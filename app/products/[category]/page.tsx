@@ -15,7 +15,7 @@ import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { QuickInquiryModal } from '@/components/QuickInquiryModal'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
 
 interface Product {
   _id: string

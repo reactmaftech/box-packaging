@@ -96,7 +96,7 @@ Uses Tailwind CSS v4 with custom color scheme:
 
 The inquiry form submits to:
 ```
-POST http://localhost:5000/api/inquiries
+POST https://packaging-backend.vercel.app/api/inquiries
 ```
 
 Required fields:

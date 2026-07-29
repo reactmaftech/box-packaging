@@ -10,7 +10,7 @@ import {
   Loader,
 } from 'lucide-react'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
 
 // Fallback images
 import boxImage1 from '../assets/images/01.webp'

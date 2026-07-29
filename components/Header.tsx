@@ -10,7 +10,7 @@ import {
   ShoppingCart, Loader, Link as LinkIcon, Tag, Image,
 } from 'lucide-react'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
 
 // Map icon names to actual Lucide components
 const iconMap: { [key: string]: any } = {
