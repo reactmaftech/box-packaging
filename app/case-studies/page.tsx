@@ -251,7 +251,7 @@ export default function CaseStudiesPage() {
                     <img 
                       src={allImages[currentImageIndex] || viewingItem.thumbnail} 
                       alt={viewingItem.title} 
-                      className="w-full h-full object-cover rounded-t-2xl"
+                      className="w-full h-full object-contain rounded-t-2xl"
                       onError={(e) => { 
                         (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" fill="%23F5F1E7"><rect width="400" height="300"/><text x="200" y="150" text-anchor="middle" dy=".3em" fill="%23999">No Image</text></svg>'
                       }}

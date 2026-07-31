@@ -6,16 +6,15 @@ import { useParams, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Search, Loader, X, Eye, MessageSquare, Package,
-  Grid3X3, List, Filter, ArrowLeft, RefreshCw,
-  Tag, Layers, ChevronDown, ChevronUp, Star,
-  DollarSign, Image as ImageIcon
+  Grid3X3, List, ArrowLeft, RefreshCw,
+  Layers, ChevronLeft, ChevronRight
 } from 'lucide-react'
 import Link from 'next/link'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { QuickInquiryModal } from '@/components/QuickInquiryModal'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 
 interface Product {
   _id: string
@@ -69,7 +68,6 @@ export default function CategoryProductsPage() {
       
       console.log('🔍 Fetching products for category:', category)
       
-      // Fetch products filtered by category
       const response = await fetch(`${API_URL}/products?category=${encodeURIComponent(category)}&isActive=true&sortBy=${sortBy}`)
       
       if (response.ok) {
@@ -87,6 +85,7 @@ export default function CategoryProductsPage() {
     }
   }
 
+  // Open inquiry modal from product card
   const handleInquiryClick = (product: Product, e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -97,11 +96,25 @@ export default function CategoryProductsPage() {
     setInquiryModalOpen(true)
   }
 
+  // View product details
   const handleViewProduct = (product: Product, e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     setViewingProduct(product)
     setCurrentImageIndex(0)
+  }
+
+  // Open inquiry from product detail modal
+  const handleInquiryFromDetail = (product: Product) => {
+    setViewingProduct(null) // Close detail modal first
+    // Small delay to let the modal close animation finish
+    setTimeout(() => {
+      setSelectedProduct({
+        name: product.title,
+        type: product.category
+      })
+      setInquiryModalOpen(true)
+    }, 150)
   }
 
   // Filter products by search term
@@ -111,12 +124,6 @@ export default function CategoryProductsPage() {
       product.description.toLowerCase().includes(searchTerm.toLowerCase())
     return matchesSearch
   })
-
-  // Get all images for gallery
-  const getAllImages = (product: Product): string[] => {
-    if (product.images && product.images.length > 0) return product.images
-    return []
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -404,7 +411,7 @@ export default function CategoryProductsPage() {
         </div>
       </section>
 
-      {/* Product Detail Modal */}
+      {/* ============ PRODUCT DETAIL MODAL ============ */}
       <AnimatePresence>
         {viewingProduct && (
           <div className="fixed inset-0 bg-black/50 flex items-start justify-center p-4 md:p-6 z-50 overflow-y-auto">
@@ -421,67 +428,130 @@ export default function CategoryProductsPage() {
                     <img 
                       src={viewingProduct.images[currentImageIndex] || viewingProduct.images[0]} 
                       alt={viewingProduct.title} 
-                      className="w-full h-full object-cover rounded-t-2xl"
+                      className="w-full h-full object-contain rounded-t-2xl"
                     />
                     {viewingProduct.images.length > 1 && (
                       <>
-                        <button onClick={() => setCurrentImageIndex(prev => Math.max(0, prev - 1))} disabled={currentImageIndex === 0}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center disabled:opacity-30">
-                          <ChevronDown className="rotate-90" size={20} />
+                        <button 
+                          onClick={() => setCurrentImageIndex(prev => Math.max(0, prev - 1))} 
+                          disabled={currentImageIndex === 0}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition-colors"
+                        >
+                          <ChevronLeft size={20} className="text-gray-700" />
                         </button>
-                        <button onClick={() => setCurrentImageIndex(prev => Math.min(viewingProduct.images.length - 1, prev + 1))} disabled={currentImageIndex === viewingProduct.images.length - 1}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center disabled:opacity-30">
-                          <ChevronDown className="-rotate-90" size={20} />
+                        <button 
+                          onClick={() => setCurrentImageIndex(prev => Math.min(viewingProduct.images.length - 1, prev + 1))} 
+                          disabled={currentImageIndex === viewingProduct.images.length - 1}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition-colors"
+                        >
+                          <ChevronRight size={20} className="text-gray-700" />
                         </button>
-                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-xs">
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs">
                           {currentImageIndex + 1} / {viewingProduct.images.length}
                         </div>
                       </>
                     )}
                   </>
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center"><Package size={64} className="text-gray-300" /></div>
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#F5F1E7] to-[#EDE5D8]">
+                    <Package size={64} className="text-[#D4C5A9]" />
+                  </div>
                 )}
-                <button onClick={() => setViewingProduct(null)} className="absolute top-4 right-4 p-2 bg-white/80 rounded-full"><X size={20} /></button>
+                <button 
+                  onClick={() => setViewingProduct(null)} 
+                  className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors z-10"
+                >
+                  <X size={20} className="text-gray-700" />
+                </button>
               </div>
 
               {/* Product Details */}
               <div className="p-6 md:p-8">
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex items-start justify-between mb-6">
                   <div>
-                    <h2 className="text-2xl font-bold mb-2">{viewingProduct.title}</h2>
-                    <span className="px-3 py-1 bg-gray-100 rounded-full text-sm">{viewingProduct.category}</span>
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{viewingProduct.title}</h2>
+                    <span className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
+                      {viewingProduct.category}
+                    </span>
                   </div>
                   {viewingProduct.price !== undefined && (
-                    <div className="text-2xl font-bold text-[#FDB022]">${viewingProduct.price.toFixed(2)}</div>
+                    <div className="text-3xl font-bold text-[#FDB022]">${viewingProduct.price.toFixed(2)}</div>
                   )}
                 </div>
 
+                {/* Description */}
                 <div className="mb-6">
-                  <h4 className="font-semibold mb-2">Description</h4>
-                  <div className="text-gray-700 leading-relaxed whitespace-pre-wrap" 
-                    dangerouslySetInnerHTML={{ __html: viewingProduct.description }} />
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <span className="w-1 h-6 bg-[#FDB022] rounded-full"></span>
+                    Description
+                  </h4>
+                  <div className="bg-gray-50 rounded-xl p-6">
+                    <div 
+                      className="text-gray-700 leading-relaxed whitespace-pre-wrap text-sm md:text-base"
+                      dangerouslySetInnerHTML={{ __html: viewingProduct.description }} 
+                    />
+                  </div>
                 </div>
 
-                {/* All Images */}
+                {/* All Images Gallery */}
                 {viewingProduct.images && viewingProduct.images.length > 1 && (
                   <div className="mb-6">
-                    <h4 className="font-semibold mb-3">Gallery ({viewingProduct.images.length} images)</h4>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                      <span className="w-1 h-6 bg-[#FDB022] rounded-full"></span>
+                      Gallery ({viewingProduct.images.length} images)
+                    </h4>
                     <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
                       {viewingProduct.images.map((img, idx) => (
-                        <img key={idx} src={img} alt="" 
-                          className="w-full h-24 object-cover rounded-xl cursor-pointer hover:opacity-80 border"
-                          onClick={() => setCurrentImageIndex(idx)} />
+                        <img 
+                          key={idx} 
+                          src={img} 
+                          alt={`${viewingProduct.title} - ${idx + 1}`}
+                          className={`w-full h-24 object-cover rounded-xl cursor-pointer hover:opacity-80 transition-opacity border-2 ${
+                            idx === currentImageIndex ? 'border-[#FDB022]' : 'border-gray-200'
+                          }`}
+                          onClick={() => setCurrentImageIndex(idx)}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                        />
                       ))}
                     </div>
                   </div>
                 )}
 
-                <div className="flex gap-3 pt-4 border-t">
-                  <button onClick={() => setViewingProduct(null)} className="flex-1 py-2.5 border rounded-xl font-medium">Close</button>
-                  <button onClick={() => { setViewingProduct(null); handleInquiryClick(viewingProduct, {} as any) }}
-                    className="flex-1 py-2.5 bg-[#FDB022] text-[#171512] rounded-xl font-bold flex items-center justify-center gap-2">
-                    <MessageSquare size={16} /> Get Quote
+                {/* Product Info */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-xs text-gray-500 mb-1">Category</p>
+                    <p className="font-semibold text-gray-900 text-sm">{viewingProduct.category}</p>
+                  </div>
+                  {viewingProduct.price !== undefined && (
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <p className="text-xs text-gray-500 mb-1">Price</p>
+                      <p className="font-semibold text-gray-900 text-sm">${viewingProduct.price.toFixed(2)}</p>
+                    </div>
+                  )}
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-xs text-gray-500 mb-1">Status</p>
+                    <p className="font-semibold text-green-600 text-sm">Available</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-xs text-gray-500 mb-1">Images</p>
+                    <p className="font-semibold text-gray-900 text-sm">{viewingProduct.images?.length || 0}</p>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
+                  <button 
+                    onClick={() => setViewingProduct(null)} 
+                    className="flex-1 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 font-medium transition-colors"
+                  >
+                    Close
+                  </button>
+                  <button 
+                    onClick={() => handleInquiryFromDetail(viewingProduct)}
+                    className="flex-1 py-3 bg-[#FDB022] text-[#171512] rounded-xl font-bold hover:bg-[#f5a80f] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#FDB022]/25"
+                  >
+                    <MessageSquare size={18} /> Get Quote for This Product
                   </button>
                 </div>
               </div>
@@ -490,7 +560,7 @@ export default function CategoryProductsPage() {
         )}
       </AnimatePresence>
 
-      {/* Quick Inquiry Modal */}
+      {/* ============ QUICK INQUIRY MODAL ============ */}
       <QuickInquiryModal
         isOpen={inquiryModalOpen}
         onClose={() => setInquiryModalOpen(false)}
