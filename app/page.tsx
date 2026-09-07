@@ -10,6 +10,7 @@ import { TrendingProducts } from '@/components/Trendingproducts'
 import { PremiumFinishes } from '@/components/Premiumfinishes'
 import { FAQ } from '@/components/Faq'
 import { CTA } from '@/components/CTA'
+import { PackagingContentSections } from '@/components/PackagingContentSections'
 
 export default function Home() {
   return (
@@ -17,11 +18,12 @@ export default function Home() {
       <Header />
       <Hero />
       <CategoryShowcase />
-      <CustomPackagingCTA />
       <Services />
       <TrendingProducts />
-      <Testimonials />
       <InquiryForm />
+      <PackagingContentSections />
+      <CustomPackagingCTA />
+      <Testimonials />
       <PremiumFinishes />
       <FAQ />
       <CTA />

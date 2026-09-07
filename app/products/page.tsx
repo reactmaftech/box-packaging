@@ -1,26 +1,18 @@
-// app/products/page.tsx (Frontend/Public)
+// app/products/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Search, 
-  Package, 
-  Loader, 
-  Filter, 
-  X, 
-  Grid3X3, 
-  List,
-  MessageSquare,
-  Tag,
-  Layers,
-  ArrowRight,
-  RefreshCw
+import { useRouter, useSearchParams } from 'next/navigation'
+import { motion } from 'framer-motion'
+import {
+  Search, Package, Loader, X, Grid3X3, List,
+  MessageSquare, Layers, ArrowRight, RefreshCw, Eye
 } from 'lucide-react'
 import Link from 'next/link'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { QuickInquiryModal } from '@/components/QuickInquiryModal'
+import { categoryHref, slugify } from '@/lib/slug'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
 
@@ -34,6 +26,9 @@ interface Category {
 }
 
 export default function ProductsPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -41,41 +36,40 @@ export default function ProductsPage() {
   const [selectedType, setSelectedType] = useState('all')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [categoryTypes, setCategoryTypes] = useState<string[]>([])
-  const [showFilters, setShowFilters] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
-  
-  // Modal state
+
   const [modalOpen, setModalOpen] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState<{ name: string; type: string }>({ 
-    name: '', 
-    type: '' 
+  const [selectedCategory, setSelectedCategory] = useState<{ name: string; type: string }>({
+    name: '',
+    type: '',
   })
+
+  // Old links looked like /products?category=Custom%20Corrugated%20Boxes
+  // Redirect them to the clean slug URL so nothing bookmarked breaks.
+  useEffect(() => {
+    const legacy = searchParams?.get('category')
+    if (legacy) router.replace(categoryHref(legacy))
+  }, [searchParams, router])
 
   useEffect(() => {
     fetchCategories()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [retryCount])
 
   const fetchCategories = async () => {
     try {
       setLoading(true)
       setError('')
-      
-      console.log('Fetching categories for products page...')
-      
+
       const response = await fetch(`${API_URL}/categories?isActive=true`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       })
-      
-      console.log('Response status:', response.status)
-      
+
       if (response.ok) {
         const responseData = await response.json()
-        console.log('Categories data:', responseData)
-        
+
         let cats: Category[] = []
-        
-        // Handle different response formats
         if (responseData.success && Array.isArray(responseData.data)) {
           cats = responseData.data
         } else if (Array.isArray(responseData.data)) {
@@ -83,69 +77,54 @@ export default function ProductsPage() {
         } else if (Array.isArray(responseData)) {
           cats = responseData
         }
-        
-        // Filter only active categories
-        const activeCategories = cats.filter(cat => 
-          cat.isActive === true || cat.isActive === undefined
+
+        const activeCategories = cats.filter(
+          cat => cat.isActive === true || cat.isActive === undefined
         )
-        
-        console.log('Active categories:', activeCategories.length)
+
         setCategories(activeCategories)
-        
-        // Extract unique types
-        const types = [...new Set(activeCategories.map(cat => cat.type))] as string[]
-        setCategoryTypes(types.sort())
-      } else if (response.status === 503) {
-        setError('Service temporarily unavailable. Please try again.')
-      } else {
-        // Try active endpoint
-        try {
-          const activeRes = await fetch(`${API_URL}/categories/active`)
-          if (activeRes.ok) {
-            const activeData = await activeRes.json()
-            let cats: Category[] = []
-            if (activeData.success && Array.isArray(activeData.data)) {
-              cats = activeData.data
-            } else if (Array.isArray(activeData.data)) {
-              cats = activeData.data
-            }
-            setCategories(cats)
-            const types = [...new Set(cats.map(cat => cat.type))] as string[]
-            setCategoryTypes(types.sort())
-            return
-          }
-        } catch (e) {
-          console.log('Fallback endpoint also failed')
-        }
-        setError('Failed to load categories')
+        setCategoryTypes([...new Set(activeCategories.map(cat => cat.type))].sort())
+        return
       }
+
+      if (response.status === 503) {
+        setError('The service is temporarily unavailable. Try again in a moment.')
+        return
+      }
+
+      // Fall back to the active-only endpoint
+      const activeRes = await fetch(`${API_URL}/categories/active`)
+      if (activeRes.ok) {
+        const activeData = await activeRes.json()
+        const cats: Category[] = activeData?.data ?? (Array.isArray(activeData) ? activeData : [])
+        setCategories(cats)
+        setCategoryTypes([...new Set(cats.map(cat => cat.type))].sort())
+        return
+      }
+
+      setError('We could not load the categories.')
     } catch (err) {
       console.error('Error fetching categories:', err)
-      setError('Error loading categories')
+      setError('We could not load the categories. Check your connection and try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleInquiryClick = (category: Category, e: React.MouseEvent) => {
+  const openInquiry = (category: Category, e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setSelectedCategory({
-      name: category.name,
-      type: category.type
-    })
+    setSelectedCategory({ name: category.name, type: category.type })
     setModalOpen(true)
   }
 
-  // Filter categories by search and type
   const filteredCategories = categories.filter(cat => {
-    const matchesSearch = 
-      cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cat.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (cat.description && cat.description.toLowerCase().includes(searchTerm.toLowerCase()))
-    
+    const q = searchTerm.toLowerCase()
+    const matchesSearch =
+      cat.name.toLowerCase().includes(q) ||
+      cat.type.toLowerCase().includes(q) ||
+      (cat.description ? cat.description.toLowerCase().includes(q) : false)
     const matchesType = selectedType === 'all' || cat.type === selectedType
-    
     return matchesSearch && matchesType
   })
 
@@ -156,29 +135,25 @@ export default function ProductsPage() {
 
   const hasActiveFilters = searchTerm || selectedType !== 'all'
 
-  // Group categories by type for display
-  const groupedCategories = selectedType === 'all' 
-    ? categoryTypes.map(type => ({
-        type,
-        categories: filteredCategories.filter(cat => cat.type === type)
-      })).filter(group => group.categories.length > 0)
-    : [{ type: selectedType, categories: filteredCategories }]
+  const groupedCategories =
+    selectedType === 'all'
+      ? categoryTypes
+          .map(type => ({ type, categories: filteredCategories.filter(cat => cat.type === type) }))
+          .filter(group => group.categories.length > 0)
+      : [{ type: selectedType, categories: filteredCategories }]
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      {/* Hero Banner */}
+      {/* Hero */}
       <section className="relative bg-gradient-to-br from-[#171512] to-[#2a2520] text-white pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden">
-        {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
             backgroundImage: `radial-gradient(circle at 25% 25%, #FDB022 1px, transparent 1px), radial-gradient(circle at 75% 75%, #FDB022 1px, transparent 1px)`,
             backgroundSize: '50px 50px'
           }} />
         </div>
-        
-        {/* Decorative Blobs */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#FDB022]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#FDB022]/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3" />
 
@@ -189,15 +164,10 @@ export default function ProductsPage() {
             transition={{ duration: 0.7 }}
             className="text-center"
           >
-            <motion.span
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center border border-[#FDB022]/30 rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide text-[#FDB022] mb-6"
-            >
+            <span className="inline-flex items-center border border-[#FDB022]/30 rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide text-[#FDB022] mb-6">
               <Layers size={14} className="mr-2" />
               EXPLORE OUR CATEGORIES
-            </motion.span>
+            </span>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
               Find Your Perfect
@@ -206,14 +176,13 @@ export default function ProductsPage() {
                 Packaging Solution
               </span>
             </h1>
-            
+
             <p className="text-lg text-white/60 max-w-2xl mx-auto mb-10">
-              Browse through our extensive collection of packaging categories. 
-              From industry-specific solutions to material types, we have everything 
+              Browse through our extensive collection of packaging categories.
+              From industry-specific solutions to material types, we have everything
               you need to make your brand stand out.
             </p>
 
-            {/* Search Bar */}
             <div className="max-w-xl mx-auto">
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={22} />
@@ -235,7 +204,6 @@ export default function ProductsPage() {
               </div>
             </div>
 
-            {/* Stats */}
             <div className="flex justify-center gap-8 mt-10">
               {[
                 { label: 'Categories', value: categories.length },
@@ -252,17 +220,12 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      {/* Main Content */}
+      {/* Main */}
       <section className="py-16 px-6">
         <div className="max-w-7xl mx-auto">
           {/* Toolbar */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-10 bg-white rounded-2xl p-4 shadow-sm border border-gray-100"
-          >
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-10 bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center gap-3 flex-wrap">
-              {/* Type Filter Pills */}
               <button
                 onClick={() => setSelectedType('all')}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
@@ -316,13 +279,13 @@ export default function ProductsPage() {
                 </button>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Content */}
           {loading ? (
             <div className="text-center py-20">
               <Loader size={40} className="mx-auto animate-spin text-gray-400 mb-4" />
-              <p className="text-gray-500 text-lg">Loading categories...</p>
+              <p className="text-gray-500 text-lg">Loading categories…</p>
             </div>
           ) : error ? (
             <div className="text-center py-20">
@@ -333,7 +296,7 @@ export default function ProductsPage() {
                 className="mt-4 inline-flex items-center gap-2 px-6 py-2.5 bg-[#171512] text-white rounded-full text-sm font-medium hover:bg-black transition-colors"
               >
                 <RefreshCw size={16} />
-                Try Again
+                Try again
               </button>
             </div>
           ) : filteredCategories.length === 0 ? (
@@ -346,20 +309,14 @@ export default function ProductsPage() {
                   onClick={clearFilters}
                   className="mt-4 px-6 py-2.5 bg-[#FDB022] text-[#171512] rounded-full text-sm font-semibold hover:bg-[#f5a80f] transition-colors"
                 >
-                  Clear Filters
+                  Clear filters
                 </button>
               )}
             </div>
           ) : (
             <div className="space-y-12">
-              {groupedCategories.map((group, groupIndex) => (
-                <motion.div
-                  key={group.type}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: groupIndex * 0.1 }}
-                >
-                  {/* Type Header */}
+              {groupedCategories.map(group => (
+                <div key={group.type}>
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-8 h-8 bg-[#FDB022]/10 rounded-xl flex items-center justify-center">
                       <Layers size={16} className="text-[#FDB022]" />
@@ -368,80 +325,72 @@ export default function ProductsPage() {
                     <span className="text-sm text-gray-400">({group.categories.length} categories)</span>
                   </div>
 
-                  {/* Categories Grid/List */}
                   {viewMode === 'grid' ? (
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                      {group.categories.map((category, index) => (
-                        <motion.div
+                      {group.categories.map(category => (
+                        <Link
                           key={category._id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          whileHover={{ y: -4 }}
-                          className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all border border-gray-100 overflow-hidden group cursor-pointer"
-                          onClick={(e) => handleInquiryClick(category, e)}
+                          href={categoryHref(category.name)}
+                          className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow border border-gray-100 overflow-hidden group block"
                         >
-                          {/* Category Image */}
                           <div className="relative h-48 bg-gradient-to-br from-[#F5F1E7] to-[#EDE5D8] overflow-hidden">
                             {category.image ? (
                               <img
                                 src={category.image}
                                 alt={category.name}
                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement
-                                  target.style.display = 'none'
-                                }}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
                                 <Package size={48} className="text-[#D4C5A9]" />
                               </div>
                             )}
-                            
-                            {/* Type Badge */}
+
                             <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-semibold text-gray-700 shadow-sm">
                               {category.type}
                             </div>
 
-                            {/* Hover Overlay */}
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
-                              <span className="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 bg-white text-[#171512] px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 shadow-lg">
-                                <MessageSquare size={16} />
-                                Get Quote
+                              <span className="opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 bg-white text-[#171512] px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 shadow-lg">
+                                <Eye size={16} />
+                                View products
                               </span>
                             </div>
                           </div>
 
-                          {/* Category Info */}
                           <div className="p-5">
                             <h3 className="font-bold text-gray-900 text-lg mb-1">{category.name}</h3>
                             {category.description && (
                               <p className="text-sm text-gray-500 line-clamp-2 mb-3">{category.description}</p>
                             )}
-                            <button
-                              onClick={(e) => handleInquiryClick(category, e)}
-                              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#FDB022] text-[#171512] rounded-xl font-semibold hover:bg-[#f5a80f] transition-all text-sm"
-                            >
-                              <MessageSquare size={14} />
-                              Inquire Now
-                            </button>
+
+                            <div className="flex gap-2">
+                              {/* View details -> category's product listing */}
+                              <span className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-[#171512] text-white rounded-xl font-semibold text-sm group-hover:bg-black transition-colors">
+                                <Eye size={14} />
+                                View details
+                              </span>
+                              <button
+                                onClick={(e) => openInquiry(category, e)}
+                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-[#FDB022] text-[#171512] rounded-xl font-semibold hover:bg-[#f5a80f] transition-colors text-sm"
+                              >
+                                <MessageSquare size={14} />
+                                Inquire
+                              </button>
+                            </div>
                           </div>
-                        </motion.div>
+                        </Link>
                       ))}
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {group.categories.map((category, index) => (
-                        <motion.div
+                      {group.categories.map(category => (
+                        <Link
                           key={category._id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.03 }}
-                          className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center gap-4 hover:shadow-md transition-all cursor-pointer group"
-                          onClick={(e) => handleInquiryClick(category, e)}
+                          href={categoryHref(category.name)}
+                          className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center gap-4 hover:shadow-md transition-shadow group"
                         >
-                          {/* Thumbnail */}
                           <div className="w-16 h-16 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
                             {category.image ? (
                               <img src={category.image} alt={category.name} className="w-full h-full object-cover" />
@@ -452,7 +401,6 @@ export default function ProductsPage() {
                             )}
                           </div>
 
-                          {/* Info */}
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-gray-900">{category.name}</h3>
                             {category.description && (
@@ -460,37 +408,33 @@ export default function ProductsPage() {
                             )}
                           </div>
 
-                          {/* Action */}
+                          <span className="hidden sm:flex items-center gap-2 px-4 py-2 bg-[#171512] text-white rounded-xl font-semibold text-sm flex-shrink-0">
+                            <Eye size={14} />
+                            View details
+                          </span>
                           <button
-                            onClick={(e) => handleInquiryClick(category, e)}
-                            className="flex items-center gap-2 px-4 py-2 bg-[#FDB022] text-[#171512] rounded-xl font-semibold hover:bg-[#f5a80f] transition-all text-sm flex-shrink-0"
+                            onClick={(e) => openInquiry(category, e)}
+                            className="flex items-center gap-2 px-4 py-2 bg-[#FDB022] text-[#171512] rounded-xl font-semibold hover:bg-[#f5a80f] transition-colors text-sm flex-shrink-0"
                           >
                             <MessageSquare size={14} />
                             Inquire
                           </button>
-                        </motion.div>
+                        </Link>
                       ))}
                     </div>
                   )}
-                </motion.div>
+                </div>
               ))}
             </div>
           )}
 
           {/* Bottom CTA */}
           {filteredCategories.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="mt-20 text-center py-16 px-6 bg-gradient-to-br from-[#171512] to-[#2a2520] rounded-3xl text-white"
-            >
+            <div className="mt-20 text-center py-16 px-6 bg-gradient-to-br from-[#171512] to-[#2a2520] rounded-3xl text-white">
               <Package size={48} className="mx-auto text-[#FDB022] mb-6" />
-              <h3 className="text-2xl md:text-3xl font-bold mb-4">
-                Need a Custom Solution?
-              </h3>
+              <h3 className="text-2xl md:text-3xl font-bold mb-4">Need a custom solution?</h3>
               <p className="text-white/60 mb-8 max-w-lg mx-auto">
-                We specialize in creating custom packaging tailored to your specific 
+                We specialize in creating custom packaging tailored to your specific
                 requirements. Let us help you bring your vision to life.
               </p>
               <button
@@ -500,17 +444,16 @@ export default function ProductsPage() {
                 }}
                 className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#FDB022] text-[#171512] font-bold rounded-xl hover:bg-[#f5a80f] transition-all shadow-lg shadow-[#FDB022]/25 text-lg"
               >
-                Request Custom Quote
+                Request custom quote
                 <ArrowRight size={20} />
               </button>
-            </motion.div>
+            </div>
           )}
         </div>
       </section>
 
       <Footer />
 
-      {/* Quick Inquiry Modal */}
       <QuickInquiryModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}

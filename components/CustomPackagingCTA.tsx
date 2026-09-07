@@ -1,80 +1,61 @@
+// components/CustomPackagingCTA.tsx
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Phone, MessageCircle, ArrowRight } from 'lucide-react'
 
-import bgImage from '../assets/banner-images/custom-packaging.jpg'
-
-const contacts = [
-  { icon: Phone, label: '800 558 8047', href: 'tel:+18005588047', iconBg: 'bg-black/20' },
-  { icon: MessageCircle, label: '800 558 8047', href: 'https://wa.me/18005588047', iconBg: 'bg-[#25D366]' },
-]
+const PHONE = '800 558 8047'
+const PHONE_HREF = 'tel:+18005588047'
+const WHATSAPP_HREF = 'https://wa.me/18005588047'
 
 export function CustomPackagingCTA() {
   return (
-    <section className="bg-white">
-      <div className="relative min-h-[600px] md:min-h-[700px] flex items-center w-full">
-        {/* Background image */}
-        <Image
-          src={bgImage}
-          alt="Custom packaging"
-          fill
-          className="object-cover"
-          sizes="500px"
-          priority={false}
-        />
-
-        {/* Content */}
-        <motion.div
-          className="relative z-10 max-w-7xl mx-auto w-full px-6 md:px-14"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="max-w-2xl">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black leading-tight mb-6">
-              Let&apos;s Create Your
-              <br />
-              Custom Packaging
+    <section className="bg-white px-6 py-10 md:py-12">
+      <motion.div
+        className="max-w-7xl mx-auto"
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="rounded-2xl bg-[#F5F1E7] border border-black/[0.06] px-6 py-6 md:px-10 md:py-7 flex flex-col md:flex-row md:items-center gap-6 md:gap-10">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl md:text-2xl font-bold text-[#171512] leading-snug">
+              Looking for other custom boxes and packaging?
             </h2>
-
-            <p className="text-black/80 text-lg md:text-xl lg:text-2xl mb-10 max-w-xl">
-              Tell us about your packaging requirement, like box style, box size,
-              quantity, etc. Get in touch with our product specialist now!
+            <p className="text-sm text-black/55 mt-1.5 max-w-xl">
+              Talk to a packaging specialist for a free consultation and an instant price quote.
             </p>
+          </div>
 
-            <div className="flex flex-col gap-5 mb-10">
-              {contacts.map((contact) => (
-                <a
-                  key={contact.label}
-                  href={contact.href}
-                  className="flex items-center gap-4 group w-fit"
-                >
-                  <span
-                    className={`w-14 h-14 rounded-full flex items-center justify-center text-white shrink-0 ${contact.iconBg} transition-transform duration-200 group-hover:scale-105`}
-                  >
-                    <contact.icon size={24} />
-                  </span>
-                  <span className="text-xl md:text-2xl font-semibold text-black">
-                    {contact.label}
-                  </span>
-                </a>
-              ))}
-            </div>
+          <div className="flex items-center gap-4 shrink-0">
+            <a
+              href={PHONE_HREF}
+              className="hidden sm:flex items-center gap-2 text-sm font-semibold text-[#171512] hover:text-black transition-colors"
+            >
+              <Phone size={16} className="text-[#c98b0c]" />
+              {PHONE}
+            </a>
+
+            <a
+              href={WHATSAPP_HREF}
+              aria-label="Chat on WhatsApp"
+              className="w-10 h-10 rounded-full bg-[#25D366] text-white flex items-center justify-center shrink-0 hover:brightness-105 transition-all"
+            >
+              <MessageCircle size={18} />
+            </a>
 
             <Link
               href="#inquiry"
-              className="group inline-flex items-center gap-3 bg-black text-white font-semibold text-lg px-8 py-4 rounded-lg hover:bg-black/80 transition-colors"
+              className="group inline-flex items-center gap-2 bg-[#FDB022] text-[#171512] font-semibold text-sm px-6 py-3 rounded-xl hover:bg-[#f5a80f] transition-colors whitespace-nowrap"
             >
-              Get a Free Quote
-              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+              Get a free quote
+              <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
     </section>
   )
 }
