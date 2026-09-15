@@ -6,13 +6,17 @@ import { useParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
   Search, Loader, X, Eye, MessageSquare, Package,
-  Grid3X3, List, ArrowLeft, RefreshCw, Layers
+  Grid3X3, List, ArrowLeft, RefreshCw, Layers,
+  ArrowRight,
+  MessageCircle
 } from 'lucide-react'
 import Link from 'next/link'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { QuickInquiryModal } from '@/components/QuickInquiryModal'
 import { productHref, matchCategoryBySlug, unslugify } from '@/lib/slug'
+import { InstantQuote } from '@/components/InstantQuote'
+import { FAQ } from '@/components/Faq'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
 
@@ -154,7 +158,7 @@ export default function CategoryProductsPage() {
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      {/* Hero */}
+     {/* Hero */}
       <section className="relative bg-gradient-to-br from-[#171512] to-[#2a2520] text-white pt-32 pb-16 md:pb-20 overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
@@ -181,12 +185,33 @@ export default function CategoryProductsPage() {
 
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 capitalize">{displayName}</h1>
 
-            <p className="text-lg text-white/60 max-w-2xl">
+            <p className="text-lg text-white/60 max-w-2xl mb-8">
               {category?.description
                 || `Explore our ${displayName.toLowerCase()} collection. High-quality custom packaging solutions designed to meet your specific needs.`}
             </p>
 
-            <div className="flex gap-6 mt-6">
+            {/* CTA Buttons */}
+            <div className="flex flex-wrap items-center gap-4 mb-8">
+              <Link 
+                href="/quote" 
+                className="inline-flex items-center gap-2 bg-[#FDB022] text-[#171512] font-semibold px-6 py-3 rounded-lg hover:bg-[#f5a80f] transition-colors shadow-lg shadow-[#FDB022]/20"
+              >
+                Request a Quote
+                <ArrowRight size={18} />
+              </Link>
+              
+              <a 
+                href="https://wa.me/1234567890" // Replace with your actual WhatsApp number
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-white font-semibold px-6 py-3 rounded-lg hover:bg-white/10 hover:border-white/20 transition-colors backdrop-blur-sm"
+              >
+                <MessageCircle size={18} className="text-[#25D366]" />
+                WhatsApp Us
+              </a>
+            </div>
+
+            {/* <div className="flex gap-6 mt-6">
               <div className="text-center">
                 <p className="text-2xl font-bold text-[#FDB022]">{products.length}</p>
                 <p className="text-xs text-white/50">Products</p>
@@ -195,11 +220,10 @@ export default function CategoryProductsPage() {
                 <p className="text-2xl font-bold text-[#FDB022]">{products.filter(p => p.isActive).length}</p>
                 <p className="text-xs text-white/50">Available</p>
               </div>
-            </div>
+            </div> */}
           </motion.div>
         </div>
       </section>
-
       {/* Toolbar */}
       <section className="py-6 px-6 bg-white border-b sticky top-[72px] z-30 shadow-sm">
         <div className="max-w-7xl mx-auto">
@@ -426,6 +450,9 @@ export default function CategoryProductsPage() {
           )}
         </div>
       </section>
+
+      <InstantQuote/ >
+      <FAQ />
 
       <QuickInquiryModal
         isOpen={inquiryModalOpen}

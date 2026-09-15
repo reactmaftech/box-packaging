@@ -14,6 +14,10 @@ import Link from 'next/link'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { categoryHref, productHref } from '@/lib/slug'
+import { TrendingProducts } from '@/components/Trendingproducts'
+import { DielineComp } from '../../../../components/DielineComp'
+import { FAQ } from '@/components/Faq'
+import { Testimonials } from '@/components/Testimonial'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
 
@@ -387,23 +391,6 @@ export default function ProductDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-
-      {/* Breadcrumb */}
-      <div className="bg-[#171512] pt-28 pb-5">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center gap-2 text-sm text-white/50 flex-wrap">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <span>/</span>
-            <Link href="/products" className="hover:text-white transition-colors">Products</Link>
-            <span>/</span>
-            <Link href={categoryHref(product.category)} className="hover:text-white transition-colors">
-              {product.category}
-            </Link>
-            <span>/</span>
-            <span className="text-[#FDB022] font-medium truncate max-w-[220px]">{product.title}</span>
-          </div>
-        </div>
-      </div>
 
       {/* Hero: gallery left, quote form right */}
       <section className="bg-white border-b border-gray-100">
@@ -882,6 +869,8 @@ export default function ProductDetailPage() {
         </div>
       </section>
 
+      
+
       {/* Related */}
       {related.length > 0 && (
         <section className="pb-20 px-6">
@@ -933,6 +922,14 @@ export default function ProductDetailPage() {
           </div>
         </section>
       )}
+      
+      <TrendingProducts />
+
+      <DielineComp />
+
+      <FAQ />
+
+      <Testimonials />
 
       {/* Mobile bar */}
       {!submitted && (
