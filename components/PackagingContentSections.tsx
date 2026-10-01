@@ -7,14 +7,32 @@ import { motion } from 'framer-motion'
 import { Check, Package, ArrowRight } from 'lucide-react'
 
 /* ------------------------------------------------------------------ */
+/* Image imports                                                       */
+/*                                                                     */
+/* Drop your image files into /public/images/ and import them here.    */
+/* Update the SECTIONS array below to use the imported variables.      */
+/* ------------------------------------------------------------------ */
+
+import customBoxesHero from '../assets/images/cutsom-1.webp'
+import customBoxesThumb1 from '../assets/images/cutsom-2.webp'
+import customBoxesThumb2 from '../assets/images/cutsom-3.webp'
+import customBoxesThumb3 from '../assets/images/cutsom-4.webp'
+
+import boxStylesHero from '../assets/images/custom-pr-1.jpg'
+import boxStylesThumb1 from '../assets/images/custom-pr-2.webp'
+import boxStylesThumb2 from '../assets/images/custom-pr-3.webp'
+import boxStylesThumb3 from '../assets/images/custom-pr-4.webp'
+
+import wholesaleHero from '../assets/images/wholeshale-1.webp'
+import wholesaleThumb1 from '../assets/images/wholeshale-2.webp'
+import wholesaleThumb2 from '../assets/images/wholeshale-3.jpg'
+import wholesaleThumb3 from '../assets/images/wholeshale-4.jpg'
+
+/* ------------------------------------------------------------------ */
 /* Content                                                             */
 /*                                                                     */
 /* Everything the page says lives in this array. Edit the copy and the */
-/* image paths here — the layout below never needs to change.          */
-/*                                                                     */
-/* Images: drop your files in /public/images/ and reference them as    */
-/* "/images/your-file.jpg". Any tile left blank renders a branded      */
-/* placeholder, so the section works before the photos are ready.      */
+/* image imports here — the layout below never needs to change.        */
 /* ------------------------------------------------------------------ */
 
 interface Section {
@@ -53,8 +71,8 @@ const SECTIONS: Section[] = [
     },
     caption:
       'From bold designs to durable materials, our custom boxes are made to protect your products, impress your customers and support your business at every step.',
-    hero: '',
-    thumbs: ['', '', ''],
+    hero: customBoxesHero.src,
+    thumbs: [customBoxesThumb1.src, customBoxesThumb2.src, customBoxesThumb3.src],
   },
   {
     id: 'box-styles',
@@ -77,8 +95,8 @@ const SECTIONS: Section[] = [
     },
     caption:
       'Choose from dozens of box styles, or send us your dimensions and we will engineer a custom structure from scratch at no extra cost.',
-    hero: '',
-    thumbs: ['', '', ''],
+    hero: boxStylesHero.src,
+    thumbs: [boxStylesThumb1.src, boxStylesThumb2.src, boxStylesThumb3.src],
   },
   {
     id: 'wholesale-packaging',
@@ -101,8 +119,8 @@ const SECTIONS: Section[] = [
     },
     caption:
       'From concept to doorstep, we handle artwork, production and delivery so you can get back to running your business.',
-    hero: '',
-    thumbs: ['', '', ''],
+    hero: wholesaleHero.src,
+    thumbs: [wholesaleThumb1.src, wholesaleThumb2.src, wholesaleThumb3.src],
   },
 ]
 

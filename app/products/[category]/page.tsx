@@ -17,6 +17,7 @@ import { QuickInquiryModal } from '@/components/QuickInquiryModal'
 import { productHref, matchCategoryBySlug, unslugify } from '@/lib/slug'
 import { InstantQuote } from '@/components/InstantQuote'
 import { FAQ } from '@/components/Faq'
+import { PackagingContentSections } from '@/components/PackagingContentSections'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
 
@@ -450,6 +451,8 @@ export default function CategoryProductsPage() {
           )}
         </div>
       </section>
+
+      <PackagingContentSections />
 
       <InstantQuote/ >
       <FAQ />

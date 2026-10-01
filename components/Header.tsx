@@ -8,9 +8,16 @@ import {
   Box, Package, ShoppingBag, Gift, Layers, Sparkles,
   Truck, Award, Star, Clock, Shield, ArrowRight,
   ShoppingCart, Loader, Link as LinkIcon, Tag, Image,
+  MessageCircle,
 } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
+
+// Contact details — update these
+const PHONE_NUMBER = '+18005555555'
+const PHONE_DISPLAY = '(800) 555-5555'
+const WHATSAPP_NUMBER = '18005555555' // no + or spaces
+const WHATSAPP_MESSAGE = 'Hi! I would like to get a quote for custom packaging.'
 
 // Map icon names to actual Lucide components
 const iconMap: { [key: string]: any } = {
@@ -64,13 +71,22 @@ function resolveIconComponent(name?: string | null): any | null {
   return null
 }
 
+// Support dropdown links
+const SUPPORT_LINKS = [
+  { label: 'Contact Us', href: '/contact' },
+  { label: 'About Us', href: '/about' },
+  { label: 'FAQs', href: '/faqs' },
+]
+
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [isScrolled, setIsScrolled] = useState(false)
   const [dynamicMenus, setDynamicMenus] = useState<DynamicMenu[]>([])
   const [loadingMenus, setLoadingMenus] = useState(true)
+  const [supportOpen, setSupportOpen] = useState(false)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const supportTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20)
@@ -121,6 +137,15 @@ export function Header() {
     setActiveMenu(activeMenu === label ? null : label)
   }
 
+  const handleSupportEnter = () => {
+    if (supportTimeoutRef.current) clearTimeout(supportTimeoutRef.current)
+    setSupportOpen(true)
+  }
+
+  const handleSupportLeave = () => {
+    supportTimeoutRef.current = setTimeout(() => setSupportOpen(false), 200)
+  }
+
   const hasMegaMenu = (menu: DynamicMenu) => {
     return menu.items.some(item => item.type === 'category' && item.categories && item.categories.length > 0)
   }
@@ -160,11 +185,7 @@ export function Header() {
     return <Layers size={15} />
   }
 
-  const staticLinks = [
-    { label: 'Case Studies', href: '/case-studies' },
-    { label: 'Sustainability', href: '/sustainability' },
-    { label: 'About Us', href: '/about' },
-  ]
+  const whatsappHref = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`
 
   return (
     <header className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'pt-2 px-2' : 'pt-0 px-0'}`}>
@@ -306,18 +327,65 @@ export function Header() {
               ) : (
                 <>
                   <Link href="/products" className="py-3.5 font-medium text-[#171512]/70 hover:text-[#171512] transition-colors">Products</Link>
-                  <Link href="/case-studies" className="py-3.5 font-medium text-[#171512]/70 hover:text-[#171512] transition-colors">Case Studies</Link>
-                  <Link href="/sustainability" className="py-3.5 font-medium text-[#171512]/70 hover:text-[#171512] transition-colors">Sustainability</Link>
-                  <Link href="/about" className="py-3.5 font-medium text-[#171512]/70 hover:text-[#171512] transition-colors">About Us</Link>
                 </>
               )}
 
-              {dynamicMenus.length > 0 && staticLinks.map((link) => (
-                <Link key={link.href} href={link.href} className="py-3.5 font-medium text-[#171512]/70 hover:text-[#171512] transition-colors">{link.label}</Link>
-              ))}
+              {/* Support dropdown */}
+              <div
+                className="relative"
+                onMouseEnter={handleSupportEnter}
+                onMouseLeave={handleSupportLeave}
+              >
+                <button
+                  onClick={() => setSupportOpen(!supportOpen)}
+                  className={`py-3.5 flex items-center gap-1.5 font-medium transition-colors ${supportOpen ? 'text-[#fdb022]' : 'text-[#171512]/70 hover:text-[#171512]'}`}
+                >
+                  Support
+                  <ChevronDown size={14} className={`transition-transform duration-200 ${supportOpen ? 'rotate-180' : ''}`} />
+                </button>
+                <AnimatePresence>
+                  {supportOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute left-0 top-full pt-2 z-50 w-56"
+                    >
+                      <div className="bg-white rounded-xl shadow-xl border border-black/[0.06] overflow-hidden py-2">
+                        {SUPPORT_LINKS.map((link) => (
+                          <Link
+                            key={link.href}
+                            href={link.href}
+                            className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#fdb022]/10 hover:text-[#171512] transition-colors"
+                          >
+                            {link.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
-              <div className="ml-auto flex items-center gap-6 py-3.5">
-                <Link href="/contact" className="font-medium text-[#171512]/70 hover:text-[#171512] transition-colors">Contact</Link>
+              {/* WhatsApp + Call buttons on the right */}
+              <div className="ml-auto flex items-center gap-3 py-2.5">
+                <a
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 bg-[#25D366] text-white text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-[#1ebe5b] transition-colors"
+                >
+                  <MessageCircle size={16} />
+                  WhatsApp
+                </a>
+                <a
+                  href={`tel:${PHONE_NUMBER}`}
+                  className="flex items-center gap-2 border-2 border-[#171512] text-[#171512] text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-[#171512] hover:text-white transition-colors"
+                >
+                  <Phone size={16} />
+                  Call Us
+                </a>
               </div>
             </nav>
           </div>
@@ -371,23 +439,53 @@ export function Header() {
               }) : (
                 <>
                   <div className="border-b border-black/[0.06] px-4 py-3"><Link href="/products" className="font-medium text-[#171512]" onClick={() => setIsMenuOpen(false)}>Products</Link></div>
-                  <div className="border-b border-black/[0.06] px-4 py-3"><Link href="/case-studies" className="font-medium text-[#171512]" onClick={() => setIsMenuOpen(false)}>Case Studies</Link></div>
-                  <div className="border-b border-black/[0.06] px-4 py-3"><Link href="/sustainability" className="font-medium text-[#171512]" onClick={() => setIsMenuOpen(false)}>Sustainability</Link></div>
-                  <div className="border-b border-black/[0.06] px-4 py-3"><Link href="/about" className="font-medium text-[#171512]" onClick={() => setIsMenuOpen(false)}>About Us</Link></div>
                 </>
               )}
 
-              {dynamicMenus.length > 0 && staticLinks.map((link) => (
-                <div key={link.href} className="border-b border-black/[0.06] px-4 py-3">
-                  <Link href={link.href} className="font-medium text-[#171512]" onClick={() => setIsMenuOpen(false)}>{link.label}</Link>
-                </div>
-              ))}
-              
-              <div className="px-4 py-3"><Link href="/contact" className="font-medium text-[#171512]" onClick={() => setIsMenuOpen(false)}>Contact</Link></div>
+              {/* Support dropdown (mobile) */}
+              <div className="border-b border-black/[0.06]">
+                <button
+                  onClick={() => setSupportOpen(!supportOpen)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-[#171512] font-medium"
+                >
+                  <span>Support</span>
+                  <ChevronDown size={18} className={`transition-transform duration-200 ${supportOpen ? 'rotate-180' : ''}`} />
+                </button>
+                <AnimatePresence>
+                  {supportOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="bg-[#F5F1E7] px-4 py-2"
+                    >
+                      {SUPPORT_LINKS.map((link) => (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          onClick={() => setIsMenuOpen(false)}
+                          className="block px-3 py-2 rounded-lg hover:bg-[#fdb022]/10 transition-colors mb-2"
+                        >
+                          <span className="text-sm font-medium text-[#171512]">{link.label}</span>
+                        </Link>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
               
               <div className="px-4 py-4 space-y-3">
+                <a
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 w-full text-center px-6 py-3 bg-[#25D366] text-white font-semibold rounded-lg hover:bg-[#1ebe5b] transition-colors"
+                >
+                  <MessageCircle size={16} /> WhatsApp
+                </a>
                 <Link href="/get-a-quote" onClick={() => setIsMenuOpen(false)} className="block w-full text-center px-6 py-3 bg-[#fdb022] text-[#171512] font-semibold rounded-lg hover:bg-[#f5a80a] transition-colors">Get Quote</Link>
-                <a href="tel:+18005555555" className="flex items-center justify-center gap-2 w-full text-center px-6 py-3 border-2 border-black/10 text-[#171512] font-medium rounded-lg"><Phone size={16} /> (800) 555-5555</a>
+                <a href={`tel:${PHONE_NUMBER}`} className="flex items-center justify-center gap-2 w-full text-center px-6 py-3 border-2 border-black/10 text-[#171512] font-medium rounded-lg"><Phone size={16} /> {PHONE_DISPLAY}</a>
               </div>
             </motion.div>
           )}
