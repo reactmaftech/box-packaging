@@ -123,8 +123,6 @@ export default function ProductDetailPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [zoom, setZoom] = useState({ on: false, x: 50, y: 50 })
 
-  const [tab, setTab] = useState<'description' | 'specs' | 'shipping'>('description')
-
   // Form
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM)
   const [submitting, setSubmitting] = useState(false)
@@ -798,78 +796,63 @@ export default function ProductDetailPage() {
         </div>
       </section>
 
-      {/* Tabs */}
+      {/* Description: images left (scrollable), content right (scrollable) */}
       <section className="py-14 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex gap-1 border-b border-gray-200 mb-8 overflow-x-auto no-scrollbar">
-            {([
-              ['description', 'Description'],
-              ['specs', 'Specifications'],
-              ['shipping', 'Shipping and turnaround'],
-            ] as const).map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => setTab(key)}
-                className={`px-5 py-3 text-sm font-semibold whitespace-nowrap border-b-2 -mb-px transition-colors ${
-                  tab === key
-                    ? 'border-[#FDB022] text-[#171512]'
-                    : 'border-transparent text-gray-500 hover:text-[#171512]'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-8">
-            {tab === 'description' && (
-              product.description ? (
-                <div
-                  className="prose prose-sm md:prose-base max-w-[70ch] text-gray-700 leading-relaxed [&_h1]:text-[#171512] [&_h2]:text-[#171512] [&_h3]:text-[#171512] [&_a]:text-[#c98b0c] [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
-                  dangerouslySetInnerHTML={{ __html: product.description }}
-                />
-              ) : (
-                <p className="text-gray-500">No description has been added for this product yet.</p>
-              )
-            )}
-
-            {tab === 'specs' && (
-              <dl className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl">
-                <SpecRow label="Category" value={product.category} />
-                <SpecRow label="Availability" value={product.isActive ? 'In production' : 'Currently paused'} />
-                <SpecRow label="Minimum order" value="100 units" />
-                <SpecRow label="Printing" value="Offset, digital, screen" />
-                <SpecRow label="Finishing" value="Matte, gloss, soft touch, spot UV" />
-                <SpecRow label="Stock options" value="Cardboard, corrugated, rigid, kraft" />
-                {product.price !== undefined && (
-                  <SpecRow label="Starting price" value={`$${product.price.toFixed(2)} per unit`} />
-                )}
-                <SpecRow label="Product images" value={`${images.length}`} />
-              </dl>
-            )}
-
-            {tab === 'shipping' && (
-              <div className="max-w-[70ch] space-y-4 text-gray-700 leading-relaxed">
-                <p>
-                  Standard production runs 8–10 business days from artwork approval. Rush production is
-                  available on most stocks — add your deadline to the form and we&apos;ll confirm what&apos;s
-                  possible.
-                </p>
-                <p>
-                  Shipping is free to the continental US on every order, with tracking sent by email once
-                  your run leaves the plant. International delivery is quoted per destination.
-                </p>
-                <p>
-                  You&apos;ll receive a free dieline and 3D mockup for approval before anything goes to
-                  press, so nothing is printed until you&apos;ve signed off.
-                </p>
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-10">
+            {/* Left: 2×2 image grid, scrollable */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
+              <div className="px-6 py-5 border-b border-gray-100">
+                <h2 className="text-xl font-bold text-[#171512]">Product Images</h2>
               </div>
-            )}
+              <div className="p-6 max-h-[600px] overflow-y-auto description-scroll">
+                {images.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    {images.map((img, idx) => (
+                      <div
+                        key={idx}
+                        className="relative aspect-square rounded-2xl overflow-hidden bg-[#F5F1E7] border border-black/[0.06] group"
+                      >
+                        <img
+                          src={img}
+                          alt={`${product.title} — view ${idx + 1}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          onError={(e) => { (e.target as HTMLImageElement).style.visibility = 'hidden' }}
+                        />
+                        <div className="absolute bottom-2 left-2 bg-black/55 backdrop-blur-sm text-white px-2 py-0.5 rounded-full text-[10px] font-medium">
+                          {idx + 1} / {images.length}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="aspect-square rounded-2xl bg-gradient-to-br from-[#F5F1E7] to-[#EDE5D8] border border-black/[0.06] flex flex-col items-center justify-center">
+                    <Package size={64} className="text-[#D4C5A9] mb-3" />
+                    <p className="text-sm text-[#8a7f6b]">No images available</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Right: scrollable description content */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
+              <div className="px-6 py-5 border-b border-gray-100">
+                <h2 className="text-xl font-bold text-[#171512]">Product Description</h2>
+              </div>
+              <div className="p-6 md:p-8 max-h-[600px] overflow-y-auto description-scroll">
+                {product.description ? (
+                  <div
+                    className="prose prose-sm md:prose-base max-w-none text-gray-700 leading-relaxed [&_h1]:text-[#171512] [&_h2]:text-[#171512] [&_h3]:text-[#171512] [&_a]:text-[#c98b0c] [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                  />
+                ) : (
+                  <p className="text-gray-500">No description has been added for this product yet.</p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </section>
-
-      
 
       {/* Related */}
       {related.length > 0 && (
@@ -894,8 +877,7 @@ export default function ProductDetailPage() {
                 >
                   <div className="relative h-44 bg-[#F5F1E7] overflow-hidden">
                     {item.images?.[0] ? (
-                      <img
-                        src={item.images[0]}
+                      <img                        src={item.images[0]}
                         alt={item.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
@@ -922,7 +904,7 @@ export default function ProductDetailPage() {
           </div>
         </section>
       )}
-      
+
       <TrendingProducts />
 
       <DielineComp />
@@ -1004,6 +986,24 @@ export default function ProductDetailPage() {
       <style jsx global>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .description-scroll::-webkit-scrollbar {
+          width: 6px;
+        }
+        .description-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .description-scroll::-webkit-scrollbar-thumb {
+          background: #d1d5db;
+          border-radius: 9999px;
+        }
+        .description-scroll::-webkit-scrollbar-thumb:hover {
+          background: #9ca3af;
+        }
+        .description-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: #d1d5db transparent;
+        }
       `}</style>
     </div>
   )

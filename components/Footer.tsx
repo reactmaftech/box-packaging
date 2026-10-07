@@ -3,6 +3,11 @@
 import Link from 'next/link'
 import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Linkedin, ArrowRight } from 'lucide-react'
 
+const PHONE_NUMBER = '+12177276247'
+const PHONE_DISPLAY = '+1 (217) 727-6247'
+const EMAIL_ADDRESS = 'info@slickcustomboxes.com'
+const SITE_NAME = 'Slick Custom Boxes'
+
 const footerColumns = [
   {
     title: 'Products',
@@ -38,7 +43,9 @@ export function Footer() {
               <div className="w-9 h-9 bg-[#FDB022] rounded-lg flex items-center justify-center text-lg">
                 📦
               </div>
-              <span className="font-bold text-xl text-white tracking-tight">BoxPack</span>
+              <span className="font-bold text-xl text-white tracking-tight">
+                Slick<span className="text-[#FDB022]">CustomBoxes</span>
+              </span>
             </Link>
             <p className="text-white/55 text-sm leading-relaxed mb-6 max-w-xs">
               We design and manufacture premium custom packaging from cardboard
@@ -47,18 +54,18 @@ export function Footer() {
 
             <div className="flex flex-col gap-3 text-sm">
               <a
-                href="tel:+18005588047"
+                href={`tel:${PHONE_NUMBER}`}
                 className="flex items-center gap-2.5 text-white/70 hover:text-[#FDB022] transition-colors"
               >
                 <Phone size={15} />
-                800 558 8047
+                {PHONE_DISPLAY}
               </a>
               <a
-                href="mailto:sales@example.com"
+                href={`mailto:${EMAIL_ADDRESS}`}
                 className="flex items-center gap-2.5 text-white/70 hover:text-[#FDB022] transition-colors"
               >
                 <Mail size={15} />
-                sales@example.com
+                {EMAIL_ADDRESS}
               </a>
               <div className="flex items-start gap-2.5 text-white/70">
                 <MapPin size={15} className="mt-0.5 shrink-0" />
@@ -114,7 +121,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-4 pt-8 border-t border-white/10">
           <p className="text-sm text-white/40">
-            © {new Date().getFullYear()} BoxPack. All rights reserved.
+            © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
           </p>
 
           <div className="flex items-center gap-5">

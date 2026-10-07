@@ -2,28 +2,34 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Phone, Mail, Menu, X, Search, ChevronDown,
   Box, Package, ShoppingBag, Gift, Layers, Sparkles,
   Truck, Award, Star, Clock, Shield, ArrowRight,
-  ShoppingCart, Loader, Link as LinkIcon, Tag, Image,
+  ShoppingCart, Loader, Link as LinkIcon, Tag, Image as ImageIcon,
   MessageCircle,
 } from 'lucide-react'
+
+// Logo import
+import logoImage from '../assets/logo/logo.png'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
 
 // Contact details — update these
-const PHONE_NUMBER = '+18005555555'
-const PHONE_DISPLAY = '(800) 555-5555'
-const WHATSAPP_NUMBER = '18005555555' // no + or spaces
+const PHONE_NUMBER = '+12177276247'
+const PHONE_DISPLAY = '+1 (217) 727-6247'
+const EMAIL_ADDRESS = 'info@slickcustomboxes.com'
+const WHATSAPP_NUMBER = '12177276247' // no + or spaces
 const WHATSAPP_MESSAGE = 'Hi! I would like to get a quote for custom packaging.'
+const SITE_NAME = 'Slick Custom Boxes'
 
 // Map icon names to actual Lucide components
 const iconMap: { [key: string]: any } = {
   Box, Package, ShoppingBag, Gift, Layers, Sparkles,
   Truck, Award, Star, Clock, Shield, ShoppingCart,
-  LinkIcon, Tag, Image,
+  LinkIcon, Tag, Image: ImageIcon,
   Link: LinkIcon,
 }
 
@@ -192,10 +198,14 @@ export function Header() {
       <div className={`w-[95%] mx-auto bg-white transition-all duration-300 ${isScrolled ? 'rounded-2xl shadow-lg' : 'rounded-none shadow-none'}`}>
         {/* Row 1 — logo / search / utility */}
         <div className="border-b border-black/[0.08] px-6">
-          <div className="py-4 flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-2 shrink-0 group">
-              <div className="w-9 h-9 bg-[#fdb022] rounded-lg flex items-center justify-center text-lg transform group-hover:scale-105 transition-transform duration-200">📦</div>
-              <span className="font-bold text-xl text-[#171512] tracking-tight">BoxPack</span>
+          <div className="py-3 flex items-center gap-6">
+            <Link href="/" className="flex items-center shrink-0 group">
+              <Image
+                src={logoImage}
+                alt={SITE_NAME}
+                priority
+                className="h-14 md:h-16 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+              />
             </Link>
 
             <div className="hidden md:flex flex-1 max-w-xl">
@@ -206,9 +216,15 @@ export function Header() {
             </div>
 
             <div className="hidden md:flex items-center gap-5 ml-auto shrink-0">
-              <a href="tel:+18005555555" className="hidden lg:flex items-center gap-2 text-sm text-[#171512]/70 hover:text-[#171512] transition-colors"><Phone size={16} /><span>(800) 555-5555</span></a>
-              <a href="mailto:sales@example.com" className="hidden lg:flex items-center gap-2 text-sm text-[#171512]/70 hover:text-[#171512] transition-colors"><Mail size={16} /></a>
-              <Link href="/get-a-quote" className="flex items-center gap-2 bg-[#fdb022] text-[#171512] text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-[#f5a80a] transition-colors">Get Quote<ArrowRight size={15} /></Link>
+              <a href={`tel:${PHONE_NUMBER}`} className="hidden lg:flex items-center gap-2 text-sm text-[#171512]/70 hover:text-[#171512] transition-colors">
+                <Phone size={16} /><span>{PHONE_DISPLAY}</span>
+              </a>
+              <a href={`mailto:${EMAIL_ADDRESS}`} className="hidden lg:flex items-center gap-2 text-sm text-[#171512]/70 hover:text-[#171512] transition-colors">
+                <Mail size={16} />
+              </a>
+              <Link href="/get-a-quote" className="flex items-center gap-2 bg-[#fdb022] text-[#171512] text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-[#f5a80a] transition-colors">
+                Get Quote<ArrowRight size={15} />
+              </Link>
             </div>
 
             <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden ml-auto text-[#171512] p-2 hover:bg-black/5 rounded-lg transition-colors">

@@ -2,7 +2,12 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus } from 'lucide-react'
+import { Plus, Phone, Mail } from 'lucide-react'
+
+const PHONE_NUMBER = '+12177276247'
+const PHONE_DISPLAY = '+1 (217) 727-6247'
+const EMAIL_ADDRESS = 'info@slickcustomboxes.com'
+const SITE_NAME = 'Slick Custom Boxes'
 
 const faqs = [
   {
@@ -117,6 +122,38 @@ export function FAQ() {
             )
           })}
         </div>
+
+        {/* Contact CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          viewport={{ once: true }}
+          className="mt-12 bg-[#171512] rounded-2xl p-8 text-center"
+        >
+          <h3 className="text-xl font-bold text-white mb-2">
+            Still have questions?
+          </h3>
+          <p className="text-white/55 text-sm mb-6 max-w-md mx-auto">
+            Our packaging specialists are here to help. Reach out and we&apos;ll get back to you within 24 hours.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a
+              href={`tel:${PHONE_NUMBER}`}
+              className="flex items-center gap-2 bg-[#FDB022] text-[#171512] font-semibold px-6 py-3 rounded-xl hover:bg-[#f5a80f] transition-colors text-sm w-full sm:w-auto justify-center"
+            >
+              <Phone size={16} />
+              {PHONE_DISPLAY}
+            </a>
+            <a
+              href={`mailto:${EMAIL_ADDRESS}`}
+              className="flex items-center gap-2 border-2 border-white/20 text-white font-semibold px-6 py-3 rounded-xl hover:bg-white hover:text-[#171512] transition-colors text-sm w-full sm:w-auto justify-center"
+            >
+              <Mail size={16} />
+              {EMAIL_ADDRESS}
+            </a>
+          </div>
+        </motion.div>
       </div>
     </section>
   )
