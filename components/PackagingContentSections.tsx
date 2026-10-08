@@ -233,7 +233,7 @@ function ContentSection({ section, flip }: { section: Section; flip: boolean }) 
 
         <p className="text-black/60 leading-relaxed max-w-[62ch]">{section.closing}</p>
 
-        {section.cta && (
+        {/* {section.cta && (
           <Link
             href={section.cta.href}
             className="group inline-flex items-center gap-2 mt-7 text-sm font-semibold text-[#171512] border-b-2 border-[#FDB022] pb-1 hover:gap-3 transition-all"
@@ -241,7 +241,7 @@ function ContentSection({ section, flip }: { section: Section; flip: boolean }) 
             {section.cta.label}
             <ArrowRight size={16} className="text-[#c98b0c]" />
           </Link>
-        )}
+        )} */}
       </div>
     </motion.div>
   )

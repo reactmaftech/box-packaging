@@ -37,11 +37,11 @@ export function CTA() {
                 <ArrowRight size={17} className="group-hover:translate-x-1 transition-transform" />
               </Link>
               <a
-                href="tel:+18005588047"
+                href="tel:+12177276247"
                 className="inline-flex items-center gap-2 border-2 border-white/20 text-white font-semibold px-8 py-3.5 rounded-lg hover:bg-white/10 transition-colors"
               >
                 <Phone size={17} />
-                800 558 8047
+                +1 (217) 727-6247
               </a>
             </div>
           </div>

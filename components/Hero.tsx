@@ -292,12 +292,12 @@ export function Hero() {
                 Get a Quote
                 <ArrowRight size={17} className="group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link
+              {/* <Link
                 href="#portfolio"
                 className="px-7 py-3.5 bg-transparent text-[#171512] font-semibold rounded-lg border-2 border-black/10 hover:border-[#fdb022] hover:bg-[#fdb022]/5 transition-all duration-300"
               >
                 View Portfolio
-              </Link>
+              </Link> */}
             </motion.div>
           </motion.div>
         </div>

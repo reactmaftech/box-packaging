@@ -3,9 +3,9 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { 
-  Phone, Mail, MapPin, Clock, Send, CheckCircle,
-  MessageSquare, ArrowRight, Building2, Users,
+import {
+  Phone, Mail, Clock, Send, CheckCircle,
+  MessageSquare, ArrowRight,
   Globe, Star, Shield, Truck, HeartHandshake
 } from 'lucide-react'
 import Link from 'next/link'
@@ -13,6 +13,12 @@ import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+
+// Contact details
+const PHONE_NUMBER = '+12177276247'
+const PHONE_DISPLAY = '+1 (217) 727-6247'
+const EMAIL_ADDRESS = 'info@slickcustomboxes.com'
+const SITE_NAME = 'Slick Custom Boxes'
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -27,7 +33,7 @@ export default function ContactPage() {
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
-  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({})
+  const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({})
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -42,8 +48,8 @@ export default function ContactPage() {
   }
 
   const validateForm = () => {
-    const errors: {[key: string]: string} = {}
-    
+    const errors: { [key: string]: string } = {}
+
     if (!formData.fullName || formData.fullName.length < 2) {
       errors.fullName = 'Full name must be at least 2 characters'
     }
@@ -59,16 +65,16 @@ export default function ContactPage() {
     if (!formData.message || formData.message.length < 10) {
       errors.message = 'Message must be at least 10 characters'
     }
-    
+
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) return
-    
+
     setLoading(true)
     setError('')
 
@@ -117,7 +123,7 @@ export default function ContactPage() {
     }
   }
 
-  const inputClass = (fieldName: string) => 
+  const inputClass = (fieldName: string) =>
     `w-full px-4 py-3.5 bg-white border rounded-xl text-[#171512] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FDB022]/40 focus:border-[#FDB022] transition-all text-sm ${
       validationErrors[fieldName] ? 'border-red-500 bg-red-50' : 'border-gray-200'
     }`
@@ -126,42 +132,39 @@ export default function ContactPage() {
     {
       icon: Phone,
       title: 'Call Us',
-      details: ['(800) 555-5555', '(212) 555-0199'],
-      description: 'Mon-Fri from 8am to 6pm',
-      color: 'from-blue-400 to-blue-600',
-      bgColor: 'bg-blue-50',
-      iconBg: 'bg-blue-100',
-      iconColor: 'text-blue-600'
+      details: [PHONE_DISPLAY],
+      // description: 'Mon-Fri from 8am to 6pm',
+      bgColor: 'bg-[#F5F1E7]',
+      iconBg: 'bg-[#FDB022]/15',
+      iconColor: 'text-[#FDB022]',
+      href: `tel:${PHONE_NUMBER}`,
     },
     {
       icon: Mail,
       title: 'Email Us',
-      details: ['info@boxpack.com', 'sales@boxpack.com'],
-      description: 'We reply within 24 hours',
-      color: 'from-green-400 to-green-600',
-      bgColor: 'bg-green-50',
-      iconBg: 'bg-green-100',
-      iconColor: 'text-green-600'
-    },
-    {
-      icon: MapPin,
-      title: 'Visit Us',
-      details: ['123 Packaging Blvd', 'New York, NY 10001'],
-      description: 'Mon-Fri 9am to 5pm',
-      color: 'from-purple-400 to-purple-600',
-      bgColor: 'bg-purple-50',
-      iconBg: 'bg-purple-100',
-      iconColor: 'text-purple-600'
+      details: [EMAIL_ADDRESS],
+      // description: 'We reply within 24 hours',
+      bgColor: 'bg-[#F5F1E7]',
+      iconBg: 'bg-[#FDB022]/15',
+      iconColor: 'text-[#FDB022]',
+      href: `mailto:${EMAIL_ADDRESS}`,
     },
     {
       icon: Clock,
       title: 'Working Hours',
-      details: ['Monday - Friday', 'Saturday'],
-      description: '8:00 AM - 6:00 PM / 9:00 AM - 2:00 PM',
-      color: 'from-orange-400 to-orange-600',
-      bgColor: 'bg-orange-50',
-      iconBg: 'bg-orange-100',
-      iconColor: 'text-orange-600'
+      details: ['Monday - Friday'],
+      bgColor: 'bg-[#F5F1E7]',
+      iconBg: 'bg-[#FDB022]/15',
+      iconColor: 'text-[#FDB022]',
+    },
+    {
+      icon: Globe,
+      title: 'Online',
+      details: ['Quote requests'],
+      // description: 'Submit anytime',
+      bgColor: 'bg-[#F5F1E7]',
+      iconBg: 'bg-[#FDB022]/15',
+      iconColor: 'text-[#FDB022]',
     },
   ]
 
@@ -202,7 +205,7 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      
+
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-[#171512] to-[#2a2520] text-white pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 opacity-10">
@@ -215,9 +218,9 @@ export default function ContactPage() {
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#FDB022]/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-6">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="text-center"
           >
@@ -229,8 +232,8 @@ export default function ContactPage() {
               Contact Us
             </h1>
             <p className="text-lg text-white/60 max-w-2xl mx-auto">
-              Have a question or ready to start your packaging project? 
-              We're here to help. Reach out to our team and we'll respond within 24 hours.
+              Have a question or ready to start your packaging project?
+              We&apos;re here to help. Reach out to our team and we&apos;ll respond within 24 hours.
             </p>
           </motion.div>
         </div>
@@ -240,25 +243,36 @@ export default function ContactPage() {
       <section className="py-16 px-6 bg-white -mt-10 relative z-20">
         <div className="max-w-7xl mx-auto">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {contactInfo.map((info, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className={`${info.bgColor} rounded-2xl p-6 border border-gray-100 hover:shadow-xl transition-all`}
-              >
-                <div className={`w-12 h-12 ${info.iconBg} rounded-xl flex items-center justify-center mb-4`}>
-                  <info.icon size={24} className={info.iconColor} />
-                </div>
-                <h3 className="font-bold text-gray-900 mb-2">{info.title}</h3>
-                {info.details.map((detail, i) => (
-                  <p key={i} className="text-gray-700 text-sm">{detail}</p>
-                ))}
-                <p className="text-xs text-gray-500 mt-2">{info.description}</p>
-              </motion.div>
-            ))}
+            {contactInfo.map((info, index) => {
+              const CardWrapper: any = info.href ? 'a' : 'div'
+              const wrapperProps = info.href
+                ? { href: info.href, className: 'block' }
+                : {}
+
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <CardWrapper
+                    {...wrapperProps}
+                    className={`${info.bgColor} rounded-2xl p-6 border border-black/[0.04] hover:shadow-xl transition-all block`}
+                  >
+                    <div className={`w-12 h-12 ${info.iconBg} rounded-xl flex items-center justify-center mb-4`}>
+                      <info.icon size={24} className={info.iconColor} />
+                    </div>
+                    <h3 className="font-bold text-[#171512] mb-2">{info.title}</h3>
+                    {info.details.map((detail, i) => (
+                      <p key={i} className="text-[#171512]/75 text-sm break-words">{detail}</p>
+                    ))}
+                    <p className="text-xs text-black/45 mt-2">{info.description}</p>
+                  </CardWrapper>
+                </motion.div>
+              )
+            })}
           </div>
         </div>
       </section>
@@ -274,8 +288,8 @@ export default function ContactPage() {
               viewport={{ once: true }}
               className="bg-white rounded-2xl shadow-md border border-gray-100 p-8"
             >
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Send Us a Message</h2>
-              <p className="text-gray-600 mb-8">Fill out the form below and we'll get back to you within 24 hours.</p>
+              <h2 className="text-2xl font-bold text-[#171512] mb-2">Send Us a Message</h2>
+              <p className="text-gray-600 mb-8">Fill out the form below and we&apos;ll get back to you within 24 hours.</p>
 
               {/* Success Message */}
               {submitted && (
@@ -287,7 +301,7 @@ export default function ContactPage() {
                   <CheckCircle size={20} className="text-green-500 flex-shrink-0" />
                   <div>
                     <p className="font-medium">Message Sent Successfully!</p>
-                    <p className="text-sm">Thank you for contacting us. We'll get back to you within 24 hours.</p>
+                    <p className="text-sm">Thank you for contacting us. We&apos;ll get back to you within 24 hours.</p>
                   </div>
                 </motion.div>
               )}
@@ -450,7 +464,7 @@ export default function ContactPage() {
                 transition={{ delay: 0.2 }}
                 className="bg-white rounded-2xl shadow-md border border-gray-100 p-6"
               >
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Why Choose BoxPack?</h3>
+                <h3 className="text-lg font-bold text-[#171512] mb-4">Why Choose {SITE_NAME}?</h3>
                 <div className="space-y-4">
                   {whyChooseUs.map((item, index) => (
                     <div key={index} className="flex items-start gap-3">
@@ -458,7 +472,7 @@ export default function ContactPage() {
                         <item.icon size={16} className="text-[#FDB022]" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900 text-sm">{item.title}</p>
+                        <p className="font-medium text-[#171512] text-sm">{item.title}</p>
                         <p className="text-xs text-gray-500">{item.description}</p>
                       </div>
                     </div>
@@ -466,74 +480,64 @@ export default function ContactPage() {
                 </div>
               </motion.div>
 
+              {/* Direct Contact */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className="bg-[#F5F1E7] rounded-2xl p-6"
+              >
+                <h3 className="text-lg font-bold text-[#171512] mb-4">Reach us directly</h3>
+                <div className="space-y-3">
+                  <a
+                    href={`tel:${PHONE_NUMBER}`}
+                    className="flex items-center gap-3 group"
+                  >
+                    <span className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#171512] shrink-0 group-hover:bg-[#FDB022] transition-colors">
+                      <Phone size={16} />
+                    </span>
+                    <span className="text-sm font-medium text-[#171512] group-hover:text-[#FDB022] transition-colors">
+                      {PHONE_DISPLAY}
+                    </span>
+                  </a>
+                  <a
+                    href={`mailto:${EMAIL_ADDRESS}`}
+                    className="flex items-center gap-3 group"
+                  >
+                    <span className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#171512] shrink-0 group-hover:bg-[#FDB022] transition-colors">
+                      <Mail size={16} />
+                    </span>
+                    <span className="text-sm font-medium text-[#171512] group-hover:text-[#FDB022] transition-colors break-all">
+                      {EMAIL_ADDRESS}
+                    </span>
+                  </a>
+                </div>
+              </motion.div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Map / Location */}
-      <section className="py-16 px-6 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <span className="inline-flex items-center border border-[#FDB022]/30 rounded-full px-4 py-1.5 text-xs font-semibold text-[#FDB022] mb-4">
-              <MapPin size={14} className="mr-2" />
-              OUR LOCATION
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Visit Our Facility
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Come see our state-of-the-art packaging facility. Schedule a tour to see our processes firsthand.
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-gray-200 rounded-3xl h-80 md:h-96 overflow-hidden relative"
-          >
-            {/* Placeholder for Google Maps or similar */}
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
-              <div className="text-center">
-                <MapPin size={48} className="text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 font-medium">123 Packaging Blvd, New York, NY 10001</p>
-                <a
-                  href="https://maps.google.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 mt-4 px-6 py-2.5 bg-[#171512] text-white rounded-xl font-medium hover:bg-black transition-colors"
-                >
-                  <Globe size={16} />
-                  View on Google Maps
-                </a>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
       {/* FAQ Quick Links */}
-      <section className="py-16 px-6 bg-gray-50">
+      <section className="py-16 px-6 bg-white">
         <div className="max-w-7xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+            <span className="inline-flex items-center border border-[#FDB022]/30 rounded-full px-4 py-1.5 text-xs font-semibold text-[#FDB022] mb-4">
+              HELP CENTER
+            </span>
+            <h2 className="text-2xl md:text-3xl font-bold text-[#171512] mb-4">
               Frequently Asked Questions
             </h2>
-            <p className="text-gray-600 mb-8">
-              Find quick answers to common questions about our services.
+            <p className="text-gray-600 mb-8 max-w-xl mx-auto">
+              Find quick answers to common questions about our services, turnaround times, and pricing.
             </p>
             <Link
-              href="/faq"
+              href="/faqs"
               className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#FDB022] text-[#171512] font-bold rounded-xl hover:bg-[#f5a80f] transition-all shadow-lg shadow-[#FDB022]/25"
             >
               Visit FAQ Page

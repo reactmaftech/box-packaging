@@ -9,7 +9,7 @@ const PHONE_DISPLAY = '+1 (217) 727-6247'
 const EMAIL_ADDRESS = 'info@slickcustomboxes.com'
 const SITE_NAME = 'Slick Custom Boxes'
 
-const faqs = [
+export const faqs = [
   {
     question: 'What is the minimum order quantity?',
     answer:
@@ -44,6 +44,21 @@ const faqs = [
     question: 'What payment methods do you accept?',
     answer:
       'We accept major credit cards, bank transfers, and offer flexible payment terms on larger bulk orders. Details are confirmed with your dedicated account specialist.',
+  },
+  {
+    question: 'Can I reorder the same packaging later?',
+    answer:
+      'Absolutely. We keep your dielines, artwork files, and material specs on file, so reorders are usually a one-email process with no setup fees.',
+  },
+  {
+    question: 'Do you offer eco-friendly packaging options?',
+    answer:
+      'Yes. We stock recyclable kraft, biodegradable liners, and FSC-certified board options. Just mention your sustainability goals in your quote request and we\'ll recommend the right material.',
+  },
+  {
+    question: 'How do I get a quote?',
+    answer:
+      'The fastest way is to submit the quote form on any product page, or call and email us directly. We typically respond within 24 hours with pricing and a free dieline.',
   },
 ]
 

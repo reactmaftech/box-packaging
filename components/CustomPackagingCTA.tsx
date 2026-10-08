@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import { Phone, MessageCircle, ArrowRight } from 'lucide-react'
 
 const PHONE = '800 558 8047'
-const PHONE_HREF = 'tel:+18005588047'
+const PHONE_HREF = 'tel:+12177276247'
 const WHATSAPP_HREF = 'https://wa.me/18005588047'
 
 export function CustomPackagingCTA() {
@@ -38,13 +38,13 @@ export function CustomPackagingCTA() {
               {PHONE}
             </a>
 
-            <a
+            {/* <a
               href={WHATSAPP_HREF}
               aria-label="Chat on WhatsApp"
               className="w-10 h-10 rounded-full bg-[#25D366] text-white flex items-center justify-center shrink-0 hover:brightness-105 transition-all"
             >
               <MessageCircle size={18} />
-            </a>
+            </a> */}
 
             <Link
               href="#inquiry"

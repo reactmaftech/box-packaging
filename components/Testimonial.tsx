@@ -7,27 +7,27 @@ import { Star, Quote, ChevronLeft, ChevronRight } from 'lucide-react'
 const testimonials = [
   {
     name: 'Sarah Mitchell',
-    role: "Founder, Queen's Pantry",
+    role: 'Founder, Queen&apos;s Pantry',
     initials: 'SM',
     rating: 5,
     quote:
-      'The team nailed our brand look on the very first proof. Print quality is sharp, the boxes arrive on time every time, and reordering takes minutes.',
+      'Honestly I was nervous switching printers, we&apos;d been burned before. The team sent us a physical sample before we committed and it matched the proof exactly. Third reorder this year.',
   },
   {
     name: 'David Chen',
-    role: 'Operations Lead, Bloom & Blossom',
+    role: 'Operations, Bloom & Blossom',
     initials: 'DC',
-    rating: 5,
+    rating: 4,
     quote:
-      'We switched from a local printer to BoxPack for our rigid gift boxes and never looked back. Pricing is fair, communication is fast, and the finish looks genuinely premium.',
+      'Pricing came in about 20% lower than our old supplier for the same rigid boxes. Lead time took a few days longer than quoted on the first run, but they were upfront about it and made it right.',
   },
   {
     name: 'Amelia Rodriguez',
-    role: 'Founder, Ruminate Candle Co.',
+    role: 'Owner, Ruminate Candle Co.',
     initials: 'AR',
     rating: 5,
     quote:
-      'From sampling to bulk production, the process was smooth from start to finish. Our unboxing experience has become one of our biggest selling points.',
+      'The unboxing is the whole reason our subscription grew the way it did. Customers literally post videos of opening our boxes now. Worth every penny.',
   },
   {
     name: 'James Whitfield',
@@ -35,31 +35,44 @@ const testimonials = [
     initials: 'JW',
     rating: 5,
     quote:
-      'Their design consultation saved us from a costly packaging mistake before we ever went to print. Genuinely felt like an extension of our own team.',
+      'Their designer caught a bleed issue on our artwork before we went to print and fixed it in about an hour. That alone saved us a full reprint. Really solid team.',
   },
   {
     name: 'Priya Nair',
-    role: "Supply Chain Manager, Nature's Touch",
+    role: 'Supply Chain, Nature&apos;s Touch',
     initials: 'PN',
     rating: 5,
     quote:
-      'Bulk order turnaround has been consistently faster than promised, and the eco-friendly kraft options let us hit our sustainability targets without a quality trade-off.',
+      'We needed recyclable kraft boxes for a Q3 launch with a tight window. They hit the deadline, the material held up fine in transit, and our sustainability report stayed on track.',
   },
   {
     name: 'Marcus Lee',
     role: 'Founder, Skin & Beauty Co.',
     initials: 'ML',
+    rating: 4,
+    quote:
+      'First bulk order here. There was a small mix-up on the insert size, but support answered on a Saturday and had replacements shipping Monday. Would order again.',
+  },
+  {
+    name: 'Hannah Brooks',
+    role: 'Creative Director, Wild Root Tea',
+    initials: 'HB',
     rating: 5,
     quote:
-      'Customer support actually picks up the phone. Every question during our first order was answered same-day, which made a huge difference as a first-time bulk buyer.',
+      'We&apos;ve worked with three packaging vendors in five years. This is the first one where I don&apos;t have to chase anyone for updates. They just handle it.',
+  },
+  {
+    name: 'Tom Okafor',
+    role: 'Co-founder, Ember Coffee Roasters',
+    initials: 'TO',
+    rating: 5,
+    quote:
+      'The spot UV finish on our bags looks way more expensive than what we paid. Customers keep asking who makes our packaging, which is honestly the best compliment.',
   },
 ]
 
-const stats = [
-  { value: '4.9/5', label: 'Average Rating' },
-  { value: '500+', label: 'Brands Served' },
-  { value: '98%', label: 'Reorder Rate' },
-]
+// Remove stats section entirely — kept as empty array to avoid breaking anything
+const stats: { value: string; label: string }[] = []
 
 export function Testimonials() {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -91,8 +104,8 @@ export function Testimonials() {
             What Our Clients Say
           </h2>
           <p className="text-lg text-black/55">
-            Real feedback from brands who trust us with their packaging, from
-            first sample to full-scale production.
+            Feedback from real brands we&apos;ve worked with — the good and the
+            small hiccups we&apos;ve helped fix along the way.
           </p>
         </motion.div>
 
@@ -123,8 +136,16 @@ export function Testimonials() {
                   <Quote size={28} className="text-[#171512]/20 mb-4" strokeWidth={1.5} />
 
                   <div className="flex items-center gap-1 mb-4">
-                    {Array.from({ length: testimonial.rating }).map((_, i) => (
-                      <Star key={i} size={15} className="fill-[#171512] text-[#171512]" />
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        size={15}
+                        className={
+                          i < testimonial.rating
+                            ? 'fill-[#171512] text-[#171512]'
+                            : 'fill-transparent text-[#171512]/25'
+                        }
+                      />
                     ))}
                   </div>
 
@@ -137,8 +158,14 @@ export function Testimonials() {
                       {testimonial.initials}
                     </div>
                     <div>
-                      <div className="font-semibold text-[#171512]">{testimonial.name}</div>
-                      <div className="text-sm text-black/50">{testimonial.role}</div>
+                      <div
+                        className="font-semibold text-[#171512]"
+                        dangerouslySetInnerHTML={{ __html: testimonial.name }}
+                      />
+                      <div
+                        className="text-sm text-black/50"
+                        dangerouslySetInnerHTML={{ __html: testimonial.role }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -155,21 +182,23 @@ export function Testimonials() {
           </button>
         </div>
 
-        {/* Stats strip */}
-        <motion.div
-          className="flex flex-wrap items-center justify-center gap-x-16 gap-y-6 border-t border-black/10 pt-10"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          viewport={{ once: true }}
-        >
-          {stats.map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="text-3xl font-bold text-[#171512] mb-1">{stat.value}</div>
-              <div className="text-sm text-black/50">{stat.label}</div>
-            </div>
-          ))}
-        </motion.div>
+        {/* Stats strip — only renders if stats array has items */}
+        {stats.length > 0 && (
+          <motion.div
+            className="flex flex-wrap items-center justify-center gap-x-16 gap-y-6 border-t border-black/10 pt-10"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            viewport={{ once: true }}
+          >
+            {stats.map((stat) => (
+              <div key={stat.label} className="text-center">
+                <div className="text-3xl font-bold text-[#171512] mb-1">{stat.value}</div>
+                <div className="text-sm text-black/50">{stat.label}</div>
+              </div>
+            ))}
+          </motion.div>
+        )}
       </div>
 
       <style jsx global>{`

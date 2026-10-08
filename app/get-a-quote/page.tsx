@@ -2,22 +2,25 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { 
-  ArrowRight, 
-  Phone, 
-  Mail, 
+import {
+  ArrowRight,
+  Phone,
+  Mail,
   Clock,
   Shield,
-  CheckCircle,
-  MessageCircle,
   Award,
   Truck,
-  Star
 } from 'lucide-react'
 
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { InquiryForm } from '@/components/InquiryForm'
+
+// Contact details
+const PHONE_NUMBER = '+12177276247'
+const PHONE_DISPLAY = '+1 (217) 727-6247'
+const EMAIL_ADDRESS = 'info@slickcustomboxes.com'
+const SITE_NAME = 'Slick Custom Boxes'
 
 // Features section data
 const features = [
@@ -43,26 +46,6 @@ const features = [
   },
 ]
 
-// FAQ data
-const faqs = [
-  {
-    question: 'How long does it take to get a quote?',
-    answer: 'We typically respond within 24 hours of receiving your inquiry. For urgent requests, we offer expedited quotes within 4-6 hours.',
-  },
-  {
-    question: 'What information do I need to provide?',
-    answer: 'To get an accurate quote, please provide details about your box type, dimensions, quantity, materials, printing requirements, and any special specifications.',
-  },
-  {
-    question: 'Do you offer free samples?',
-    answer: 'Yes, we provide free digital samples and prototypes. Physical samples are available for a nominal fee that can be credited towards your first order.',
-  },
-  {
-    question: 'What are your minimum order quantities?',
-    answer: 'Minimum order quantities vary by product type. We work with businesses of all sizes and can accommodate small to large volume orders.',
-  },
-]
-
 export default function GetQuotePage() {
   return (
     <>
@@ -73,7 +56,7 @@ export default function GetQuotePage() {
           <div className="absolute top-0 right-0 w-96 h-96 bg-[#FDB022]/5 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#FDB022]/5 rounded-full blur-3xl" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#FDB022]/3 rounded-full blur-3xl" />
-          
+
           <div className="max-w-5xl mx-auto relative z-10 text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -89,9 +72,9 @@ export default function GetQuotePage() {
                 <span className="text-[#FDB022]">Packaging Quote</span>
               </h1>
               <p className="text-xl text-white/70 max-w-3xl mx-auto mb-8">
-                Tell us about your packaging requirements and we'll provide you 
-                with a tailored quote within 24 hours. From design to delivery, 
-                we've got you covered.
+                Tell us about your packaging requirements and we&apos;ll provide you
+                with a tailored quote within 24 hours. From design to delivery,
+                we&apos;ve got you covered.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Link
@@ -101,32 +84,6 @@ export default function GetQuotePage() {
                   Start Your Quote
                   <ArrowRight size={18} />
                 </Link>
-                <Link
-                  href="#faq"
-                  className="inline-flex items-center gap-2 border border-white/20 text-white font-semibold px-8 py-4 rounded-xl hover:bg-white/10 transition-colors"
-                >
-                  See FAQ
-                </Link>
-              </div>
-
-              {/* Quick stats */}
-              <div className="flex flex-wrap justify-center gap-8 mt-10 pt-10 border-t border-white/10">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-[#FDB022]">24hr</div>
-                  <div className="text-white/50 text-sm">Response Time</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-[#FDB022]">500+</div>
-                  <div className="text-white/50 text-sm">Happy Clients</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-[#FDB022]">50+</div>
-                  <div className="text-white/50 text-sm">Countries Served</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-[#FDB022]">98%</div>
-                  <div className="text-white/50 text-sm">Satisfaction Rate</div>
-                </div>
               </div>
             </motion.div>
           </div>
@@ -148,11 +105,11 @@ export default function GetQuotePage() {
               <h2 className="text-4xl md:text-5xl font-bold text-[#171512] leading-tight mb-4">
                 Why Request a Quote
                 <br />
-                <span className="text-[#FDB022]">With BoxPack?</span>
+                <span className="text-[#FDB022]">With {SITE_NAME}?</span>
               </h2>
               <p className="text-lg text-black/55">
-                We make getting a quote simple, fast, and transparent. Here's why 
-                thousands of brands trust us for their packaging needs.
+                We make getting a quote simple, fast, and transparent. Here&apos;s why
+                brands trust us for their packaging needs.
               </p>
             </motion.div>
 
@@ -194,8 +151,8 @@ export default function GetQuotePage() {
                 Simple <span className="text-[#FDB022]">4-Step Process</span>
               </h2>
               <p className="text-lg text-black/55">
-                Getting a quote is quick and easy. Follow these simple steps and 
-                we'll take care of the rest.
+                Getting a quote is quick and easy. Follow these simple steps and
+                we&apos;ll take care of the rest.
               </p>
             </motion.div>
 
@@ -252,12 +209,9 @@ export default function GetQuotePage() {
         {/* Inquiry Form Section */}
         <section id="inquiry-form" className="py-20 px-6 bg-white">
           <div className="max-w-6xl mx-auto">
-           
-
             <InquiryForm />
           </div>
         </section>
-
 
         {/* Contact Options Section */}
         <section className="py-20 px-6 bg-white">
@@ -271,15 +225,15 @@ export default function GetQuotePage() {
               <h2 className="text-3xl md:text-4xl font-bold text-[#171512] leading-tight mb-4">
                 Prefer to Talk to Someone?
                 <br />
-                <span className="text-[#FDB022]">We're Here to Help</span>
+                <span className="text-[#FDB022]">We&apos;re Here to Help</span>
               </h2>
               <p className="text-lg text-black/55 mb-8 max-w-2xl mx-auto">
-                Our packaging experts are available to discuss your requirements 
+                Our packaging experts are available to discuss your requirements
                 and provide personalized assistance.
               </p>
               <div className="flex flex-wrap justify-center gap-6">
                 <a
-                  href="tel:+18005555555"
+                  href={`tel:${PHONE_NUMBER}`}
                   className="flex items-center gap-3 group bg-[#F5F1E7] rounded-2xl px-6 py-4 hover:bg-[#FDB022]/10 transition-colors"
                 >
                   <span className="w-12 h-12 rounded-full bg-[#FDB022]/10 flex items-center justify-center text-[#FDB022] group-hover:scale-110 transition-transform">
@@ -287,11 +241,11 @@ export default function GetQuotePage() {
                   </span>
                   <div className="text-left">
                     <div className="text-sm text-black/50">Call us</div>
-                    <div className="font-semibold text-[#171512]">(800) 555-5555</div>
+                    <div className="font-semibold text-[#171512]">{PHONE_DISPLAY}</div>
                   </div>
                 </a>
                 <a
-                  href="mailto:sales@boxpack.com"
+                  href={`mailto:${EMAIL_ADDRESS}`}
                   className="flex items-center gap-3 group bg-[#F5F1E7] rounded-2xl px-6 py-4 hover:bg-[#FDB022]/10 transition-colors"
                 >
                   <span className="w-12 h-12 rounded-full bg-[#FDB022]/10 flex items-center justify-center text-[#FDB022] group-hover:scale-110 transition-transform">
@@ -299,19 +253,7 @@ export default function GetQuotePage() {
                   </span>
                   <div className="text-left">
                     <div className="text-sm text-black/50">Email us</div>
-                    <div className="font-semibold text-[#171512]">sales@boxpack.com</div>
-                  </div>
-                </a>
-                <a
-                  href="https://wa.me/18005555555"
-                  className="flex items-center gap-3 group bg-[#F5F1E7] rounded-2xl px-6 py-4 hover:bg-[#25D366]/10 transition-colors"
-                >
-                  <span className="w-12 h-12 rounded-full bg-[#25D366]/10 flex items-center justify-center text-[#25D366] group-hover:scale-110 transition-transform">
-                    <MessageCircle size={20} />
-                  </span>
-                  <div className="text-left">
-                    <div className="text-sm text-black/50">Chat with us</div>
-                    <div className="font-semibold text-[#171512]">WhatsApp</div>
+                    <div className="font-semibold text-[#171512]">{EMAIL_ADDRESS}</div>
                   </div>
                 </a>
               </div>
@@ -334,8 +276,8 @@ export default function GetQuotePage() {
                 <span className="text-[#FDB022]">Request Your Quote Today</span>
               </h2>
               <p className="text-white/70 text-lg mb-10 max-w-2xl mx-auto">
-                Join 500+ satisfied brands and experience the BoxPack difference. 
-                We're here to bring your packaging vision to life.
+                Experience the {SITE_NAME} difference. We&apos;re here to bring your
+                packaging vision to life.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Link
@@ -345,12 +287,12 @@ export default function GetQuotePage() {
                   Get Your Free Quote
                   <ArrowRight size={18} />
                 </Link>
-                <Link
+                {/* <Link
                   href="/about"
                   className="inline-flex items-center gap-2 border border-white/20 text-white font-semibold px-8 py-4 rounded-xl hover:bg-white/10 transition-colors"
                 >
                   Learn More About Us
-                </Link>
+                </Link> */}
               </div>
             </motion.div>
           </div>

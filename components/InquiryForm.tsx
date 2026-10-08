@@ -456,22 +456,22 @@ export function InquiryForm() {
                   Contact us directly
                 </p>
                 <div className="flex flex-col gap-3">
-                  <a href="tel:+18000000" className="flex items-center gap-3 group">
+                  <a href="tel:+12177276247" className="flex items-center gap-3 group">
                     <span className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white shrink-0 transition-all duration-200 group-hover:bg-[#FDB022] group-hover:scale-105">
                       <Phone size={16} />
                     </span>
                     <span className="text-white font-medium group-hover:text-[#FDB022] transition-colors">
-                      (800) 000-1234
+                      +1 (217) 727-6247
                     </span>
                   </a>
-                  <a href="https://wa.me/100000000" className="flex items-center gap-3 group">
+                  {/* <a href="https://wa.me/100000000" className="flex items-center gap-3 group">
                     <span className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center text-white shrink-0 transition-all duration-200 group-hover:scale-105">
                       <MessageCircle size={16} />
                     </span>
                     <span className="text-white font-medium group-hover:text-[#25D366] transition-colors">
                       Chat on WhatsApp
                     </span>
-                  </a>
+                  </a> */}
                 </div>
               </div>
             </div>

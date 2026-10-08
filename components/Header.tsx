@@ -9,7 +9,6 @@ import {
   Box, Package, ShoppingBag, Gift, Layers, Sparkles,
   Truck, Award, Star, Clock, Shield, ArrowRight,
   ShoppingCart, Loader, Link as LinkIcon, Tag, Image as ImageIcon,
-  MessageCircle,
 } from 'lucide-react'
 
 // Logo import
@@ -21,8 +20,6 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.ve
 const PHONE_NUMBER = '+12177276247'
 const PHONE_DISPLAY = '+1 (217) 727-6247'
 const EMAIL_ADDRESS = 'info@slickcustomboxes.com'
-const WHATSAPP_NUMBER = '12177276247' // no + or spaces
-const WHATSAPP_MESSAGE = 'Hi! I would like to get a quote for custom packaging.'
 const SITE_NAME = 'Slick Custom Boxes'
 
 // Map icon names to actual Lucide components
@@ -190,8 +187,6 @@ export function Header() {
 
     return <Layers size={15} />
   }
-
-  const whatsappHref = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`
 
   return (
     <header className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'pt-2 px-2' : 'pt-0 px-0'}`}>
@@ -384,20 +379,11 @@ export function Header() {
                 </AnimatePresence>
               </div>
 
-              {/* WhatsApp + Call buttons on the right */}
+              {/* Call button on the right */}
               <div className="ml-auto flex items-center gap-3 py-2.5">
                 <a
-                  href={whatsappHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 bg-[#25D366] text-white text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-[#1ebe5b] transition-colors"
-                >
-                  <MessageCircle size={16} />
-                  WhatsApp
-                </a>
-                <a
                   href={`tel:${PHONE_NUMBER}`}
-                  className="flex items-center gap-2 border-2 border-[#171512] text-[#171512] text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-[#171512] hover:text-white transition-colors"
+                  className="flex items-center gap-2 bg-[#171512] text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-black transition-colors"
                 >
                   <Phone size={16} />
                   Call Us
@@ -491,15 +477,6 @@ export function Header() {
               </div>
               
               <div className="px-4 py-4 space-y-3">
-                <a
-                  href={whatsappHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 w-full text-center px-6 py-3 bg-[#25D366] text-white font-semibold rounded-lg hover:bg-[#1ebe5b] transition-colors"
-                >
-                  <MessageCircle size={16} /> WhatsApp
-                </a>
                 <Link href="/get-a-quote" onClick={() => setIsMenuOpen(false)} className="block w-full text-center px-6 py-3 bg-[#fdb022] text-[#171512] font-semibold rounded-lg hover:bg-[#f5a80a] transition-colors">Get Quote</Link>
                 <a href={`tel:${PHONE_NUMBER}`} className="flex items-center justify-center gap-2 w-full text-center px-6 py-3 border-2 border-black/10 text-[#171512] font-medium rounded-lg"><Phone size={16} /> {PHONE_DISPLAY}</a>
               </div>
