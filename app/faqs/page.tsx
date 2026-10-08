@@ -6,7 +6,7 @@ import { ArrowLeft, Phone, Mail, MessageCircle } from 'lucide-react'
 
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
-import { FAQ as FAQSection } from '@/components/FAQ'
+import { FAQ as FAQSection } from '../../components/Faq'
 
 const PHONE_NUMBER = '+12177276247'
 const PHONE_DISPLAY = '+1 (217) 727-6247'
