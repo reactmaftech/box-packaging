@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { Phone, Mail } from 'lucide-react'
 
 // Logo import
-import logoImage from '../assets/logo/logo.png'
+import logoImage from '../assets/logo/footer-logo.png'
 
 const PHONE_NUMBER = '+12177276247'
 const PHONE_DISPLAY = '+1 (217) 727-6247'
@@ -24,7 +24,7 @@ export function Footer() {
             <Image
               src={logoImage}
               alt={SITE_NAME}
-              className="h-14 md:h-16 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+              className="h-14 md:h-20 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
             />
           </Link>
 
