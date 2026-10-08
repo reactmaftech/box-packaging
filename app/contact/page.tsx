@@ -268,7 +268,7 @@ export default function ContactPage() {
                     {info.details.map((detail, i) => (
                       <p key={i} className="text-[#171512]/75 text-sm break-words">{detail}</p>
                     ))}
-                    <p className="text-xs text-black/45 mt-2">{info.description}</p>
+                    {/* <p className="text-xs text-black/45 mt-2">{info.description}</p> */}
                   </CardWrapper>
                 </motion.div>
               )
