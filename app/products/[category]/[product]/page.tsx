@@ -796,45 +796,11 @@ export default function ProductDetailPage() {
         </div>
       </section>
 
-      {/* Description: images left (scrollable), content right (scrollable) */}
+      {/* Description: content left (scrollable), single image right (scrollable) */}
       <section className="py-14 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-10">
-            {/* Left: 2×2 image grid, scrollable */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
-              <div className="px-6 py-5 border-b border-gray-100">
-                <h2 className="text-xl font-bold text-[#171512]">Product Images</h2>
-              </div>
-              <div className="p-6 max-h-[600px] overflow-y-auto description-scroll">
-                {images.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-4">
-                    {images.map((img, idx) => (
-                      <div
-                        key={idx}
-                        className="relative aspect-square rounded-2xl overflow-hidden bg-[#F5F1E7] border border-black/[0.06] group"
-                      >
-                        <img
-                          src={img}
-                          alt={`${product.title} — view ${idx + 1}`}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          onError={(e) => { (e.target as HTMLImageElement).style.visibility = 'hidden' }}
-                        />
-                        <div className="absolute bottom-2 left-2 bg-black/55 backdrop-blur-sm text-white px-2 py-0.5 rounded-full text-[10px] font-medium">
-                          {idx + 1} / {images.length}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="aspect-square rounded-2xl bg-gradient-to-br from-[#F5F1E7] to-[#EDE5D8] border border-black/[0.06] flex flex-col items-center justify-center">
-                    <Package size={64} className="text-[#D4C5A9] mb-3" />
-                    <p className="text-sm text-[#8a7f6b]">No images available</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Right: scrollable description content */}
+            {/* Left: scrollable description content */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
               <div className="px-6 py-5 border-b border-gray-100">
                 <h2 className="text-xl font-bold text-[#171512]">Product Description</h2>
@@ -847,6 +813,67 @@ export default function ProductDetailPage() {
                   />
                 ) : (
                   <p className="text-gray-500">No description has been added for this product yet.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Right: single product image, scrollable */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
+              <div className="px-6 py-5 border-b border-gray-100">
+                <h2 className="text-xl font-bold text-[#171512]">Product Image</h2>
+              </div>
+              <div className="p-6 max-h-[600px] overflow-y-auto description-scroll">
+                {hasImages ? (
+                  <div
+                    className="relative aspect-square rounded-2xl overflow-hidden bg-[#F5F1E7] border border-black/[0.06] group cursor-zoom-in"
+                    onClick={() => setLightboxOpen(true)}
+                  >
+                    <img
+                      src={images[activeImage]}
+                      alt={product.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => { (e.target as HTMLImageElement).style.visibility = 'hidden' }}
+                    />
+                    <div className="absolute bottom-3 left-3 bg-black/55 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
+                      {activeImage + 1} / {images.length}
+                    </div>
+                    <button
+                      aria-label="Open full size image"
+                      className="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Maximize2 size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="aspect-square rounded-2xl bg-gradient-to-br from-[#F5F1E7] to-[#EDE5D8] border border-black/[0.06] flex flex-col items-center justify-center">
+                    <Package size={64} className="text-[#D4C5A9] mb-3" />
+                    <p className="text-sm text-[#8a7f6b]">No image available</p>
+                  </div>
+                )}
+
+                {/* Thumbnails below the single image for switching */}
+                {images.length > 1 && (
+                  <div className="grid grid-cols-5 gap-3 mt-4">
+                    {images.map((img, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setActiveImage(idx)}
+                        aria-label={`Show image ${idx + 1}`}
+                        className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${
+                          idx === activeImage
+                            ? 'border-[#FDB022] ring-2 ring-[#FDB022]/25'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <img
+                          src={img}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                        />
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
@@ -877,7 +904,8 @@ export default function ProductDetailPage() {
                 >
                   <div className="relative h-44 bg-[#F5F1E7] overflow-hidden">
                     {item.images?.[0] ? (
-                      <img                        src={item.images[0]}
+                      <img
+                        src={item.images[0]}
                         alt={item.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />

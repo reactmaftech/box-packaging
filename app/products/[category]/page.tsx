@@ -159,72 +159,124 @@ export default function CategoryProductsPage() {
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-     {/* Hero */}
-      <section className="relative bg-gradient-to-br from-[#171512] to-[#2a2520] text-white pt-32 pb-16 md:pb-20 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
+      {/* Hero - Light Theme with Category Image */}
+      <section className="relative bg-gradient-to-br from-[#FAF8F5] via-[#F5F1E7] to-[#EDE5D8] pt-32 pb-16 md:pb-20 overflow-hidden">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 opacity-[0.03]">
           <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 25% 25%, #FDB022 1px, transparent 1px), radial-gradient(circle at 75% 75%, #FDB022 1px, transparent 1px)`,
+            backgroundImage: `radial-gradient(circle at 25% 25%, #171512 1px, transparent 1px), radial-gradient(circle at 75% 75%, #171512 1px, transparent 1px)`,
             backgroundSize: '50px 50px'
           }} />
         </div>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#FDB022]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        {/* Decorative blur blobs */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#FDB022]/15 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#FDB022]/10 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <div className="flex items-center gap-2 text-sm text-white/60 mb-6">
-              <Link href="/" className="hover:text-white transition-colors">Home</Link>
-              <span>/</span>
-              <Link href="/products" className="hover:text-white transition-colors">Products</Link>
-              <span>/</span>
-              <span className="text-[#FDB022] font-medium capitalize">{displayName}</span>
-            </div>
-
-            <span className="inline-flex items-center border border-[#FDB022]/30 rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide text-[#FDB022] mb-4">
-              <Layers size={14} className="mr-2" />
-              {category?.type || 'CATEGORY'}
-            </span>
-
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 capitalize">{displayName}</h1>
-
-            <p className="text-lg text-white/60 max-w-2xl mb-8">
-              {category?.description
-                || `Explore our ${displayName.toLowerCase()} collection. High-quality custom packaging solutions designed to meet your specific needs.`}
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-wrap items-center gap-4 mb-8">
-              <Link 
-                href="/quote" 
-                className="inline-flex items-center gap-2 bg-[#FDB022] text-[#171512] font-semibold px-6 py-3 rounded-lg hover:bg-[#f5a80f] transition-colors shadow-lg shadow-[#FDB022]/20"
-              >
-                Request a Quote
-                <ArrowRight size={18} />
-              </Link>
-              
-              <a 
-                href="https://wa.me/1234567890" // Replace with your actual WhatsApp number
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-white font-semibold px-6 py-3 rounded-lg hover:bg-white/10 hover:border-white/20 transition-colors backdrop-blur-sm"
-              >
-                <MessageCircle size={18} className="text-[#25D366]" />
-                WhatsApp Us
-              </a>
-            </div>
-
-            {/* <div className="flex gap-6 mt-6">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-[#FDB022]">{products.length}</p>
-                <p className="text-xs text-white/50">Products</p>
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            {/* Left: Text Content */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              {/* Breadcrumbs */}
+              <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
+                <Link href="/" className="hover:text-[#171512] transition-colors">Home</Link>
+                <span>/</span>
+                <Link href="/products" className="hover:text-[#171512] transition-colors">Products</Link>
+                <span>/</span>
+                <span className="text-[#FDB022] font-semibold capitalize">{displayName}</span>
               </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-[#FDB022]">{products.filter(p => p.isActive).length}</p>
-                <p className="text-xs text-white/50">Available</p>
+
+              {/* Category type badge */}
+              <span className="inline-flex items-center border border-[#FDB022]/40 bg-[#FDB022]/10 rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide text-[#B8860B] mb-4">
+                <Layers size={14} className="mr-2" />
+                {category?.type || 'CATEGORY'}
+              </span>
+
+              {/* Title */}
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 capitalize text-[#171512]">
+                {displayName}
+              </h1>
+
+              {/* Description */}
+              <p className="text-lg text-gray-600 max-w-xl mb-8 leading-relaxed">
+                {category?.description
+                  || `Explore our ${displayName.toLowerCase()} collection. High-quality custom packaging solutions designed to meet your specific needs.`}
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-wrap items-center gap-4">
+                <Link
+                  href="/quote"
+                  className="inline-flex items-center gap-2 bg-[#FDB022] text-[#171512] font-semibold px-6 py-3 rounded-lg hover:bg-[#f5a80f] transition-colors shadow-lg shadow-[#FDB022]/25"
+                >
+                  Request a Quote
+                  <ArrowRight size={18} />
+                </Link>
+
+                <a
+                  href="https://wa.me/1234567890" // Replace with your actual WhatsApp number
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-white border border-gray-200 text-[#171512] font-semibold px-6 py-3 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
+                >
+                  <MessageCircle size={18} className="text-[#25D366]" />
+                  WhatsApp Us
+                </a>
               </div>
-            </div> */}
-          </motion.div>
+
+              {/* Stats */}
+              {/* <div className="flex gap-8 mt-8 pt-6 border-t border-gray-200/60">
+                <div>
+                  <p className="text-2xl font-bold text-[#171512]">{products.length}</p>
+                  <p className="text-xs text-gray-500 font-medium">Products</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-[#171512]">{products.filter(p => p.isActive).length}</p>
+                  <p className="text-xs text-gray-500 font-medium">Available</p>
+                </div>
+              </div> */}
+            </motion.div>
+
+            {/* Right: Category Image */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+              className="relative hidden lg:block"
+            >
+              <div className="relative">
+                {/* Decorative frame behind image */}
+                <div className="absolute -inset-4 bg-gradient-to-br from-[#FDB022]/20 to-[#FDB022]/5 rounded-3xl rotate-2" />
+                <div className="absolute -inset-4 bg-gradient-to-tl from-[#171512]/10 to-transparent rounded-3xl -rotate-1" />
+
+                {/* Main image container */}
+                <div className="relative bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                  {category?.image ? (
+                    <img
+                      src={category.image}
+                      alt={displayName}
+                      className="w-full h-[340px] md:h-[400px] object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src =
+                          'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" fill="%23F5F1E7"><rect width="600" height="400"/><text x="50%" y="50%" font-family="sans-serif" font-size="16" fill="%23D4C5A9" text-anchor="middle" dy=".3em">Category Image</text></svg>'
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-[340px] md:h-[400px] flex flex-col items-center justify-center bg-gradient-to-br from-[#F5F1E7] to-[#EDE5D8]">
+                      <Package size={80} className="text-[#D4C5A9] mb-4" />
+                      <p className="text-sm text-[#B8A88A] font-medium">No image available</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </section>
+
       {/* Toolbar */}
       <section className="py-6 px-6 bg-white border-b sticky top-[72px] z-30 shadow-sm">
         <div className="max-w-7xl mx-auto">
@@ -454,7 +506,7 @@ export default function CategoryProductsPage() {
 
       <PackagingContentSections />
 
-      <InstantQuote/ >
+      <InstantQuote />
       <FAQ />
 
       <QuickInquiryModal
