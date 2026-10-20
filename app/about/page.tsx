@@ -5,41 +5,30 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
   ArrowRight,
-  Award,
   Users,
-  Clock,
   Shield,
   Star,
-  Truck,
-  Package,
-  Sparkles,
-  Globe,
   Heart,
   Target,
   Lightbulb,
-  TrendingUp,
-  CheckCircle,
-  MessageCircle,
-  Phone,
-  Mail,
-  Leaf,
-  Factory,
-  // Handshake,
-  Rocket,
+  Sparkles,
+  Package,
   Palette,
+  Truck,
   Recycle,
+  Factory,
+  Rocket,
 } from 'lucide-react'
 
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { InquiryForm } from '@/components/InquiryForm'
+import { Testimonials } from '@/components/Testimonial'
 
-// Import images
 import boxImage1 from '../../../assets/images/01.webp'
 import boxImage2 from '../../../assets/images/02.webp'
 import boxImage3 from '../../../assets/images/03.webp'
 import boxImage4 from '../../../assets/images/04.webp'
-import { Testimonials } from '@/components/Testimonial'
 
 const PHONE_NUMBER = '+12177276247'
 const PHONE_DISPLAY = '+1 (217) 727-6247'
@@ -49,23 +38,26 @@ const EMAIL_ADDRESS = 'info@slickcustomboxes.com'
 const values = [
   {
     icon: Heart,
-    title: 'Passion for Quality',
-    description: 'We pour our hearts into every box we create, ensuring premium quality in every detail.',
+    title: 'Passion for quality',
+    description:
+      'We pour our hearts into every box we create, ensuring premium quality in every detail.',
   },
   {
     icon: Lightbulb,
-    title: 'Innovation First',
-    description: 'Constantly pushing boundaries with cutting-edge designs and sustainable materials.',
+    title: 'Innovation first',
+    description:
+      'Constantly pushing boundaries with cutting-edge designs and sustainable materials.',
   },
   {
     icon: Target,
-    title: 'Customer Focus',
+    title: 'Customer focus',
     description: 'Your success is our success. We tailor every solution to your unique needs.',
   },
   {
     icon: Shield,
-    title: 'Integrity Always',
-    description: 'Transparent pricing, honest communication, and reliable delivery every time.',
+    title: 'Integrity always',
+    description:
+      'Transparent pricing, honest communication, and reliable delivery every time.',
   },
 ]
 
@@ -73,76 +65,81 @@ const values = [
 const offerings = [
   {
     icon: Package,
-    title: 'Custom Box Design',
-    description: 'Bespoke packaging engineered around your product, your brand, and your budget.',
+    title: 'Custom box design',
+    description:
+      'Bespoke packaging engineered around your product, your brand, and your budget.',
   },
   {
     icon: Palette,
-    title: 'Premium Printing',
-    description: 'Offset, digital, and specialty finishes that make your packaging unforgettable.',
+    title: 'Premium printing',
+    description:
+      'Offset, digital, and specialty finishes that make your packaging unforgettable.',
   },
   {
     icon: Truck,
-    title: 'Fast Turnaround',
+    title: 'Fast turnaround',
     description: 'Standard production in 8–10 business days with free shipping across the US.',
   },
   {
     icon: Recycle,
-    title: 'Eco-Friendly Options',
-    description: 'Recyclable, biodegradable, and responsibly sourced materials on every product line.',
+    title: 'Eco-friendly options',
+    description:
+      'Recyclable, biodegradable, and responsibly sourced materials on every product line.',
   },
 ]
 
 // Why choose us
 const whyUs = [
   {
-    icon: Factory,
-    title: 'Dedicated Support',
-    description: 'A real human assigned to every order, from your first quote to final delivery.',
+    icon: Users,
+    title: 'Dedicated support',
+    description:
+      'A real human assigned to every order, from your first quote to final delivery.',
   },
   {
     icon: Factory,
-    title: 'In-House Production',
-    description: 'We control the entire process, which means better quality and faster lead times.',
+    title: 'In-house production',
+    description:
+      'We control the entire process, which means better quality and faster lead times.',
   },
   {
     icon: Rocket,
-    title: 'Scalable Solutions',
+    title: 'Scalable solutions',
     description: 'Whether you need 100 boxes or 100,000, our process scales with your business.',
   },
 ]
 
-// Milestones
+// Milestones — consistent with the rest of the site (US-focused, 100-unit minimum)
 const milestones = [
   {
     year: '2018',
-    title: 'Company Founded',
-    description: 'Slick Custom Boxes was born with a mission to revolutionize packaging.',
+    title: 'Company founded',
+    description: 'Slick Custom Boxes was born with a mission to modernize custom packaging.',
   },
   {
     year: '2019',
-    title: 'First Major Client',
-    description: 'Secured partnership with a national retail brand.',
+    title: 'First retail partnerships',
+    description: 'Began supplying custom printed boxes to independent US retailers.',
   },
   {
     year: '2020',
-    title: 'Expanded Operations',
-    description: 'Opened second manufacturing facility to meet demand.',
+    title: 'Expanded operations',
+    description: 'Added capacity to support growing demand from e-commerce brands.',
   },
   {
     year: '2021',
-    title: 'Sustainability Initiative',
-    description: 'Launched eco-friendly packaging line.',
+    title: 'Sustainability initiative',
+    description: 'Launched a recyclable kraft and biodegradable packaging line.',
   },
   {
     year: '2022',
-    title: 'International Expansion',
-    description: 'Began serving clients in 30+ countries worldwide.',
+    title: 'US-wide delivery',
+    description: 'Now serving clients in all 50 US states with free continental shipping.',
   },
   {
     year: '2023',
-    title: 'Innovation Award',
-    description: 'Recognized for excellence in packaging design.',
+    title: '100-unit minimum',
+    description: 'Introduced low minimum order quantities starting at 100 units.',
   },
 ]
 
@@ -167,12 +164,12 @@ export default function AboutPage() {
                 ABOUT SLICK CUSTOM BOXES
               </span>
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-6">
-                Crafting Excellence in
+                Crafting excellence in
                 <br />
-                <span className="text-[#FDB022]">Packaging Since 2018</span>
+                <span className="text-[#FDB022]">packaging since 2018</span>
               </h1>
               <p className="text-xl text-white/70 max-w-3xl mx-auto mb-10">
-                We&apos;re on a mission to transform the packaging industry through innovation,
+                We&apos;re on a mission to modernize the packaging industry through innovation,
                 sustainability, and unparalleled quality. Every box tells a story, and we&apos;re
                 here to help you tell yours.
               </p>
@@ -181,14 +178,14 @@ export default function AboutPage() {
                   href="#story"
                   className="inline-flex items-center gap-2 bg-[#FDB022] text-[#171512] font-semibold px-8 py-4 rounded-xl hover:bg-[#f5a80f] transition-colors shadow-lg shadow-[#FDB022]/25"
                 >
-                  Our Story
+                  Our story
                   <ArrowRight size={18} />
                 </Link>
                 <Link
                   href="#inquiry"
                   className="inline-flex items-center gap-2 border border-white/20 text-white font-semibold px-8 py-4 rounded-xl hover:bg-white/10 transition-colors"
                 >
-                  Get in Touch
+                  Get in touch
                 </Link>
               </div>
             </motion.div>
@@ -209,16 +206,16 @@ export default function AboutPage() {
                   OUR STORY
                 </span>
                 <h2 className="text-4xl md:text-5xl font-bold text-[#171512] leading-tight mb-6">
-                  From Vision to
+                  From vision to
                   <br />
-                  <span className="text-[#FDB022]">Global Impact</span>
+                  <span className="text-[#FDB022]">nationwide service</span>
                 </h2>
                 <div className="space-y-4 text-black/60 leading-relaxed">
                   <p>
                     Slick Custom Boxes was founded in 2018 with a simple yet powerful vision:
                     to make high-quality, sustainable packaging accessible to businesses
                     of all sizes. What started as a small operation has grown into a
-                    global packaging solution provider trusted by brands worldwide.
+                    nationwide packaging partner trusted by brands across the United States.
                   </p>
                   <p>
                     Our journey has been driven by a relentless commitment to innovation,
@@ -227,9 +224,9 @@ export default function AboutPage() {
                     and creates memorable experiences.
                   </p>
                   <p>
-                    Today, we&apos;re proud to serve clients across the globe, delivering
-                    millions of boxes annually while maintaining our promise of
-                    exceptional quality and sustainable practices.
+                    Today, we&apos;re proud to serve clients across all 50 US states,
+                    delivering thousands of custom boxes each month while maintaining our
+                    promise of exceptional quality and sustainable practices.
                   </p>
                 </div>
               </motion.div>
@@ -284,7 +281,7 @@ export default function AboutPage() {
                 WHAT WE OFFER
               </span>
               <h2 className="text-4xl md:text-5xl font-bold text-[#171512] leading-tight mb-4">
-                Packaging That <span className="text-[#FDB022]">Works For You</span>
+                Packaging that <span className="text-[#FDB022]">works for you</span>
               </h2>
               <p className="text-lg text-black/55">
                 Everything you need to bring your packaging vision to life, all under one roof.
@@ -326,7 +323,7 @@ export default function AboutPage() {
                 OUR VALUES
               </span>
               <h2 className="text-4xl md:text-5xl font-bold text-[#171512] leading-tight mb-4">
-                What Drives <span className="text-[#FDB022]">Us Forward</span>
+                What drives <span className="text-[#FDB022]">us forward</span>
               </h2>
               <p className="text-lg text-black/55">
                 Our core values shape everything we do, from design to delivery.
@@ -347,9 +344,7 @@ export default function AboutPage() {
                     <value.icon size={28} />
                   </div>
                   <h3 className="text-xl font-bold text-[#171512] mb-3">{value.title}</h3>
-                  <p className="text-black/55 text-sm leading-relaxed">
-                    {value.description}
-                  </p>
+                  <p className="text-black/55 text-sm leading-relaxed">{value.description}</p>
                 </motion.div>
               ))}
             </div>
@@ -370,10 +365,11 @@ export default function AboutPage() {
                 WHY CHOOSE US
               </span>
               <h2 className="text-4xl md:text-5xl font-bold text-[#171512] leading-tight mb-4">
-                The Slick <span className="text-[#FDB022]">Difference</span>
+                The Slick <span className="text-[#FDB022]">difference</span>
               </h2>
               <p className="text-lg text-black/55">
-                We combine craftsmanship, technology, and a customer-first mindset to deliver packaging that stands out.
+                We combine craftsmanship, technology, and a customer-first mindset to deliver
+                packaging that stands out.
               </p>
             </motion.div>
 
@@ -412,7 +408,7 @@ export default function AboutPage() {
                 OUR JOURNEY
               </span>
               <h2 className="text-4xl md:text-5xl font-bold text-[#171512] leading-tight mb-4">
-                Key <span className="text-[#FDB022]">Milestones</span>
+                Key <span className="text-[#FDB022]">milestones</span>
               </h2>
               <p className="text-lg text-black/55">
                 A timeline of our growth and achievements over the years.
@@ -430,7 +426,9 @@ export default function AboutPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     viewport={{ once: true }}
-                    className={`relative ${index % 2 === 0 ? 'md:text-right md:pr-12' : 'md:pl-12 md:col-start-2'}`}
+                    className={`relative ${
+                      index % 2 === 0 ? 'md:text-right md:pr-12' : 'md:pl-12 md:col-start-2'
+                    }`}
                   >
                     <div className="bg-white rounded-2xl p-6 hover:shadow-lg transition-shadow duration-300">
                       <div className="text-2xl font-bold text-[#FDB022] mb-2">{milestone.year}</div>
@@ -462,26 +460,26 @@ export default function AboutPage() {
               viewport={{ once: true }}
             >
               <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-6">
-                Ready to Start Your
+                Ready to start your
                 <br />
-                <span className="text-[#FDB022]">Packaging Journey?</span>
+                <span className="text-[#FDB022]">packaging journey?</span>
               </h2>
               <p className="text-white/70 text-lg mb-10 max-w-2xl mx-auto">
-                Trusted by brands around the world. Let&apos;s create something amazing together.
+                Trusted by brands across the US. Let&apos;s create something amazing together.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Link
                   href="#inquiry"
                   className="inline-flex items-center gap-2 bg-[#FDB022] text-[#171512] font-semibold px-8 py-4 rounded-xl hover:bg-[#f5a80f] transition-colors shadow-lg shadow-[#FDB022]/25"
                 >
-                  Get a Free Quote
+                  Get a free quote
                   <ArrowRight size={18} />
                 </Link>
                 <Link
                   href="/services"
                   className="inline-flex items-center gap-2 border border-white/20 text-white font-semibold px-8 py-4 rounded-xl hover:bg-white/10 transition-colors"
                 >
-                  Explore Our Services
+                  Explore our services
                 </Link>
               </div>
             </motion.div>

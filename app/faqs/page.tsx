@@ -94,7 +94,7 @@ export default function FAQsPage() {
               </span>
               <div className="min-w-0">
                 <p className="text-xs text-black/45 font-medium">Get a quote</p>
-                <p className="text-sm font-semibold text-[#171512] truncate">Response within 24h</p>
+                <p className="text-sm font-semibold text-[#171512] truncate">Response within 24 hours</p>
               </div>
             </Link>
           </div>

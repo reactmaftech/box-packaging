@@ -142,7 +142,7 @@ export default function SustainabilityPage() {
             </h1>
             
             <p className="text-lg text-green-100/80 max-w-3xl mx-auto mb-10 leading-relaxed">
-              At BoxPack, we believe that exceptional packaging shouldn't come at the expense of our planet. 
+              At Slick Custom Boxes, we believe that exceptional packaging shouldn't come at the expense of our planet. 
               We're committed to sustainable practices that reduce environmental impact while delivering 
               the premium quality your brand deserves.
             </p>

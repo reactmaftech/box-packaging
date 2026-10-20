@@ -3,35 +3,33 @@
 import { motion } from 'framer-motion'
 import { ArrowRight, Palette, Tag, ShieldCheck, Rocket } from 'lucide-react'
 
-// Same six services from the old section, consolidated into four highlight cards
-// so the layout can match the bento-style reference without losing any content.
 const highlights = [
   {
     icon: Palette,
-    title: 'Custom Design',
+    title: 'Custom design',
     description:
       'Our expert designers create stunning custom designs that match your brand identity perfectly.',
     size: 'small',
   },
   {
     icon: Tag,
-    title: 'Competitive Pricing',
+    title: 'Competitive pricing',
     description:
       'Best wholesale rates with bulk discounts and flexible payment options.',
     size: 'small',
   },
   {
     icon: ShieldCheck,
-    title: 'Premium Materials & Quality Assurance',
+    title: 'Premium materials & quality assurance',
     description:
       'High-quality, eco-friendly materials on every order, with each box inspected before shipment to ensure perfection.',
     size: 'wide',
   },
   {
     icon: Rocket,
-    title: 'Fast, Worldwide Delivery',
+    title: 'Fast, US-wide delivery',
     description:
-      'Quick turnaround times with rush orders available, backed by reliable global logistics and tracking — wherever your business ships.',
+      'Quick turnaround times with rush orders available, backed by reliable shipping and tracking — free across the continental United States.',
     size: 'dark',
   },
 ]
@@ -53,7 +51,7 @@ export function Services() {
             WHY CHOOSE US
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-[#171512] leading-tight mb-4 max-w-2xl">
-            Why BoxPack is The Right Choice for You
+            Why Slick Custom Boxes is the right choice for you
           </h2>
           <p className="text-lg text-black/55 max-w-2xl mb-14">
             We deliver premium packaging solutions backed by years of industry expertise.
@@ -121,7 +119,7 @@ export function Services() {
           >
             {/* Accent gradient */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-[#fdb022]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-            
+
             <div className="w-12 h-12 rounded-full border border-[#fdb022]/30 flex items-center justify-center text-[#fdb022] mb-6 relative z-10">
               <darkCard.icon size={20} strokeWidth={1.75} />
             </div>
@@ -132,7 +130,7 @@ export function Services() {
               href="#inquiry"
               className="group mt-auto inline-flex items-center gap-2 w-fit bg-[#fdb022] text-[#171512] font-semibold px-6 py-3 rounded-lg hover:bg-[#f5a80a] transition-colors relative z-10"
             >
-              Get a Free Quote
+              Get a free quote
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </a>
           </motion.div>

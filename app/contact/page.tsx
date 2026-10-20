@@ -37,9 +37,9 @@ export default function ContactPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    setFormData((prev) => ({ ...prev, [name]: value }))
     if (validationErrors[name]) {
-      setValidationErrors(prev => {
+      setValidationErrors((prev) => {
         const newErrors = { ...prev }
         delete newErrors[name]
         return newErrors
@@ -56,7 +56,8 @@ export default function ContactPage() {
     if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = 'Please enter a valid email address'
     }
-    if (!formData.phone || formData.phone.length < 7) {
+    // Phone is OPTIONAL now — only validate when the user actually types something.
+    if (formData.phone && formData.phone.length < 7) {
       errors.phone = 'Phone number must be at least 7 characters'
     }
     if (!formData.subject) {
@@ -72,7 +73,6 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
     if (!validateForm()) return
 
     setLoading(true)
@@ -82,7 +82,7 @@ export default function ContactPage() {
       const submissionData = {
         fullName: formData.fullName,
         email: formData.email,
-        phone: formData.phone,
+        phone: formData.phone || 'Not provided',
         company: formData.company || 'N/A',
         industry: 'Contact Form',
         boxType: formData.subject,
@@ -95,28 +95,19 @@ export default function ContactPage() {
 
       const response = await fetch(`${API_URL}/inquiries`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submissionData),
       })
 
       if (response.ok) {
         setSubmitted(true)
-        setFormData({
-          fullName: '',
-          email: '',
-          phone: '',
-          company: '',
-          subject: '',
-          message: '',
-        })
+        setFormData({ fullName: '', email: '', phone: '', company: '', subject: '', message: '' })
         setTimeout(() => setSubmitted(false), 5000)
       } else {
         const data = await response.json()
         setError(data.message || 'Failed to send message. Please try again.')
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please check your connection and try again.')
     } finally {
       setLoading(false)
@@ -131,9 +122,8 @@ export default function ContactPage() {
   const contactInfo = [
     {
       icon: Phone,
-      title: 'Call Us',
+      title: 'Call us',
       details: [PHONE_DISPLAY],
-      // description: 'Mon-Fri from 8am to 6pm',
       bgColor: 'bg-[#F5F1E7]',
       iconBg: 'bg-[#FDB022]/15',
       iconColor: 'text-[#FDB022]',
@@ -141,9 +131,8 @@ export default function ContactPage() {
     },
     {
       icon: Mail,
-      title: 'Email Us',
+      title: 'Email us',
       details: [EMAIL_ADDRESS],
-      // description: 'We reply within 24 hours',
       bgColor: 'bg-[#F5F1E7]',
       iconBg: 'bg-[#FDB022]/15',
       iconColor: 'text-[#FDB022]',
@@ -151,8 +140,8 @@ export default function ContactPage() {
     },
     {
       icon: Clock,
-      title: 'Working Hours',
-      details: ['Monday - Friday'],
+      title: 'Working hours',
+      details: ['Monday – Friday, 8:00am – 6:00pm CT'],
       bgColor: 'bg-[#F5F1E7]',
       iconBg: 'bg-[#FDB022]/15',
       iconColor: 'text-[#FDB022]',
@@ -160,8 +149,7 @@ export default function ContactPage() {
     {
       icon: Globe,
       title: 'Online',
-      details: ['Quote requests'],
-      // description: 'Submit anytime',
+      details: ['Submit a quote request any time — we reply within 24 hours'],
       bgColor: 'bg-[#F5F1E7]',
       iconBg: 'bg-[#FDB022]/15',
       iconColor: 'text-[#FDB022]',
@@ -182,23 +170,23 @@ export default function ContactPage() {
   const whyChooseUs = [
     {
       icon: Shield,
-      title: 'Quality Guaranteed',
-      description: '100% satisfaction guaranteed on all our packaging products'
+      title: 'Quality guaranteed',
+      description: 'Every box is inspected before shipment — see our quality policy for details.',
     },
     {
       icon: Truck,
-      title: 'Fast Delivery',
-      description: 'Quick turnaround times with reliable shipping options'
+      title: 'Fast delivery',
+      description: 'Standard production in 8–10 business days, with free shipping across the continental US.',
     },
     {
       icon: Star,
-      title: 'Expert Support',
-      description: 'Dedicated team ready to help with your packaging needs'
+      title: 'Expert support',
+      description: 'A dedicated team ready to help with your packaging needs.',
     },
     {
       icon: HeartHandshake,
-      title: 'Trusted Partner',
-      description: 'Serving thousands of happy customers worldwide'
+      title: 'Trusted partner',
+      description: 'Trusted by hundreds of US-based brands.',
     },
   ]
 
@@ -209,10 +197,13 @@ export default function ContactPage() {
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-[#171512] to-[#2a2520] text-white pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 25% 25%, #FDB022 1px, transparent 1px), radial-gradient(circle at 75% 75%, #FDB022 1px, transparent 1px)`,
-            backgroundSize: '50px 50px'
-          }} />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `radial-gradient(circle at 25% 25%, #FDB022 1px, transparent 1px), radial-gradient(circle at 75% 75%, #FDB022 1px, transparent 1px)`,
+              backgroundSize: '50px 50px',
+            }}
+          />
         </div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#FDB022]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#FDB022]/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3" />
@@ -228,12 +219,10 @@ export default function ContactPage() {
               <MessageSquare size={14} className="mr-2" />
               GET IN TOUCH
             </span>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Contact Us
-            </h1>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Contact us</h1>
             <p className="text-lg text-white/60 max-w-2xl mx-auto">
-              Have a question or ready to start your packaging project?
-              We&apos;re here to help. Reach out to our team and we&apos;ll respond within 24 hours.
+              Have a question or ready to start your packaging project? We&apos;re here to help.
+              Reach out to our team and we&apos;ll respond within 24 hours.
             </p>
           </motion.div>
         </div>
@@ -245,9 +234,7 @@ export default function ContactPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {contactInfo.map((info, index) => {
               const CardWrapper: any = info.href ? 'a' : 'div'
-              const wrapperProps = info.href
-                ? { href: info.href, className: 'block' }
-                : {}
+              const wrapperProps = info.href ? { href: info.href, className: 'block' } : {}
 
               return (
                 <motion.div
@@ -266,9 +253,10 @@ export default function ContactPage() {
                     </div>
                     <h3 className="font-bold text-[#171512] mb-2">{info.title}</h3>
                     {info.details.map((detail, i) => (
-                      <p key={i} className="text-[#171512]/75 text-sm break-words">{detail}</p>
+                      <p key={i} className="text-[#171512]/75 text-sm break-words">
+                        {detail}
+                      </p>
                     ))}
-                    {/* <p className="text-xs text-black/45 mt-2">{info.description}</p> */}
                   </CardWrapper>
                 </motion.div>
               )
@@ -288,10 +276,11 @@ export default function ContactPage() {
               viewport={{ once: true }}
               className="bg-white rounded-2xl shadow-md border border-gray-100 p-8"
             >
-              <h2 className="text-2xl font-bold text-[#171512] mb-2">Send Us a Message</h2>
-              <p className="text-gray-600 mb-8">Fill out the form below and we&apos;ll get back to you within 24 hours.</p>
+              <h2 className="text-2xl font-bold text-[#171512] mb-2">Send us a message</h2>
+              <p className="text-gray-600 mb-8">
+                Fill out the form below and we&apos;ll get back to you within 24 hours.
+              </p>
 
-              {/* Success Message */}
               {submitted && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
@@ -300,13 +289,14 @@ export default function ContactPage() {
                 >
                   <CheckCircle size={20} className="text-green-500 flex-shrink-0" />
                   <div>
-                    <p className="font-medium">Message Sent Successfully!</p>
-                    <p className="text-sm">Thank you for contacting us. We&apos;ll get back to you within 24 hours.</p>
+                    <p className="font-medium">Message sent successfully!</p>
+                    <p className="text-sm">
+                      Thank you for contacting us. We&apos;ll get back to you within 24 hours.
+                    </p>
                   </div>
                 </motion.div>
               )}
 
-              {/* Error Message */}
               {error && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
@@ -320,7 +310,7 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Full name *</label>
                     <input
                       type="text"
                       name="fullName"
@@ -334,7 +324,7 @@ export default function ContactPage() {
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Email address *</label>
                     <input
                       type="email"
                       name="email"
@@ -351,7 +341,7 @@ export default function ContactPage() {
 
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone number</label>
                     <input
                       type="tel"
                       name="phone"
@@ -365,7 +355,7 @@ export default function ContactPage() {
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Company Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Company name</label>
                     <input
                       type="text"
                       name="company"
@@ -383,11 +373,13 @@ export default function ContactPage() {
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
-                    className={`${inputClass('subject')} appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"8\" viewBox=\"0 0 12 8\"%3E%3Cpath fill=\"%23333\" d=\"M6 8L0 0h12z\"/%3E%3C/svg%3E')] bg-[length:12px_8px] bg-[right_1rem_center] bg-no-repeat`}
+                    className={inputClass('subject')}
                   >
                     <option value="">Select a subject</option>
-                    {subjects.map(subject => (
-                      <option key={subject} value={subject}>{subject}</option>
+                    {subjects.map((subject) => (
+                      <option key={subject} value={subject}>
+                        {subject}
+                      </option>
                     ))}
                   </select>
                   {validationErrors.subject && (
@@ -426,7 +418,7 @@ export default function ContactPage() {
                   ) : (
                     <>
                       <Send size={18} />
-                      Send Message
+                      Send message
                     </>
                   )}
                 </motion.button>
@@ -443,15 +435,16 @@ export default function ContactPage() {
                 transition={{ delay: 0.1 }}
                 className="bg-gradient-to-br from-[#171512] to-[#2a2520] rounded-2xl p-8 text-white"
               >
-                <h3 className="text-xl font-bold mb-4">Need a Quick Quote?</h3>
+                <h3 className="text-xl font-bold mb-4">Need a quick quote?</h3>
                 <p className="text-white/60 text-sm mb-6">
-                  Get instant pricing for your custom packaging project. Our team is ready to help!
+                  Request pricing for your custom packaging project. Our team responds with a
+                  written quote within 24 hours.
                 </p>
                 <Link
                   href="/get-a-quote"
                   className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-[#FDB022] text-[#171512] font-bold rounded-xl hover:bg-[#f5a80f] transition-all"
                 >
-                  Get Instant Quote
+                  Get a quote
                   <ArrowRight size={18} />
                 </Link>
               </motion.div>
@@ -464,7 +457,7 @@ export default function ContactPage() {
                 transition={{ delay: 0.2 }}
                 className="bg-white rounded-2xl shadow-md border border-gray-100 p-6"
               >
-                <h3 className="text-lg font-bold text-[#171512] mb-4">Why Choose {SITE_NAME}?</h3>
+                <h3 className="text-lg font-bold text-[#171512] mb-4">Why choose {SITE_NAME}?</h3>
                 <div className="space-y-4">
                   {whyChooseUs.map((item, index) => (
                     <div key={index} className="flex items-start gap-3">
@@ -490,10 +483,7 @@ export default function ContactPage() {
               >
                 <h3 className="text-lg font-bold text-[#171512] mb-4">Reach us directly</h3>
                 <div className="space-y-3">
-                  <a
-                    href={`tel:${PHONE_NUMBER}`}
-                    className="flex items-center gap-3 group"
-                  >
+                  <a href={`tel:${PHONE_NUMBER}`} className="flex items-center gap-3 group">
                     <span className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#171512] shrink-0 group-hover:bg-[#FDB022] transition-colors">
                       <Phone size={16} />
                     </span>
@@ -501,10 +491,7 @@ export default function ContactPage() {
                       {PHONE_DISPLAY}
                     </span>
                   </a>
-                  <a
-                    href={`mailto:${EMAIL_ADDRESS}`}
-                    className="flex items-center gap-3 group"
-                  >
+                  <a href={`mailto:${EMAIL_ADDRESS}`} className="flex items-center gap-3 group">
                     <span className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#171512] shrink-0 group-hover:bg-[#FDB022] transition-colors">
                       <Mail size={16} />
                     </span>
@@ -531,7 +518,7 @@ export default function ContactPage() {
               HELP CENTER
             </span>
             <h2 className="text-2xl md:text-3xl font-bold text-[#171512] mb-4">
-              Frequently Asked Questions
+              Frequently asked questions
             </h2>
             <p className="text-gray-600 mb-8 max-w-xl mx-auto">
               Find quick answers to common questions about our services, turnaround times, and pricing.
@@ -540,7 +527,7 @@ export default function ContactPage() {
               href="/faqs"
               className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#FDB022] text-[#171512] font-bold rounded-xl hover:bg-[#f5a80f] transition-all shadow-lg shadow-[#FDB022]/25"
             >
-              Visit FAQ Page
+              Visit FAQ page
               <ArrowRight size={18} />
             </Link>
           </motion.div>

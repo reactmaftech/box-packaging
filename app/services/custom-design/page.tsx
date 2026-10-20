@@ -161,7 +161,7 @@ const benefits = [
 const testimonials = [
   {
     quote:
-      'The design team at BoxPack understood our brand instantly and created packaging that perfectly represents who we are. The attention to detail was exceptional.',
+      'The design team at Slick Custom Boxes understood our brand instantly and created packaging that perfectly represents who we are. The attention to detail was exceptional.',
     name: 'Sarah Mitchell',
     role: "Founder, Queen's Pantry",
     rating: 5,

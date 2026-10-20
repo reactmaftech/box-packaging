@@ -5,9 +5,10 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Phone, MessageCircle, ArrowRight } from 'lucide-react'
 
-const PHONE = '800 558 8047'
+const PHONE = '+1 (217) 727-6247'
 const PHONE_HREF = 'tel:+12177276247'
-const WHATSAPP_HREF = 'https://wa.me/18005588047'
+// If WhatsApp is ever enabled, use the SAME number as the main line.
+const WHATSAPP_HREF = 'https://wa.me/12177276247'
 
 export function CustomPackagingCTA() {
   return (
@@ -25,7 +26,7 @@ export function CustomPackagingCTA() {
               Looking for other custom boxes and packaging?
             </h2>
             <p className="text-sm text-black/55 mt-1.5 max-w-xl">
-              Talk to a packaging specialist for a free consultation and an instant price quote.
+              Talk to a packaging specialist for a free consultation and a written quote within 24 hours.
             </p>
           </div>
 
@@ -38,13 +39,7 @@ export function CustomPackagingCTA() {
               {PHONE}
             </a>
 
-            {/* <a
-              href={WHATSAPP_HREF}
-              aria-label="Chat on WhatsApp"
-              className="w-10 h-10 rounded-full bg-[#25D366] text-white flex items-center justify-center shrink-0 hover:brightness-105 transition-all"
-            >
-              <MessageCircle size={18} />
-            </a> */}
+            {/* WhatsApp icon is disabled. If you re-enable it, WHATSAPP_HREF uses the correct 217 number above. */}
 
             <Link
               href="#inquiry"

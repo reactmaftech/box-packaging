@@ -2,47 +2,37 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import {
-  ArrowRight,
-  Phone,
-  Mail,
-  Clock,
-  Shield,
-  Award,
-  Truck,
-} from 'lucide-react'
+import { ArrowRight, Phone, Mail, Clock, Shield, Award, Truck } from 'lucide-react'
 
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { InquiryForm } from '@/components/InquiryForm'
 
-// Contact details
 const PHONE_NUMBER = '+12177276247'
 const PHONE_DISPLAY = '+1 (217) 727-6247'
 const EMAIL_ADDRESS = 'info@slickcustomboxes.com'
 const SITE_NAME = 'Slick Custom Boxes'
 
-// Features section data
 const features = [
   {
     icon: Clock,
-    title: 'Fast Response',
-    description: 'Get a quote within 24 hours of submission',
+    title: 'Fast response',
+    description: 'Get a written quote within 24 hours of submission',
   },
   {
     icon: Shield,
-    title: 'Quality Guaranteed',
+    title: 'Quality guaranteed',
     description: 'Premium materials and expert craftsmanship',
   },
   {
     icon: Award,
-    title: 'Competitive Pricing',
+    title: 'Competitive pricing',
     description: 'Best rates with bulk discounts available',
   },
   {
     icon: Truck,
-    title: 'Worldwide Delivery',
-    description: 'Reliable shipping to over 50 countries',
+    title: 'US-wide delivery',
+    description: 'Free shipping across the continental United States',
   },
 ]
 
@@ -67,21 +57,21 @@ export default function GetQuotePage() {
                 GET A QUOTE
               </span>
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-6">
-                Get Your Custom
+                Get your custom
                 <br />
-                <span className="text-[#FDB022]">Packaging Quote</span>
+                <span className="text-[#FDB022]">packaging quote</span>
               </h1>
               <p className="text-xl text-white/70 max-w-3xl mx-auto mb-8">
-                Tell us about your packaging requirements and we&apos;ll provide you
-                with a tailored quote within 24 hours. From design to delivery,
-                we&apos;ve got you covered.
+                Tell us about your packaging requirements and we&apos;ll provide you with a
+                tailored written quote within 24 hours. From design to delivery, we&apos;ve got
+                you covered.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Link
                   href="#inquiry-form"
                   className="inline-flex items-center gap-2 bg-[#FDB022] text-[#171512] font-semibold px-8 py-4 rounded-xl hover:bg-[#f5a80f] transition-colors shadow-lg shadow-[#FDB022]/25"
                 >
-                  Start Your Quote
+                  Start your quote
                   <ArrowRight size={18} />
                 </Link>
               </div>
@@ -103,13 +93,13 @@ export default function GetQuotePage() {
                 WHY CHOOSE US
               </span>
               <h2 className="text-4xl md:text-5xl font-bold text-[#171512] leading-tight mb-4">
-                Why Request a Quote
+                Why request a quote
                 <br />
-                <span className="text-[#FDB022]">With {SITE_NAME}?</span>
+                <span className="text-[#FDB022]">with {SITE_NAME}?</span>
               </h2>
               <p className="text-lg text-black/55">
-                We make getting a quote simple, fast, and transparent. Here&apos;s why
-                brands trust us for their packaging needs.
+                We make getting a quote simple, fast, and transparent. Here&apos;s why brands
+                trust us for their packaging needs.
               </p>
             </motion.div>
 
@@ -148,36 +138,20 @@ export default function GetQuotePage() {
                 HOW IT WORKS
               </span>
               <h2 className="text-4xl md:text-5xl font-bold text-[#171512] leading-tight mb-4">
-                Simple <span className="text-[#FDB022]">4-Step Process</span>
+                Simple <span className="text-[#FDB022]">4-step process</span>
               </h2>
               <p className="text-lg text-black/55">
-                Getting a quote is quick and easy. Follow these simple steps and
-                we&apos;ll take care of the rest.
+                Getting a quote is quick and easy. Follow these simple steps and we&apos;ll take
+                care of the rest.
               </p>
             </motion.div>
 
             <div className="grid md:grid-cols-4 gap-6 relative">
               {[
-                {
-                  step: '01',
-                  title: 'Fill Out Form',
-                  description: 'Complete our quick inquiry form with your requirements.',
-                },
-                {
-                  step: '02',
-                  title: 'Review & Confirm',
-                  description: 'We\'ll review your request and reach out for clarification if needed.',
-                },
-                {
-                  step: '03',
-                  title: 'Get Your Quote',
-                  description: 'Receive a detailed, no-obligation quote within 24 hours.',
-                },
-                {
-                  step: '04',
-                  title: 'Start Production',
-                  description: 'Approve the quote and we\'ll begin bringing your packaging to life.',
-                },
+                { step: '01', title: 'Fill out form', description: 'Complete our quick inquiry form with your requirements.' },
+                { step: '02', title: 'Review & confirm', description: 'We’ll review your request and reach out for clarification if needed.' },
+                { step: '03', title: 'Get your quote', description: 'Receive a detailed, no-obligation written quote within 24 hours.' },
+                { step: '04', title: 'Start production', description: 'Approve the quote and we’ll begin bringing your packaging to life.' },
               ].map((process, index) => (
                 <motion.div
                   key={process.step}
@@ -223,13 +197,13 @@ export default function GetQuotePage() {
               viewport={{ once: true }}
             >
               <h2 className="text-3xl md:text-4xl font-bold text-[#171512] leading-tight mb-4">
-                Prefer to Talk to Someone?
+                Prefer to talk to someone?
                 <br />
-                <span className="text-[#FDB022]">We&apos;re Here to Help</span>
+                <span className="text-[#FDB022]">We&apos;re here to help</span>
               </h2>
               <p className="text-lg text-black/55 mb-8 max-w-2xl mx-auto">
-                Our packaging experts are available to discuss your requirements
-                and provide personalized assistance.
+                Our packaging experts are available to discuss your requirements and provide
+                personalized assistance.
               </p>
               <div className="flex flex-wrap justify-center gap-6">
                 <a
@@ -271,28 +245,22 @@ export default function GetQuotePage() {
               viewport={{ once: true }}
             >
               <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-6">
-                Ready to Get Started?
+                Ready to get started?
                 <br />
-                <span className="text-[#FDB022]">Request Your Quote Today</span>
+                <span className="text-[#FDB022]">Request your quote today</span>
               </h2>
               <p className="text-white/70 text-lg mb-10 max-w-2xl mx-auto">
-                Experience the {SITE_NAME} difference. We&apos;re here to bring your
-                packaging vision to life.
+                Experience the {SITE_NAME} difference. We&apos;re here to bring your packaging
+                vision to life.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Link
                   href="#inquiry-form"
                   className="inline-flex items-center gap-2 bg-[#FDB022] text-[#171512] font-semibold px-8 py-4 rounded-xl hover:bg-[#f5a80f] transition-colors shadow-lg shadow-[#FDB022]/25"
                 >
-                  Get Your Free Quote
+                  Get your free quote
                   <ArrowRight size={18} />
                 </Link>
-                {/* <Link
-                  href="/about"
-                  className="inline-flex items-center gap-2 border border-white/20 text-white font-semibold px-8 py-4 rounded-xl hover:bg-white/10 transition-colors"
-                >
-                  Learn More About Us
-                </Link> */}
               </div>
             </motion.div>
           </div>

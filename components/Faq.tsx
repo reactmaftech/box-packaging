@@ -13,12 +13,12 @@ export const faqs = [
   {
     question: 'What is the minimum order quantity?',
     answer:
-      'Our minimum order quantity varies by box type and material, typically starting around 100 units. For smaller runs or one-off samples, reach out and we\'ll work out an option that fits your needs.',
+      'Our minimum order quantity varies by box type and material, starting at 100 units. For smaller runs or one-off samples, reach out and we’ll work out an option that fits your needs.',
   },
   {
     question: 'How long does production and delivery take?',
     answer:
-      'Standard turnaround is 7–10 business days after your design is approved, plus shipping time. Rush production is available for time-sensitive orders — let us know your deadline when you request a quote.',
+      'Standard turnaround is 8 to 10 business days after your design is approved, plus shipping time. Rush production is available for time-sensitive orders — let us know your deadline when you request a quote.',
   },
   {
     question: 'Can I get a physical sample before placing a bulk order?',
@@ -38,7 +38,7 @@ export const faqs = [
   {
     question: 'Do you ship internationally?',
     answer:
-      'Yes, we ship worldwide with tracked, reliable logistics. Shipping costs and timelines are calculated based on destination and order volume during the quote process.',
+      'Yes, we ship internationally with tracked, reliable logistics. Free shipping applies to orders across the continental United States; international shipping costs and timelines are calculated based on destination and order volume during the quote process.',
   },
   {
     question: 'What payment methods do you accept?',
@@ -53,7 +53,7 @@ export const faqs = [
   {
     question: 'Do you offer eco-friendly packaging options?',
     answer:
-      'Yes. We stock recyclable kraft, biodegradable liners, and FSC-certified board options. Just mention your sustainability goals in your quote request and we\'ll recommend the right material.',
+      'Yes. We stock recyclable kraft, biodegradable liners, and FSC-certified board options. Just mention your sustainability goals in your quote request and we’ll recommend the right material.',
   },
   {
     question: 'How do I get a quote?',
@@ -69,8 +69,24 @@ export function FAQ() {
     setOpenIndex(openIndex === index ? null : index)
   }
 
+  // JSON-LD FAQ schema so the answers are machine-readable
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  }
+
   return (
     <section className="py-6 px-6 bg-white">
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <motion.div
@@ -84,10 +100,10 @@ export function FAQ() {
             FAQs
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-[#171512] leading-tight mb-4">
-            Frequently Asked Questions
+            Frequently asked questions
           </h2>
           <p className="text-lg text-black/55">
-            Can&apos;t find the answer you&apos;re looking for? Reach out to our
+            Can’t find the answer you’re looking for? Reach out to our
             packaging specialists directly.
           </p>
         </motion.div>
@@ -108,6 +124,7 @@ export function FAQ() {
                 <button
                   onClick={() => toggle(index)}
                   className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left"
+                  aria-expanded={isOpen}
                 >
                   <span className="font-semibold text-[#171512]">{faq.question}</span>
                   <span
@@ -119,20 +136,16 @@ export function FAQ() {
                   </span>
                 </button>
 
-                <AnimatePresence initial={false}>
-                  {isOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.25 }}
-                    >
-                      <p className="px-6 pb-5 text-black/55 leading-relaxed">
-                        {faq.answer}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {/*
+                  IMPORTANT: the answer is ALWAYS rendered in the DOM (so Google
+                  can index it) and only hidden with the `hidden` attribute.
+                */}
+                <div
+                  hidden={!isOpen}
+                  className="px-6 pb-5 text-black/55 leading-relaxed"
+                >
+                  {faq.answer}
+                </div>
               </motion.div>
             )
           })}
@@ -146,11 +159,9 @@ export function FAQ() {
           viewport={{ once: true }}
           className="mt-12 bg-[#171512] rounded-2xl p-8 text-center"
         >
-          <h3 className="text-xl font-bold text-white mb-2">
-            Still have questions?
-          </h3>
+          <h3 className="text-xl font-bold text-white mb-2">Still have questions?</h3>
           <p className="text-white/55 text-sm mb-6 max-w-md mx-auto">
-            Our packaging specialists are here to help. Reach out and we&apos;ll get back to you within 24 hours.
+            Our packaging specialists are here to help. Reach out and we’ll get back to you within 24 hours.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <a

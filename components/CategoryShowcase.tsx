@@ -5,17 +5,10 @@ import { useRef, useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Tag, Truck, Clock, Palette, Loader } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Tag, Loader } from 'lucide-react'
 import { categoryHref } from '@/lib/slug'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
-
-const featuresfeatures = [
-  { icon: Tag, label: 'Competitive Pricing', bg: '#E5E1F5' },
-  { icon: Truck, label: 'Free Shipping', bg: '#FBE1E6' },
-  { icon: Clock, label: 'Quick Turnaround Time', bg: '#F6E3C4' },
-  { icon: Palette, label: 'Free Design Support', bg: '#DCEEDC' },
-]
 
 interface Category {
   _id: string
@@ -54,7 +47,6 @@ export function CategoryShowcase() {
         } else if (Array.isArray(data)) {
           setCategories(data.filter((cat: Category) => cat.isActive === true))
         } else {
-          console.error('Unexpected data format:', data)
           setCategories([])
         }
         return
@@ -71,7 +63,6 @@ export function CategoryShowcase() {
 
       setError('We could not load the categories.')
     } catch (err) {
-      console.error('Error fetching categories:', err)
       setError('We could not load the categories. Check your connection and try again.')
     } finally {
       setLoading(false)
@@ -90,8 +81,6 @@ export function CategoryShowcase() {
   return (
     <section className="bg-white py-14 md:py-14">
       <div className="max-w-7xl mx-auto px-6">
-        {/* Feature pills */}
-
         {/* Heading */}
         <motion.div
           className="text-center max-w-2xl mx-auto mb-14"
@@ -101,13 +90,12 @@ export function CategoryShowcase() {
           transition={{ duration: 0.5, delay: 0.1 }}
         >
           <h2 className="text-3xl md:text-4xl font-bold text-[#171512] tracking-tight mb-4">
-            Shop Custom Boxes By Industry &amp; Packaging Style
+            Shop custom boxes by industry & packaging style
           </h2>
           <p className="text-black/55 leading-relaxed">
-            We provide you the best packaging solutions with customized printed box
-            service, which matches your industry and product specific needs. Get
-            high-quality custom boxes with logo with a flexible and simple packaging
-            process.
+            We provide packaging solutions and custom printed boxes matched to your industry,
+            product and budget. Get high-quality custom boxes with your logo through a simple,
+            flexible packaging process.
           </p>
         </motion.div>
 
@@ -168,7 +156,6 @@ export function CategoryShowcase() {
                   transition={{ duration: 0.4, delay: index * 0.05 }}
                   className="shrink-0 w-[220px] md:w-[250px] snap-start"
                 >
-                  {/* Slug URL — /products/custom-corrugated-boxes */}
                   <Link href={categoryHref(category.name)} className="group block">
                     <div className="relative w-full h-[200px] md:h-[230px] rounded-2xl overflow-hidden bg-[#F5F1E7] border border-black/[0.06] shadow-sm group-hover:shadow-xl transition-shadow duration-300">
                       {category.image ? (
@@ -234,7 +221,7 @@ export function CategoryShowcase() {
               href="/products"
               className="inline-flex items-center gap-2 px-6 py-3 bg-[#171512] text-white rounded-full font-medium hover:bg-black transition-colors"
             >
-              View All Products
+              View all products
               <ChevronRight size={18} />
             </Link>
           </motion.div>

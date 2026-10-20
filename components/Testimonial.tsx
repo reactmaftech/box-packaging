@@ -7,11 +7,11 @@ import { Star, Quote, ChevronLeft, ChevronRight } from 'lucide-react'
 const testimonials = [
   {
     name: 'Sarah Mitchell',
-    role: 'Founder, Queen&apos;s Pantry',
+    role: 'Founder, Queen’s Pantry',
     initials: 'SM',
     rating: 5,
     quote:
-      'Honestly I was nervous switching printers, we&apos;d been burned before. The team sent us a physical sample before we committed and it matched the proof exactly. Third reorder this year.',
+      'Honestly, I was nervous switching printers, we’d been burned before. The team sent us a physical sample before we committed and it matched the proof exactly. Third reorder this year.',
   },
   {
     name: 'David Chen',
@@ -39,7 +39,7 @@ const testimonials = [
   },
   {
     name: 'Priya Nair',
-    role: 'Supply Chain, Nature&apos;s Touch',
+    role: 'Supply Chain, Nature’s Touch',
     initials: 'PN',
     rating: 5,
     quote:
@@ -59,7 +59,7 @@ const testimonials = [
     initials: 'HB',
     rating: 5,
     quote:
-      'We&apos;ve worked with three packaging vendors in five years. This is the first one where I don&apos;t have to chase anyone for updates. They just handle it.',
+      'We’ve worked with three packaging vendors in five years. This is the first one where I don’t have to chase anyone for updates. They just handle it.',
   },
   {
     name: 'Tom Okafor',
@@ -71,7 +71,7 @@ const testimonials = [
   },
 ]
 
-// Remove stats section entirely — kept as empty array to avoid breaking anything
+// Kept empty on purpose; renders nothing if empty.
 const stats: { value: string; label: string }[] = []
 
 export function Testimonials() {
@@ -101,11 +101,11 @@ export function Testimonials() {
             TESTIMONIALS
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-[#171512] leading-tight mb-4">
-            What Our Clients Say
+            What our clients say
           </h2>
           <p className="text-lg text-black/55">
-            Feedback from real brands we&apos;ve worked with — the good and the
-            small hiccups we&apos;ve helped fix along the way.
+            Feedback from real brands we’ve worked with — the good and the
+            small hiccups we’ve helped fix along the way.
           </p>
         </motion.div>
 
@@ -158,14 +158,8 @@ export function Testimonials() {
                       {testimonial.initials}
                     </div>
                     <div>
-                      <div
-                        className="font-semibold text-[#171512]"
-                        dangerouslySetInnerHTML={{ __html: testimonial.name }}
-                      />
-                      <div
-                        className="text-sm text-black/50"
-                        dangerouslySetInnerHTML={{ __html: testimonial.role }}
-                      />
+                      <div className="font-semibold text-[#171512]">{testimonial.name}</div>
+                      <div className="text-sm text-black/50">{testimonial.role}</div>
                     </div>
                   </div>
                 </div>
