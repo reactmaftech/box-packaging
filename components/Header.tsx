@@ -11,6 +11,8 @@ import {
   ShoppingCart, Loader, Link as LinkIcon, Tag, Image as ImageIcon,
 } from 'lucide-react'
 
+import { categoryHref } from '@/lib/slug'
+
 // Logo import
 import logoImage from '../assets/logo/logo.png'
 
@@ -294,7 +296,7 @@ export function Header() {
                                             {column.map((cat, catIdx) => (
                                               <Link
                                                 key={catIdx}
-                                                href={`/products/${encodeURIComponent(cat.name)}`}
+                                                href={categoryHref(cat.name)}
                                                 className="block px-2.5 py-2 rounded-lg hover:bg-[#fdb022]/10 transition-colors group/item"
                                               >
                                                 <div className="text-sm font-medium text-[#171512] group-hover/item:text-[#fdb022] transition-colors truncate">
@@ -420,7 +422,7 @@ export function Header() {
                               <h4 className="text-[11px] font-bold text-black/40 uppercase tracking-wider mb-2">{item.label}</h4>
                               <div className="space-y-1">
                                 {item.categories && item.categories.length > 0 ? item.categories.map((cat, catIdx) => (
-                                  <Link key={catIdx} href={`/products/${encodeURIComponent(cat.name)}`} onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg hover:bg-[#fdb022]/10 transition-colors">
+                                  <Link key={catIdx} href={categoryHref(cat.name)} onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg hover:bg-[#fdb022]/10 transition-colors">
                                     <div className="text-sm font-medium text-[#171512] truncate">{cat.name}</div>
                                     {cat.description && <div className="text-xs text-black/40 truncate">{cat.description}</div>}
                                   </Link>

@@ -12,9 +12,18 @@ import Link from 'next/link'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { QuickInquiryModal } from '@/components/QuickInquiryModal'
-import { categoryHref, slugify } from '@/lib/slug'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
+
+// Build a hyphenated slug: "Custom Cardboard Boxes" -> "custom-cardboard-boxes"
+const toSlug = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+const categoryHref = (name: string) => `/products/${toSlug(name)}`
 
 interface Category {
   _id: string

@@ -14,12 +14,23 @@ import Link from 'next/link'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { QuickInquiryModal } from '@/components/QuickInquiryModal'
-import { productHref, matchCategoryBySlug, unslugify } from '@/lib/slug'
+import { matchCategoryBySlug, unslugify } from '@/lib/slug'
 import { InstantQuote } from '@/components/InstantQuote'
 import { FAQ } from '@/components/Faq'
 import { PackagingContentSections } from '@/components/PackagingContentSections'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
+
+// Build a hyphenated slug: "Custom Cardboard Boxes" -> "custom-cardboard-boxes"
+const toSlug = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+const productHref = (product: { title: string; slug?: string; category: string }) =>
+  `/products/${toSlug(product.category)}/${product.slug || toSlug(product.title)}`
 
 interface Product {
   _id: string
@@ -215,29 +226,7 @@ export default function CategoryProductsPage() {
                   Request a Quote
                   <ArrowRight size={18} />
                 </Link>
-
-                <a
-                  href="https://wa.me/1234567890" // Replace with your actual WhatsApp number
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-white border border-gray-200 text-[#171512] font-semibold px-6 py-3 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
-                >
-                  <MessageCircle size={18} className="text-[#25D366]" />
-                  WhatsApp Us
-                </a>
               </div>
-
-              {/* Stats */}
-              {/* <div className="flex gap-8 mt-8 pt-6 border-t border-gray-200/60">
-                <div>
-                  <p className="text-2xl font-bold text-[#171512]">{products.length}</p>
-                  <p className="text-xs text-gray-500 font-medium">Products</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-[#171512]">{products.filter(p => p.isActive).length}</p>
-                  <p className="text-xs text-gray-500 font-medium">Available</p>
-                </div>
-              </div> */}
             </motion.div>
 
             {/* Right: Category Image */}

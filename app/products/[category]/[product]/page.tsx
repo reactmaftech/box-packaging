@@ -8,18 +8,25 @@ import axios from 'axios'
 import {
   Loader, Package, ChevronLeft, ChevronRight, ArrowLeft, ArrowRight,
   CheckCircle, X, Truck, Palette, Clock, ShieldCheck, Layers,
-  Maximize2, Phone, MessageCircle
+  Maximize2, Phone, Ruler,
 } from 'lucide-react'
 import Link from 'next/link'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
-import { categoryHref, productHref } from '@/lib/slug'
 import { TrendingProducts } from '@/components/Trendingproducts'
 import { DielineComp } from '../../../../components/DielineComp'
 import { FAQ } from '@/components/Faq'
 import { Testimonials } from '@/components/Testimonial'
+import { DIMENSION_UNITS, DimensionUnit } from '@/lib/constants'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
+
+const toSlug = (value: string) =>
+  value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+
+const categoryHref = (name: string) => `/products/${toSlug(name)}`
+const productHref = (product: { title: string; slug?: string; category: string }) =>
+  `/products/${toSlug(product.category)}/${product.slug || toSlug(product.title)}`
 
 interface Product {
   _id: string
@@ -35,7 +42,12 @@ interface Product {
   updatedAt: string
 }
 
-// Same shape the site-wide InquiryForm posts, so /api/inquiries needs no change.
+interface CategoryOption {
+  _id: string
+  name: string
+  type: string
+}
+
 interface FormData {
   fullName: string
   email: string
@@ -44,6 +56,10 @@ interface FormData {
   industry: string
   boxType: string
   quantity: string
+  length: string
+  width: string
+  depth: string
+  unit: DimensionUnit
   specifications: string
   deadline: string
   budget: string
@@ -51,39 +67,14 @@ interface FormData {
 }
 
 const EMPTY_FORM: FormData = {
-  fullName: '',
-  email: '',
-  phone: '',
-  company: '',
-  industry: '',
-  boxType: '',
-  quantity: '',
-  specifications: '',
-  deadline: '',
-  budget: '',
-  message: '',
+  fullName: '', email: '', phone: '', company: '', industry: '', boxType: '',
+  quantity: '', length: '', width: '', depth: '', unit: 'in',
+  specifications: '', deadline: '', budget: '', message: '',
 }
 
 const INDUSTRIES = [
-  'Electronics',
-  'Cosmetics & Beauty',
-  'Food & Beverage',
-  'Pharmaceuticals',
-  'E-commerce',
-  'Retail',
-  'Other',
-]
-
-const BOX_TYPES = [
-  'Rigid Boxes',
-  'Kraft Boxes',
-  'Corrugated Boxes',
-  'Mylar Bags',
-  'Gable Boxes',
-  'Pillow Boxes',
-  'Mailer Boxes',
-  'Custom',
-  'Other',
+  'Electronics', 'Cosmetics & Beauty', 'Food & Beverage',
+  'Pharmaceuticals', 'E-commerce', 'Retail', 'Other',
 ]
 
 const BUDGETS = ['Under $500', '$500 - $1000', '$1000 - $5000', '$5000+']
@@ -94,18 +85,6 @@ const TRUST_ITEMS = [
   { icon: Palette, title: 'Free design support', copy: 'Dieline and 3D mockup' },
   { icon: ShieldCheck, title: 'No die charges', copy: 'Custom sizes at no extra cost' },
 ]
-
-/** Best guess at a box type from the product's category, so the select starts sensibly. */
-function guessBoxType(category: string): string {
-  const c = (category || '').toLowerCase()
-  const exact = BOX_TYPES.find(t => t.toLowerCase() === c)
-  if (exact) return exact
-  const partial = BOX_TYPES.find(t => {
-    const keyword = t.toLowerCase().replace(/ (boxes|bags)$/, '')
-    return keyword !== 'custom' && keyword !== 'other' && c.includes(keyword)
-  })
-  return partial || 'Custom'
-}
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -123,7 +102,9 @@ export default function ProductDetailPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [zoom, setZoom] = useState({ on: false, x: 50, y: 50 })
 
-  // Form
+  const [categories, setCategories] = useState<CategoryOption[]>([])
+  const [loadingCategories, setLoadingCategories] = useState(false)
+
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -131,9 +112,29 @@ export default function ProductDetailPage() {
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({})
   const formRef = useRef<HTMLDivElement>(null)
 
+  // Prefill only once per product id so a router.replace() re-render
+  // cannot wipe user input.
+  const prefilledForRef = useRef<string | null>(null)
+
   const today = new Date().toISOString().split('T')[0]
 
-  /* ---------------------------- data ---------------------------- */
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        setLoadingCategories(true)
+        const res = await fetch(`${API_URL}/categories?isActive=true`)
+        if (cancelled) return
+        const json = await res.json()
+        setCategories(json?.data ?? [])
+      } catch (err) {
+        console.error('Failed to load categories:', err)
+      } finally {
+        if (!cancelled) setLoadingCategories(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [])
 
   useEffect(() => {
     if (!productSlug || !categorySlug) {
@@ -141,6 +142,7 @@ export default function ProductDetailPage() {
       setLoading(false)
       return
     }
+    prefilledForRef.current = null
     fetchProduct()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productSlug, categorySlug])
@@ -164,17 +166,16 @@ export default function ProductDetailPage() {
 
       const json = await res.json()
       const item: Product = json?.data ?? json
-
-      if (!item?._id) {
-        setError('We could not load this product.')
-        return
-      }
+      if (!item?._id) { setError('We could not load this product.'); return }
 
       setProduct(item)
       setActiveImage(0)
-      prefillForm(item)
 
-      // Keep the URL canonical if the title changed since the link was made
+      if (prefilledForRef.current !== item._id) {
+        prefilledForRef.current = item._id
+        prefillForm(item)
+      }
+
       const canonical = productHref(item)
       if (typeof window !== 'undefined' && window.location.pathname !== canonical) {
         router.replace(canonical)
@@ -195,21 +196,16 @@ export default function ProductDetailPage() {
       if (!res.ok) return
       const json = await res.json()
       setRelated(json?.data ?? [])
-    } catch {
-      // Related products are a nice-to-have
-    }
+    } catch { /* nice-to-have */ }
   }
 
-  // Start the form off knowing which product it's about. Both fields stay editable.
   const prefillForm = (item: Product) => {
     setFormData({
       ...EMPTY_FORM,
-      boxType: guessBoxType(item.category),
+      boxType: item.category || '',
       specifications: `Product: ${item.title} (${item.category})\n`,
     })
   }
-
-  /* --------------------------- gallery --------------------------- */
 
   const images = product?.images?.length ? product.images : []
   const hasImages = images.length > 0
@@ -238,8 +234,6 @@ export default function ProductDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lightboxOpen, images.length])
 
-  /* ----------------------------- form ---------------------------- */
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -256,26 +250,16 @@ export default function ProductDetailPage() {
 
   const validateForm = () => {
     const errors: { [key: string]: string } = {}
-
-    if (!formData.fullName || formData.fullName.trim().length < 2) {
-      errors.fullName = 'Full name must be at least 2 characters'
-    }
-    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = 'Please enter a valid email address'
-    }
-    if (!formData.phone || formData.phone.trim().length < 7) {
-      errors.phone = 'Phone number must be at least 7 characters'
-    }
-    if (!formData.company) {
-      errors.company = 'Company name is required'
-    }
-    if (!formData.industry) {
-      errors.industry = 'Please select an industry'
-    }
-    if (!formData.boxType) {
-      errors.boxType = 'Please select a box type'
-    }
-
+    if (!formData.fullName || formData.fullName.trim().length < 2) errors.fullName = 'Full name must be at least 2 characters'
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = 'Please enter a valid email address'
+    if (!formData.phone || formData.phone.trim().length < 7) errors.phone = 'Phone number must be at least 7 characters'
+    if (!formData.company) errors.company = 'Company name is required'
+    if (!formData.industry) errors.industry = 'Please select an industry'
+    if (!formData.boxType) errors.boxType = 'Please select a box type'
+    ;(['length', 'width', 'depth'] as const).forEach((k) => {
+      const v = formData[k]
+      if (v !== '' && (Number.isNaN(Number(v)) || Number(v) < 0)) errors[k] = 'Must be a positive number'
+    })
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -288,13 +272,31 @@ export default function ProductDetailPage() {
     setFormError('')
 
     try {
-      const submissionData = {
-        ...formData,
-        quantity: formData.quantity ? parseInt(formData.quantity, 10) : undefined,
-        deadline: formData.deadline || undefined,
-      }
+      const lengthNum = formData.length.trim() !== '' ? Number(formData.length) : undefined
+      const widthNum = formData.width.trim() !== '' ? Number(formData.width) : undefined
+      const depthNum = formData.depth.trim() !== '' ? Number(formData.depth) : undefined
 
-      const response = await axios.post(`${API_URL}/inquiries`, submissionData, {
+      const payload: any = {
+        fullName: formData.fullName.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        company: formData.company.trim(),
+        industry: formData.industry,
+        boxType: formData.boxType,
+        quantity: formData.quantity ? parseInt(formData.quantity, 10) : undefined,
+        specifications: formData.specifications,
+        deadline: formData.deadline || undefined,
+        budget: formData.budget,
+        message: formData.message,
+        unit: formData.unit,
+      }
+      if (lengthNum !== undefined && Number.isFinite(lengthNum)) payload.length = lengthNum
+      if (widthNum !== undefined && Number.isFinite(widthNum)) payload.width = widthNum
+      if (depthNum !== undefined && Number.isFinite(depthNum)) payload.depth = depthNum
+
+      console.log('[product page] payload →', payload)
+
+      const response = await axios.post(`${API_URL}/inquiries`, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 10000,
       })
@@ -307,13 +309,10 @@ export default function ProductDetailPage() {
       }
     } catch (err: any) {
       console.error('Submission error:', err)
-
       if (err.response) {
         if (err.response.data?.errors) {
           const serverErrors: { [key: string]: string } = {}
-          err.response.data.errors.forEach((e: any) => {
-            serverErrors[e.path] = e.msg
-          })
+          err.response.data.errors.forEach((e: any) => { serverErrors[e.path] = e.msg })
           setValidationErrors(serverErrors)
           setFormError('Please fix the highlighted fields below.')
         } else {
@@ -337,9 +336,7 @@ export default function ProductDetailPage() {
     }`
 
   const selectArrow =
-    'appearance-none bg-[url(\'data:image/svg+xml;charset=utf-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"%3E%3Cpath fill="%23333" d="M6 8L0 0h12z"/%3E%3C/svg%3E\')] bg-[length:12px_8px] bg-[right_1rem_center] bg-no-repeat'
-
-  /* --------------------------- states ---------------------------- */
+    "appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"8\" viewBox=\"0 0 12 8\"%3E%3Cpath fill=\"%23333\" d=\"M6 8L0 0h12z\"/%3E%3C/svg%3E')] bg-[length:12px_8px] bg-[right_1rem_center] bg-no-repeat"
 
   if (loading) {
     return (
@@ -363,16 +360,12 @@ export default function ProductDetailPage() {
           <h1 className="text-2xl font-bold text-[#171512] mb-2">Product unavailable</h1>
           <p className="text-gray-500 mb-8">{error || 'We could not find this product.'}</p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <button
-              onClick={fetchProduct}
-              className="px-6 py-2.5 bg-[#171512] text-white rounded-full text-sm font-medium hover:bg-black transition-colors"
-            >
+            <button onClick={fetchProduct}
+              className="px-6 py-2.5 bg-[#171512] text-white rounded-full text-sm font-medium hover:bg-black transition-colors">
               Try again
             </button>
-            <Link
-              href={`/products/${categorySlug}`}
-              className="px-6 py-2.5 bg-[#FDB022] text-[#171512] rounded-full text-sm font-semibold hover:bg-[#f5a80f] transition-colors"
-            >
+            <Link href={`/products/${categorySlug}`}
+              className="px-6 py-2.5 bg-[#FDB022] text-[#171512] rounded-full text-sm font-semibold hover:bg-[#f5a80f] transition-colors">
               Back to category
             </Link>
           </div>
@@ -384,21 +377,15 @@ export default function ProductDetailPage() {
 
   const plainDescription = product.description?.replace(/<[^>]*>/g, '').trim() || ''
 
-  /* ----------------------------- page ---------------------------- */
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      {/* Hero: gallery left, quote form right */}
       <section className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 py-10 md:py-14">
-          <Link
-            href={categoryHref(product.category)}
-            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#171512] transition-colors mb-8"
-          >
-            <ArrowLeft size={16} />
-            Back to {product.category}
+          <Link href={categoryHref(product.category)}
+            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#171512] transition-colors mb-8">
+            <ArrowLeft size={16} /> Back to {product.category}
           </Link>
 
           <div className="grid lg:grid-cols-2 gap-10 xl:gap-14">
@@ -432,18 +419,12 @@ export default function ProductDetailPage() {
 
                     {images.length > 1 && (
                       <>
-                        <button
-                          onClick={prevImage}
-                          aria-label="Previous image"
-                          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center text-gray-700 hover:bg-white transition-colors"
-                        >
+                        <button onClick={prevImage} aria-label="Previous image"
+                          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center text-gray-700 hover:bg-white transition-colors">
                           <ChevronLeft size={20} />
                         </button>
-                        <button
-                          onClick={nextImage}
-                          aria-label="Next image"
-                          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center text-gray-700 hover:bg-white transition-colors"
-                        >
+                        <button onClick={nextImage} aria-label="Next image"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center text-gray-700 hover:bg-white transition-colors">
                           <ChevronRight size={20} />
                         </button>
                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/55 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs">
@@ -463,22 +444,14 @@ export default function ProductDetailPage() {
               {images.length > 1 && (
                 <div className="grid grid-cols-5 gap-3 mt-4">
                   {images.map((img, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setActiveImage(idx)}
-                      aria-label={`Show image ${idx + 1}`}
+                    <button key={idx} onClick={() => setActiveImage(idx)} aria-label={`Show image ${idx + 1}`}
                       className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${
                         idx === activeImage
                           ? 'border-[#FDB022] ring-2 ring-[#FDB022]/25'
                           : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <img
-                        src={img}
-                        alt=""
-                        className="w-full h-full object-cover"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                      />
+                      }`}>
+                      <img src={img} alt="" className="w-full h-full object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
                     </button>
                   ))}
                 </div>
@@ -490,24 +463,15 @@ export default function ProductDetailPage() {
                 </p>
               )}
 
-              {/* Contact shortcuts under the gallery */}
               <div className="mt-6 rounded-2xl bg-gradient-to-br from-[#171512] to-[#2a2520] p-5">
                 <p className="text-white/40 text-xs uppercase tracking-wider mb-4">Contact us directly</p>
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <a href="tel:+18000000" className="flex items-center gap-3 group">
+                  <a href="tel:+12177276247" className="flex items-center gap-3 group">
                     <span className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white shrink-0 transition-all duration-200 group-hover:bg-[#FDB022] group-hover:scale-105">
                       <Phone size={16} />
                     </span>
                     <span className="text-white text-sm font-medium group-hover:text-[#FDB022] transition-colors">
-                      (800) 000-1234
-                    </span>
-                  </a>
-                  <a href="https://wa.me/100000000" className="flex items-center gap-3 group">
-                    <span className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center text-white shrink-0 transition-all duration-200 group-hover:scale-105">
-                      <MessageCircle size={16} />
-                    </span>
-                    <span className="text-white text-sm font-medium group-hover:text-[#25D366] transition-colors">
-                      Chat on WhatsApp
+                      +1 (217) 727-6247
                     </span>
                   </a>
                 </div>
@@ -516,12 +480,9 @@ export default function ProductDetailPage() {
 
             {/* -------- Details + full inquiry form -------- */}
             <div>
-              <Link
-                href={categoryHref(product.category)}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F5F1E7] text-[#8a7554] text-xs font-semibold hover:bg-[#EDE5D8] transition-colors"
-              >
-                <Layers size={12} />
-                {product.category}
+              <Link href={categoryHref(product.category)}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F5F1E7] text-[#8a7554] text-xs font-semibold hover:bg-[#EDE5D8] transition-colors">
+                <Layers size={12} /> {product.category}
               </Link>
 
               <h1 className="text-3xl md:text-4xl font-bold text-[#171512] mt-4 leading-tight">
@@ -556,7 +517,6 @@ export default function ProductDetailPage() {
                 ))}
               </div>
 
-              {/* ---------- Form ---------- */}
               <div
                 ref={formRef}
                 id="quote"
@@ -586,10 +546,8 @@ export default function ProductDetailPage() {
                         We have your details for <span className="font-medium text-[#171512]">{product.title}</span> and
                         will email you pricing within 24 hours.
                       </p>
-                      <button
-                        onClick={() => setSubmitted(false)}
-                        className="mt-6 px-6 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
+                      <button onClick={() => setSubmitted(false)}
+                        className="mt-6 px-6 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                         Send another inquiry
                       </button>
                     </motion.div>
@@ -604,11 +562,7 @@ export default function ProductDetailPage() {
                       {formError && (
                         <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-start justify-between gap-3">
                           <span>{formError}</span>
-                          <button
-                            type="button"
-                            onClick={() => setFormError('')}
-                            className="text-red-500 hover:text-red-700 shrink-0"
-                          >
+                          <button type="button" onClick={() => setFormError('')} className="text-red-500 hover:text-red-700 shrink-0">
                             <X size={18} />
                           </button>
                         </div>
@@ -616,152 +570,110 @@ export default function ProductDetailPage() {
 
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div>
-                          <input
-                            type="text"
-                            name="fullName"
-                            value={formData.fullName}
-                            onChange={handleChange}
-                            className={fieldClass('fullName')}
-                            placeholder="Full Name *"
-                          />
-                          {validationErrors.fullName && (
-                            <p className="text-red-500 text-xs mt-1">{validationErrors.fullName}</p>
-                          )}
+                          <input type="text" name="fullName" value={formData.fullName} onChange={handleChange}
+                            className={fieldClass('fullName')} placeholder="Full Name *" />
+                          {validationErrors.fullName && <p className="text-red-500 text-xs mt-1">{validationErrors.fullName}</p>}
                         </div>
                         <div>
-                          <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className={fieldClass('email')}
-                            placeholder="Email Address *"
-                          />
-                          {validationErrors.email && (
-                            <p className="text-red-500 text-xs mt-1">{validationErrors.email}</p>
-                          )}
+                          <input type="email" name="email" value={formData.email} onChange={handleChange}
+                            className={fieldClass('email')} placeholder="Email Address *" />
+                          {validationErrors.email && <p className="text-red-500 text-xs mt-1">{validationErrors.email}</p>}
                         </div>
                       </div>
 
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div>
-                          <input
-                            type="tel"
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            className={fieldClass('phone')}
-                            placeholder="Phone Number *"
-                          />
-                          {validationErrors.phone && (
-                            <p className="text-red-500 text-xs mt-1">{validationErrors.phone}</p>
-                          )}
+                          <input type="tel" name="phone" value={formData.phone} onChange={handleChange}
+                            className={fieldClass('phone')} placeholder="Phone Number *" />
+                          {validationErrors.phone && <p className="text-red-500 text-xs mt-1">{validationErrors.phone}</p>}
                         </div>
                         <div>
-                          <input
-                            type="text"
-                            name="company"
-                            value={formData.company}
-                            onChange={handleChange}
-                            className={fieldClass('company')}
-                            placeholder="Company Name *"
-                          />
-                          {validationErrors.company && (
-                            <p className="text-red-500 text-xs mt-1">{validationErrors.company}</p>
-                          )}
+                          <input type="text" name="company" value={formData.company} onChange={handleChange}
+                            className={fieldClass('company')} placeholder="Company Name *" />
+                          {validationErrors.company && <p className="text-red-500 text-xs mt-1">{validationErrors.company}</p>}
                         </div>
                       </div>
 
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div>
-                          <select
-                            name="industry"
-                            value={formData.industry}
-                            onChange={handleChange}
-                            className={`${fieldClass('industry')} ${selectArrow}`}
-                          >
+                          <select name="industry" value={formData.industry} onChange={handleChange}
+                            className={`${fieldClass('industry')} ${selectArrow}`}>
                             <option value="">Industry *</option>
-                            {INDUSTRIES.map(ind => (
-                              <option key={ind} value={ind}>{ind}</option>
-                            ))}
+                            {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
                           </select>
-                          {validationErrors.industry && (
-                            <p className="text-red-500 text-xs mt-1">{validationErrors.industry}</p>
-                          )}
+                          {validationErrors.industry && <p className="text-red-500 text-xs mt-1">{validationErrors.industry}</p>}
                         </div>
                         <div>
-                          <select
-                            name="boxType"
-                            value={formData.boxType}
-                            onChange={handleChange}
-                            className={`${fieldClass('boxType')} ${selectArrow}`}
-                          >
-                            <option value="">Box Type *</option>
-                            {BOX_TYPES.map(type => (
-                              <option key={type} value={type}>{type}</option>
+                          <select name="boxType" value={formData.boxType} onChange={handleChange}
+                            className={`${fieldClass('boxType')} ${selectArrow}`} disabled={loadingCategories}>
+                            <option value="">{loadingCategories ? 'Loading…' : 'Box Type *'}</option>
+                            {categories.map(c => (
+                              <option key={c._id} value={c.name}>{c.name}{c.type ? ` — ${c.type}` : ''}</option>
                             ))}
                           </select>
-                          {validationErrors.boxType && (
-                            <p className="text-red-500 text-xs mt-1">{validationErrors.boxType}</p>
-                          )}
+                          {validationErrors.boxType && <p className="text-red-500 text-xs mt-1">{validationErrors.boxType}</p>}
+                        </div>
+                      </div>
+
+                      {/* Dimensions */}
+                      <div className="rounded-xl border border-black/10 p-4 bg-gray-50/70">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Ruler size={16} className="text-[#FDB022]" />
+                          <span className="text-sm font-semibold text-[#171512]">Box Dimensions (optional)</span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          <div>
+                            <label className="block text-[11px] uppercase tracking-wide text-black/50 mb-1">Length</label>
+                            <input type="number" inputMode="decimal" name="length" value={formData.length} onChange={handleChange}
+                              className={fieldClass('length')} placeholder="L" min="0" step="0.01" />
+                            {validationErrors.length && <p className="text-red-500 text-xs mt-1">{validationErrors.length}</p>}
+                          </div>
+                          <div>
+                            <label className="block text-[11px] uppercase tracking-wide text-black/50 mb-1">Width</label>
+                            <input type="number" inputMode="decimal" name="width" value={formData.width} onChange={handleChange}
+                              className={fieldClass('width')} placeholder="W" min="0" step="0.01" />
+                            {validationErrors.width && <p className="text-red-500 text-xs mt-1">{validationErrors.width}</p>}
+                          </div>
+                          <div>
+                            <label className="block text-[11px] uppercase tracking-wide text-black/50 mb-1">Depth</label>
+                            <input type="number" inputMode="decimal" name="depth" value={formData.depth} onChange={handleChange}
+                              className={fieldClass('depth')} placeholder="D" min="0" step="0.01" />
+                            {validationErrors.depth && <p className="text-red-500 text-xs mt-1">{validationErrors.depth}</p>}
+                          </div>
+                          <div>
+                            <label className="block text-[11px] uppercase tracking-wide text-black/50 mb-1">Unit</label>
+                            <select name="unit" value={formData.unit} onChange={handleChange}
+                              className={`${fieldClass('unit')} ${selectArrow}`}>
+                              {DIMENSION_UNITS.map(u => <option key={u.value} value={u.value}>{u.label}</option>)}
+                            </select>
+                          </div>
                         </div>
                       </div>
 
                       <div className="grid sm:grid-cols-3 gap-4">
-                        <input
-                          type="number"
-                          name="quantity"
-                          value={formData.quantity}
-                          onChange={handleChange}
-                          className={fieldClass('quantity')}
-                          placeholder="Quantity"
-                          min="1"
-                        />
-                        <select
-                          name="budget"
-                          value={formData.budget}
-                          onChange={handleChange}
-                          className={`${fieldClass('budget')} ${selectArrow}`}
-                        >
+                        <input type="number" name="quantity" value={formData.quantity} onChange={handleChange}
+                          className={fieldClass('quantity')} placeholder="Quantity" min="1" />
+                        <select name="budget" value={formData.budget} onChange={handleChange}
+                          className={`${fieldClass('budget')} ${selectArrow}`}>
                           <option value="">Budget Range</option>
-                          {BUDGETS.map(b => (
-                            <option key={b} value={b}>{b}</option>
-                          ))}
+                          {BUDGETS.map(b => <option key={b} value={b}>{b}</option>)}
                         </select>
-                        <input
-                          type="date"
-                          name="deadline"
-                          value={formData.deadline}
-                          onChange={handleChange}
-                          className={fieldClass('deadline')}
-                          min={today}
-                        />
+                        <input type="date" name="deadline" value={formData.deadline} onChange={handleChange}
+                          className={fieldClass('deadline')} min={today} />
                       </div>
 
                       <div>
-                        <textarea
-                          name="specifications"
-                          value={formData.specifications}
-                          onChange={handleChange}
+                        <textarea name="specifications" value={formData.specifications} onChange={handleChange}
                           className={`${fieldClass('specifications')} h-24 resize-none`}
-                          placeholder="Box specifications — dimensions, materials, printing requirements, etc."
-                        />
-                        {validationErrors.specifications && (
-                          <p className="text-red-500 text-xs mt-1">{validationErrors.specifications}</p>
-                        )}
+                          placeholder="Box specifications — materials, printing requirements, etc." />
+                        {validationErrors.specifications && <p className="text-red-500 text-xs mt-1">{validationErrors.specifications}</p>}
                       </div>
 
                       <div>
-                        <textarea
-                          name="message"
-                          value={formData.message}
-                          onChange={handleChange}
+                        <textarea name="message" value={formData.message} onChange={handleChange}
                           className={`${fieldClass('message')} h-20 resize-none`}
-                          placeholder="Tell us more about your project..."
-                        />
-                        {validationErrors.message && (
-                          <p className="text-red-500 text-xs mt-1">{validationErrors.message}</p>
-                        )}
+                          placeholder="Tell us more about your project..." />
+                        {validationErrors.message && <p className="text-red-500 text-xs mt-1">{validationErrors.message}</p>}
                       </div>
 
                       <motion.button
@@ -796,11 +708,10 @@ export default function ProductDetailPage() {
         </div>
       </section>
 
-      {/* Description: content left (scrollable), single image right (scrollable) */}
+      {/* Description + single image — unchanged */}
       <section className="py-14 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-10">
-            {/* Left: scrollable description content */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
               <div className="px-6 py-5 border-b border-gray-100">
                 <h2 className="text-xl font-bold text-[#171512]">Product Description</h2>
@@ -817,7 +728,6 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {/* Right: single product image, scrollable */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
               <div className="px-6 py-5 border-b border-gray-100">
                 <h2 className="text-xl font-bold text-[#171512]">Product Image</h2>
@@ -828,19 +738,14 @@ export default function ProductDetailPage() {
                     className="relative aspect-square rounded-2xl overflow-hidden bg-[#F5F1E7] border border-black/[0.06] group cursor-zoom-in"
                     onClick={() => setLightboxOpen(true)}
                   >
-                    <img
-                      src={images[activeImage]}
-                      alt={product.title}
+                    <img src={images[activeImage]} alt={product.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      onError={(e) => { (e.target as HTMLImageElement).style.visibility = 'hidden' }}
-                    />
+                      onError={(e) => { (e.target as HTMLImageElement).style.visibility = 'hidden' }} />
                     <div className="absolute bottom-3 left-3 bg-black/55 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
                       {activeImage + 1} / {images.length}
                     </div>
-                    <button
-                      aria-label="Open full size image"
-                      className="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
+                    <button aria-label="Open full size image"
+                      className="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Maximize2 size={16} />
                     </button>
                   </div>
@@ -851,26 +756,17 @@ export default function ProductDetailPage() {
                   </div>
                 )}
 
-                {/* Thumbnails below the single image for switching */}
                 {images.length > 1 && (
                   <div className="grid grid-cols-5 gap-3 mt-4">
                     {images.map((img, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setActiveImage(idx)}
-                        aria-label={`Show image ${idx + 1}`}
+                      <button key={idx} onClick={() => setActiveImage(idx)} aria-label={`Show image ${idx + 1}`}
                         className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${
                           idx === activeImage
                             ? 'border-[#FDB022] ring-2 ring-[#FDB022]/25'
                             : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        <img
-                          src={img}
-                          alt=""
-                          className="w-full h-full object-cover"
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                        />
+                        }`}>
+                        <img src={img} alt="" className="w-full h-full object-cover"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
                       </button>
                     ))}
                   </div>
@@ -881,34 +777,25 @@ export default function ProductDetailPage() {
         </div>
       </section>
 
-      {/* Related */}
       {related.length > 0 && (
         <section className="pb-20 px-6">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-end justify-between mb-6">
               <h2 className="text-2xl font-bold text-[#171512]">More in {product.category}</h2>
-              <Link
-                href={categoryHref(product.category)}
-                className="text-sm font-medium text-[#c98b0c] hover:text-[#171512] transition-colors"
-              >
+              <Link href={categoryHref(product.category)}
+                className="text-sm font-medium text-[#c98b0c] hover:text-[#171512] transition-colors">
                 View all
               </Link>
             </div>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {related.map(item => (
-                <Link
-                  key={item._id}
-                  href={productHref(item)}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-shadow overflow-hidden group"
-                >
+                <Link key={item._id} href={productHref(item)}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-shadow overflow-hidden group">
                   <div className="relative h-44 bg-[#F5F1E7] overflow-hidden">
                     {item.images?.[0] ? (
-                      <img
-                        src={item.images[0]}
-                        alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+                      <img src={item.images[0]} alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Package size={36} className="text-[#D4C5A9]" />
@@ -934,14 +821,10 @@ export default function ProductDetailPage() {
       )}
 
       <TrendingProducts />
-
       <DielineComp />
-
       <FAQ />
-
       <Testimonials />
 
-      {/* Mobile bar */}
       {!submitted && (
         <div className="lg:hidden sticky bottom-0 z-40 bg-white/95 backdrop-blur-sm border-t border-gray-200 px-4 py-3 flex items-center gap-3">
           <div className="min-w-0 flex-1">
@@ -950,16 +833,13 @@ export default function ProductDetailPage() {
               {product.price !== undefined ? `From $${product.price.toFixed(2)}` : 'Custom pricing'}
             </p>
           </div>
-          <button
-            onClick={scrollToForm}
-            className="px-5 py-2.5 bg-[#FDB022] text-[#171512] rounded-xl font-bold text-sm shrink-0"
-          >
+          <button onClick={scrollToForm}
+            className="px-5 py-2.5 bg-[#FDB022] text-[#171512] rounded-xl font-bold text-sm shrink-0">
             Get a quote
           </button>
         </div>
       )}
 
-      {/* Lightbox */}
       <AnimatePresence>
         {lightboxOpen && hasImages && (
           <motion.div
@@ -969,35 +849,23 @@ export default function ProductDetailPage() {
             className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4"
             onClick={() => setLightboxOpen(false)}
           >
-            <button
-              onClick={() => setLightboxOpen(false)}
-              aria-label="Close"
-              className="absolute top-5 right-5 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
-            >
+            <button onClick={() => setLightboxOpen(false)} aria-label="Close"
+              className="absolute top-5 right-5 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
               <X size={22} />
             </button>
 
-            <img
-              src={images[activeImage]}
-              alt={product.title}
+            <img src={images[activeImage]} alt={product.title}
               className="max-h-[85vh] max-w-full object-contain rounded-xl"
-              onClick={(e) => e.stopPropagation()}
-            />
+              onClick={(e) => e.stopPropagation()} />
 
             {images.length > 1 && (
               <>
-                <button
-                  onClick={(e) => { e.stopPropagation(); prevImage() }}
-                  aria-label="Previous image"
-                  className="absolute left-5 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
-                >
+                <button onClick={(e) => { e.stopPropagation(); prevImage() }} aria-label="Previous image"
+                  className="absolute left-5 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
                   <ChevronLeft size={24} />
                 </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); nextImage() }}
-                  aria-label="Next image"
-                  className="absolute right-5 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
-                >
+                <button onClick={(e) => { e.stopPropagation(); nextImage() }} aria-label="Next image"
+                  className="absolute right-5 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
                   <ChevronRight size={24} />
                 </button>
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/70 text-sm">
@@ -1014,34 +882,12 @@ export default function ProductDetailPage() {
       <style jsx global>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .description-scroll::-webkit-scrollbar {
-          width: 6px;
-        }
-        .description-scroll::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .description-scroll::-webkit-scrollbar-thumb {
-          background: #d1d5db;
-          border-radius: 9999px;
-        }
-        .description-scroll::-webkit-scrollbar-thumb:hover {
-          background: #9ca3af;
-        }
-        .description-scroll {
-          scrollbar-width: thin;
-          scrollbar-color: #d1d5db transparent;
-        }
+        .description-scroll::-webkit-scrollbar { width: 6px; }
+        .description-scroll::-webkit-scrollbar-track { background: transparent; }
+        .description-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 9999px; }
+        .description-scroll::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+        .description-scroll { scrollbar-width: thin; scrollbar-color: #d1d5db transparent; }
       `}</style>
-    </div>
-  )
-}
-
-function SpecRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-gray-50 rounded-xl p-4">
-      <dt className="text-xs text-gray-500 mb-1">{label}</dt>
-      <dd className="font-semibold text-[#171512] text-sm">{value}</dd>
     </div>
   )
 }
