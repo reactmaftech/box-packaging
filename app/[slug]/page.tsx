@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react'
 import { notFound, useParams } from 'next/navigation'
 import { matchCategoryBySlug, slugify } from '@/lib/slug'
 import CategoryProductsPage from '@/app/products/[category]/page'
-import ProductDetailPage from '@/app/products/[category]/[product]/page'
+import ProductDetailClient, { Product } from '@/components/ProductDetailClient'
 import { Loader } from 'lucide-react'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
@@ -20,6 +20,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.ve
 
 type Mode = 'loading' | 'category' | 'product' | 'not-found'
 
+/**
+ * Loose shape coming back from the API — fields the client needs may be
+ * missing, so we normalize to `Product` before rendering.
+ */
 interface AnyProduct {
   _id: string
   title: string
@@ -29,22 +33,31 @@ interface AnyProduct {
   category: string
   price?: number
   isActive?: boolean
+  createdBy?: { _id: string; name: string }
   createdAt?: string
   updatedAt?: string
 }
 
+/** Coerce a loose API record into the strict `Product` shape the client expects. */
+function normalizeProduct(p: AnyProduct): Product {
+  const now = new Date().toISOString()
+  return {
+    _id: p._id,
+    title: p.title,
+    slug: p.slug,
+    description: p.description ?? '',
+    images: Array.isArray(p.images) ? (p.images.filter(Boolean) as string[]) : [],
+    category: p.category,
+    price: p.price,
+    isActive: p.isActive ?? true,
+    createdBy: p.createdBy,
+    createdAt: p.createdAt ?? now,
+    updatedAt: p.updatedAt ?? now,
+  }
+}
+
 /**
- * Extract an array of records from any plausible API shape:
- *   [...]
- *   { data: [...] }
- *   { data: { data: [...] } }
- *   { data: { products: [...] } }
- *   { data: { docs: [...] } }
- *   { data: { items: [...] } }
- *   { products: [...] }
- *   { docs: [...] }
- *   { items: [...] }
- *   { results: [...] }
+ * Extract an array of records from any plausible API shape.
  */
 function extractArray<T = any>(json: any): T[] {
   if (json == null) return []
@@ -58,11 +71,9 @@ function extractArray<T = any>(json: any): T[] {
     return null
   }
 
-  // First level
   const first = tryKeys(json)
   if (first) return first
 
-  // Second level (e.g. { data: { docs: [...] } })
   if (json.data && typeof json.data === 'object') {
     const second = tryKeys(json.data)
     if (second) return second
@@ -85,12 +96,10 @@ function slugMatches(productSlugOrTitle: string | undefined, target: string): bo
     slugify(raw),
   ].filter(Boolean)
 
-  // Normalize target too
   const targetNorm = target.replace(/_+/g, '-').toLowerCase()
 
   for (const v of variants) {
     if (v === target || v === targetNorm) return true
-    // Fuzzy: strip hyphens/underscores and compare
     const vStripped = v.replace(/[-_]/g, '')
     const tStripped = targetNorm.replace(/[-_]/g, '')
     if (vStripped && vStripped === tStripped) return true
@@ -123,7 +132,6 @@ export default function FlatSlugPage() {
     ;(async () => {
       const triedUrls: string[] = []
       const log = (msg: string) => {
-        // Remove or gate this behind NODE_ENV if you don't want console noise
         console.log('[flat-slug]', msg)
       }
 
@@ -266,5 +274,9 @@ export default function FlatSlugPage() {
   if (mode === 'category') return <CategoryProductsPage />
 
   // mode === 'product'
-  return <ProductDetailPage initialProduct={resolvedProduct} />
+  return (
+    <ProductDetailClient
+      initialProduct={resolvedProduct ? normalizeProduct(resolvedProduct) : null}
+    />
+  )
 }
