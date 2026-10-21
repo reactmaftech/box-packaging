@@ -1,7 +1,7 @@
 // app/products/page.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
@@ -15,7 +15,6 @@ import { QuickInquiryModal } from '@/components/QuickInquiryModal'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
 
-// Build a hyphenated slug: "Custom Cardboard Boxes" -> "custom-cardboard-boxes"
 const toSlug = (value: string) =>
   value
     .toLowerCase()
@@ -34,7 +33,11 @@ interface Category {
   isActive: boolean
 }
 
-export default function ProductsPage() {
+// ─────────────────────────────────────────────────────────────
+// Inner component — holds all the logic including useSearchParams.
+// It MUST be rendered inside <Suspense> (see default export below).
+// ─────────────────────────────────────────────────────────────
+function ProductsPageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -101,7 +104,6 @@ export default function ProductsPage() {
         return
       }
 
-      // Fall back to the active-only endpoint
       const activeRes = await fetch(`${API_URL}/categories/active`)
       if (activeRes.ok) {
         const activeData = await activeRes.json()
@@ -375,7 +377,6 @@ export default function ProductsPage() {
                             )}
 
                             <div className="flex gap-2">
-                              {/* View details -> category's product listing */}
                               <span className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-[#171512] text-white rounded-xl font-semibold text-sm group-hover:bg-black transition-colors">
                                 <Eye size={14} />
                                 View details
@@ -470,5 +471,30 @@ export default function ProductsPage() {
         categoryType={selectedCategory.type}
       />
     </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// Default export: wraps the inner component in <Suspense> so
+// Next.js can prerender the static shell (the fallback) and
+// hydrate the real content on the client. This is required by
+// Next.js 14.1+ whenever useSearchParams() is used in a page.
+// ─────────────────────────────────────────────────────────────
+export default function ProductsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50">
+          <Header />
+          <div className="pt-40 pb-32 text-center">
+            <Loader size={40} className="mx-auto animate-spin text-gray-400 mb-4" />
+            <p className="text-gray-500">Loading…</p>
+          </div>
+          <Footer />
+        </div>
+      }
+    >
+      <ProductsPageInner />
+    </Suspense>
   )
 }
