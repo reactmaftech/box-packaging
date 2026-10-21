@@ -12,4 +12,4 @@ interface PageProps {
 
 export default function Page({ params, searchParams }: PageProps) {
   return <ProductDetailClient />
-}
+} 
