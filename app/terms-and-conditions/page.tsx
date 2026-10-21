@@ -2,11 +2,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import {
-  FileText, ShieldCheck, Layers, Scale, Lock, ShoppingBag,
-  Truck, Mail, Phone, ChevronRight, AlertTriangle, Globe,
-  UserCheck, Copyright, CreditCard, Package,
-} from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
@@ -45,7 +41,6 @@ export default function TermsAndConditionsPage() {
             </div>
 
             <span className="inline-flex items-center border border-[#FDB022]/30 rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide text-[#FDB022] mb-5">
-              <FileText size={14} className="mr-2" />
               LEGAL
             </span>
 
@@ -76,7 +71,7 @@ export default function TermsAndConditionsPage() {
             <div className="p-6 md:p-10 space-y-12 text-gray-700 leading-relaxed">
 
               {/* Legal Notice */}
-              <Section id="legal-notice" title="Legal Notice" icon={AlertTriangle}>
+              <Section id="legal-notice" title="Legal Notice">
                 <p>
                   Welcome to <strong className="text-[#171512]">Slick Custom Boxes</strong>! The guidelines for using
                   our website, goods, and services are described in these Terms and Conditions. Before accessing our
@@ -88,7 +83,7 @@ export default function TermsAndConditionsPage() {
               </Section>
 
               {/* Interpretation & Definitions */}
-              <Section id="interpretation" title="Interpretation & Definitions" icon={FileText}>
+              <Section id="interpretation" title="Interpretation & Definitions">
                 <div>
                   <h4 className="font-bold text-[#171512] mb-2">Interpretation</h4>
                   <p>
@@ -119,7 +114,7 @@ export default function TermsAndConditionsPage() {
               </Section>
 
               {/* Intellectual Property */}
-              <Section id="intellectual-property" title="Intellectual Property Rights" icon={Copyright}>
+              <Section id="intellectual-property" title="Intellectual Property Rights">
                 <div>
                   <h4 className="font-bold text-[#171512] mb-2">Ownership</h4>
                   <p className="mb-3">
@@ -147,7 +142,7 @@ export default function TermsAndConditionsPage() {
               </Section>
 
               {/* Restrictions */}
-              <Section id="restrictions" title="Restrictions" icon={ShieldCheck}>
+              <Section id="restrictions" title="Restrictions">
                 <p className="mb-3">You are specifically restricted from:</p>
                 <ul className="list-disc pl-5 space-y-1.5">
                   <li>Publishing any Website material in any other media.</li>
@@ -170,7 +165,7 @@ export default function TermsAndConditionsPage() {
               </Section>
 
               {/* Services */}
-              <Section id="services" title="Services" icon={Layers}>
+              <Section id="services" title="Services">
                 <p className="mb-3">The following are just a few of the services we might offer:</p>
                 <ul className="list-disc pl-5 space-y-1.5">
                   <li>Custom box design</li>
@@ -184,7 +179,7 @@ export default function TermsAndConditionsPage() {
               </Section>
 
               {/* Limitation of Liability */}
-              <Section id="liability" title="Limitation of Liability" icon={Scale}>
+              <Section id="liability" title="Limitation of Liability">
                 <p className="mb-3">In no event shall the Company:</p>
                 <p className="mb-3">
                   Be liable for any consequential, incidental, indirect, special, or punitive damages, or any loss of
@@ -198,7 +193,7 @@ export default function TermsAndConditionsPage() {
               </Section>
 
               {/* Indemnification */}
-              <Section id="indemnification" title="Indemnification" icon={ShieldCheck}>
+              <Section id="indemnification" title="Indemnification">
                 <p className="mb-3">You consent to provide indemnification for:</p>
                 <p>
                   Defend and hold harmless the Company and its employees from and against any claims, damages,
@@ -208,7 +203,7 @@ export default function TermsAndConditionsPage() {
               </Section>
 
               {/* Severability */}
-              <Section id="severability" title="Severability" icon={FileText}>
+              <Section id="severability" title="Severability">
                 <p className="mb-3">Any provision:</p>
                 <p>
                   Any provision of these Terms that is determined to be unenforceable or illegal by any relevant
@@ -218,7 +213,7 @@ export default function TermsAndConditionsPage() {
               </Section>
 
               {/* Variation */}
-              <Section id="variation" title="Variation of Terms" icon={FileText}>
+              <Section id="variation" title="Variation of Terms">
                 <p className="mb-3">The following Terms are subject to being updated by the Company:</p>
                 <p className="mb-3">
                   At any time and as it deems fit, you agree to routinely check these Terms by using this website.
@@ -232,7 +227,7 @@ export default function TermsAndConditionsPage() {
               </Section>
 
               {/* Entire Agreement */}
-              <Section id="entire-agreement" title="Entire Agreement" icon={FileText}>
+              <Section id="entire-agreement" title="Entire Agreement">
                 <p className="mb-3">This Agreement is made up entirely of these Terms:</p>
                 <p>
                   Between the Company and you regarding your use of this Website and supersede all prior agreements
@@ -241,7 +236,7 @@ export default function TermsAndConditionsPage() {
               </Section>
 
               {/* Governing Law */}
-              <Section id="governing-law" title="Governing Law & Jurisdiction" icon={Globe}>
+              <Section id="governing-law" title="Governing Law & Jurisdiction">
                 <p className="mb-3">This Agreement shall be regulated by:</p>
                 <p className="mb-3">
                   And interpreted under the laws of the jurisdiction of the Company, without regard to its conflict
@@ -254,7 +249,7 @@ export default function TermsAndConditionsPage() {
               </Section>
 
               {/* Account Registration */}
-              <Section id="account" title="Account Registration" icon={UserCheck}>
+              <Section id="account" title="Account Registration">
                 <ul className="list-disc pl-5 space-y-2">
                   <li>
                     To access certain features of the Site or to use our services, you may be required to create an
@@ -273,7 +268,7 @@ export default function TermsAndConditionsPage() {
               </Section>
 
               {/* Orders & Payments */}
-              <Section id="orders" title="Orders & Payments" icon={ShoppingBag}>
+              <Section id="orders" title="Orders & Payments">
                 <ul className="list-disc pl-5 space-y-2">
                   <li>
                     By using our website to place an order, you consent to paying the listed price for the goods or
@@ -293,7 +288,7 @@ export default function TermsAndConditionsPage() {
               </Section>
 
               {/* Shipping */}
-              <Section id="shipping" title="Shipping & Delivery" icon={Truck}>
+              <Section id="shipping" title="Shipping & Delivery">
                 <ul className="list-disc pl-5 space-y-2">
                   <li>Slick Custom Boxes offers shipping and delivery services for our products.</li>
                   <li>
@@ -312,38 +307,28 @@ export default function TermsAndConditionsPage() {
               </Section>
 
               {/* Contact */}
-              <Section id="contact" title="Contact Us" icon={Mail}>
+              <Section id="contact" title="Contact Us">
                 <p className="mb-4">
                   To ask any queries concerning these terms and conditions, please get in touch with us at:
                 </p>
                 <div className="grid sm:grid-cols-2 gap-3">
                   <a
-                    href="tel:+18177042917"
-                    className="group flex items-center gap-3 p-4 rounded-xl border border-gray-200 bg-white hover:border-[#FDB022] hover:shadow-sm transition-all"
+                    href="tel:+12177276247"
+                    className="group flex flex-col p-4 rounded-xl border border-gray-200 bg-white hover:border-[#FDB022] hover:shadow-sm transition-all"
                   >
-                    <span className="w-10 h-10 rounded-lg bg-[#FDB022]/12 flex items-center justify-center shrink-0">
-                      <Phone size={16} className="text-[#c98b0c]" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-xs text-gray-500">By Phone Call</p>
-                      <p className="text-sm font-semibold text-[#171512] group-hover:text-[#c98b0c] transition-colors">
-                        (817)-704-2917
-                      </p>
-                    </div>
+                    <p className="text-xs text-gray-500 mb-1">By Phone Call</p>
+                    <p className="text-sm font-semibold text-[#171512] group-hover:text-[#c98b0c] transition-colors">
+                      +1 (217) 727-6247
+                    </p>
                   </a>
                   <a
-                    href="mailto:sales@slickcustomboxes.com"
-                    className="group flex items-center gap-3 p-4 rounded-xl border border-gray-200 bg-white hover:border-[#FDB022] hover:shadow-sm transition-all"
+                    href="mailto:info@slickcustomboxes.com"
+                    className="group flex flex-col p-4 rounded-xl border border-gray-200 bg-white hover:border-[#FDB022] hover:shadow-sm transition-all"
                   >
-                    <span className="w-10 h-10 rounded-lg bg-[#FDB022]/12 flex items-center justify-center shrink-0">
-                      <Mail size={16} className="text-[#c98b0c]" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-xs text-gray-500">By email</p>
-                      <p className="text-sm font-semibold text-[#171512] group-hover:text-[#c98b0c] transition-colors truncate">
-                        sales@slickcustomboxes.com
-                      </p>
-                    </div>
+                    <p className="text-xs text-gray-500 mb-1">By email</p>
+                    <p className="text-sm font-semibold text-[#171512] group-hover:text-[#c98b0c] transition-colors truncate">
+                      info@slickcustomboxes.com
+                    </p>
                   </a>
                 </div>
               </Section>
@@ -351,21 +336,14 @@ export default function TermsAndConditionsPage() {
               {/* Acceptance */}
               <div className="pt-6 border-t border-gray-100">
                 <div className="rounded-xl bg-[#FDB022]/10 border border-[#FDB022]/25 p-5">
-                  <div className="flex items-start gap-3">
-                    <span className="w-9 h-9 rounded-lg bg-[#FDB022] flex items-center justify-center shrink-0">
-                      <Package size={16} className="text-[#171512]" />
-                    </span>
-                    <div>
-                      <h4 className="font-bold text-[#171512] mb-1">
-                        Acceptance of the Terms and Conditions
-                      </h4>
-                      <p className="text-sm text-gray-700">
-                        You acknowledge that you have read, understood, and will abide by our terms and conditions
-                        by using our website or services. You are not permitted to use our website if you disagree
-                        with our Terms and Conditions.
-                      </p>
-                    </div>
-                  </div>
+                  <h4 className="font-bold text-[#171512] mb-1">
+                    Acceptance of the Terms and Conditions
+                  </h4>
+                  <p className="text-sm text-gray-700">
+                    You acknowledge that you have read, understood, and will abide by our terms and conditions
+                    by using our website or services. You are not permitted to use our website if you disagree
+                    with our Terms and Conditions.
+                  </p>
                 </div>
               </div>
 
@@ -374,7 +352,6 @@ export default function TermsAndConditionsPage() {
 
           {/* CTA */}
           <div className="mt-10 text-center py-12 px-6 bg-gradient-to-br from-[#171512] to-[#2a2520] rounded-3xl text-white">
-            <Lock size={40} className="mx-auto text-[#FDB022] mb-4" />
             <h3 className="text-2xl font-bold mb-3">Have questions about our terms?</h3>
             <p className="text-white/60 mb-7 max-w-md mx-auto text-sm">
               Our team is happy to clarify anything in our Terms &amp; Conditions.
@@ -385,7 +362,6 @@ export default function TermsAndConditionsPage() {
               className="inline-flex items-center gap-2 px-7 py-3 bg-[#FDB022] text-[#171512] font-bold rounded-xl hover:bg-[#f5a80f] transition-all shadow-lg shadow-[#FDB022]/25"
             >
               Contact us
-              <ChevronRight size={18} />
             </Link>
           </div>
         </div>
@@ -403,23 +379,16 @@ export default function TermsAndConditionsPage() {
 function Section({
   id,
   title,
-  icon: Icon,
   children,
 }: {
   id: string
   title: string
-  icon: React.ComponentType<{ size?: number; className?: string }>
   children: React.ReactNode
 }) {
   return (
     <section id={id} className="scroll-mt-28">
-      <div className="flex items-center gap-3 mb-4">
-        <span className="w-9 h-9 rounded-xl bg-[#FDB022]/12 flex items-center justify-center shrink-0">
-          <Icon size={16} className="text-[#c98b0c]" />
-        </span>
-        <h2 className="text-xl md:text-2xl font-bold text-[#171512]">{title}</h2>
-      </div>
-      <div className="pl-12 space-y-3 text-sm md:text-base">{children}</div>
+      <h2 className="text-xl md:text-2xl font-bold text-[#171512] mb-4">{title}</h2>
+      <div className="space-y-3 text-sm md:text-base">{children}</div>
     </section>
   )
 }

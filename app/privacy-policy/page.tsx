@@ -2,11 +2,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import {
-  ShieldCheck, Lock, FileText, Database, Share2, Globe,
-  Cookie, Link2, Mail, Phone, ChevronRight, RefreshCw,
-  Building2, UserCheck, Package,
-} from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
@@ -45,7 +41,6 @@ export default function PrivacyPolicyPage() {
             </div>
 
             <span className="inline-flex items-center border border-[#FDB022]/30 rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide text-[#FDB022] mb-5">
-              <ShieldCheck size={14} className="mr-2" />
               LEGAL
             </span>
 
@@ -76,7 +71,7 @@ export default function PrivacyPolicyPage() {
             <div className="p-6 md:p-10 space-y-12 text-gray-700 leading-relaxed">
 
               {/* Intro */}
-              <Section id="intro" title="Overview" icon={FileText}>
+              <Section id="intro" title="Overview">
                 <p>
                   Slick Custom Boxes is dedicated to protecting your privacy and securing your data. Our Privacy
                   Policy delineates the nature of the personal data we gather, our methods for employing it, and the
@@ -86,7 +81,7 @@ export default function PrivacyPolicyPage() {
               </Section>
 
               {/* Types of Personal Information */}
-              <Section id="information-collected" title="Types of Personal Information Collected" icon={Database}>
+              <Section id="information-collected" title="Types of Personal Information Collected">
                 <p className="mb-3">
                   When you engage with our services or browse our website, we collect a variety of information,
                   which may include:
@@ -115,7 +110,7 @@ export default function PrivacyPolicyPage() {
               </Section>
 
               {/* Utilization */}
-              <Section id="utilization" title="Utilization of Collected Information" icon={UserCheck}>
+              <Section id="utilization" title="Utilization of Collected Information">
                 <p className="mb-3">The collected information is utilized for multiple purposes:</p>
                 <ul className="list-disc pl-5 space-y-2">
                   <li>Tailoring and delivering our services to suit your requirements.</li>
@@ -130,7 +125,7 @@ export default function PrivacyPolicyPage() {
               </Section>
 
               {/* Sharing & Disclosure */}
-              <Section id="sharing" title="Sharing and Disclosure of Information" icon={Share2}>
+              <Section id="sharing" title="Sharing and Disclosure of Information">
                 <p>
                   We staunchly refrain from selling, trading, or leasing your data to outside parties. Nonetheless,
                   certain instances may necessitate sharing your information with reliable service providers who
@@ -142,7 +137,7 @@ export default function PrivacyPolicyPage() {
               </Section>
 
               {/* Protection & Retention */}
-              <Section id="protection" title="Protection and Retention of Data" icon={Lock}>
+              <Section id="protection" title="Protection and Retention of Data">
                 <p className="mb-3">
                   We implement appropriate measures to ensure the integrity and privacy of your data. These measures
                   encompass encryption, access control, and consistent security evaluations. Your information is
@@ -159,7 +154,7 @@ export default function PrivacyPolicyPage() {
               </Section>
 
               {/* Business Transfers */}
-              <Section id="business-transfers" title="Our Transfers in Business Conversions" icon={Building2}>
+              <Section id="business-transfers" title="Our Transfers in Business Conversions">
                 <p>
                   If Slick Custom Boxes goes through a business transition or change such as being sold to, merged
                   with another company, or declaration of bankruptcy; the transfer of assets will comprise some or
@@ -168,7 +163,7 @@ export default function PrivacyPolicyPage() {
               </Section>
 
               {/* Cookies */}
-              <Section id="cookies" title="We Use Cookies for Enhanced User Experience" icon={Cookie}>
+              <Section id="cookies" title="We Use Cookies for Enhanced User Experience">
                 <p>
                   To enhance users&apos; and customers&apos; experiences on our website, Slick Custom Boxes uses cookies.
                   A cookie is a preprogrammed collection of data that our website saves on your computer for an
@@ -180,7 +175,7 @@ export default function PrivacyPolicyPage() {
               </Section>
 
               {/* Third-Party Links */}
-              <Section id="third-party" title="Third-Party Website Links & Our Responsibility" icon={Link2}>
+              <Section id="third-party" title="Third-Party Website Links & Our Responsibility">
                 <p>
                   Our website can show links to third-party websites. Please understand that we have no control over
                   the privacy policies of any other sites. We urge users to be careful when exiting from this web
@@ -190,7 +185,7 @@ export default function PrivacyPolicyPage() {
               </Section>
 
               {/* Contact */}
-              <Section id="contact" title="Inquiries and Contact Information" icon={Mail}>
+              <Section id="contact" title="Inquiries and Contact Information">
                 <p className="mb-4">
                   For any inquiries or concerns regarding how we handle your data or our Privacy Policy, please
                   reach us at:
@@ -198,37 +193,27 @@ export default function PrivacyPolicyPage() {
                 <div className="grid sm:grid-cols-2 gap-3">
                   <a
                     href="mailto:info@slickcustomboxes.com"
-                    className="group flex items-center gap-3 p-4 rounded-xl border border-gray-200 bg-white hover:border-[#FDB022] hover:shadow-sm transition-all"
+                    className="group flex flex-col p-4 rounded-xl border border-gray-200 bg-white hover:border-[#FDB022] hover:shadow-sm transition-all"
                   >
-                    <span className="w-10 h-10 rounded-lg bg-[#FDB022]/12 flex items-center justify-center shrink-0">
-                      <Mail size={16} className="text-[#c98b0c]" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-xs text-gray-500">By email</p>
-                      <p className="text-sm font-semibold text-[#171512] group-hover:text-[#c98b0c] transition-colors truncate">
-                        info@slickcustomboxes.com
-                      </p>
-                    </div>
+                    <p className="text-xs text-gray-500 mb-1">By email</p>
+                    <p className="text-sm font-semibold text-[#171512] group-hover:text-[#c98b0c] transition-colors truncate">
+                      info@slickcustomboxes.com
+                    </p>
                   </a>
                   <a
                     href="tel:+12177276247"
-                    className="group flex items-center gap-3 p-4 rounded-xl border border-gray-200 bg-white hover:border-[#FDB022] hover:shadow-sm transition-all"
+                    className="group flex flex-col p-4 rounded-xl border border-gray-200 bg-white hover:border-[#FDB022] hover:shadow-sm transition-all"
                   >
-                    <span className="w-10 h-10 rounded-lg bg-[#FDB022]/12 flex items-center justify-center shrink-0">
-                      <Phone size={16} className="text-[#c98b0c]" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-xs text-gray-500">By Phone Call</p>
-                      <p className="text-sm font-semibold text-[#171512] group-hover:text-[#c98b0c] transition-colors">
-                        +1 (217) 727-6247
-                      </p>
-                    </div>
+                    <p className="text-xs text-gray-500 mb-1">By Phone Call</p>
+                    <p className="text-sm font-semibold text-[#171512] group-hover:text-[#c98b0c] transition-colors">
+                      +1 (217) 727-6247
+                    </p>
                   </a>
                 </div>
               </Section>
 
               {/* Updates */}
-              <Section id="updates" title="Updates to the Privacy Policy" icon={RefreshCw}>
+              <Section id="updates" title="Updates to the Privacy Policy">
                 <p>
                   This Privacy Policy may be revised periodically. We will post any alterations or updates on this
                   webpage, ensuring you are continually informed about what information we collect, how it is used,
@@ -239,27 +224,20 @@ export default function PrivacyPolicyPage() {
               {/* Acceptance / closing callout */}
               <div className="pt-6 border-t border-gray-100">
                 <div className="rounded-xl bg-[#FDB022]/10 border border-[#FDB022]/25 p-5">
-                  <div className="flex items-start gap-3">
-                    <span className="w-9 h-9 rounded-lg bg-[#FDB022] flex items-center justify-center shrink-0">
-                      <ShieldCheck size={16} className="text-[#171512]" />
-                    </span>
-                    <div>
-                      <h4 className="font-bold text-[#171512] mb-1">
-                        Your privacy matters to us
-                      </h4>
-                      <p className="text-sm text-gray-700">
-                        By using our website or services, you acknowledge that you have read and understood this
-                        Privacy Policy. If you have any questions, please contact us at{' '}
-                        <a
-                          href="mailto:info@slickcustomboxes.com"
-                          className="text-[#c98b0c] font-semibold hover:underline"
-                        >
-                          info@slickcustomboxes.com
-                        </a>
-                        .
-                      </p>
-                    </div>
-                  </div>
+                  <h4 className="font-bold text-[#171512] mb-1">
+                    Your privacy matters to us
+                  </h4>
+                  <p className="text-sm text-gray-700">
+                    By using our website or services, you acknowledge that you have read and understood this
+                    Privacy Policy. If you have any questions, please contact us at{' '}
+                    <a
+                      href="mailto:info@slickcustomboxes.com"
+                      className="text-[#c98b0c] font-semibold hover:underline"
+                    >
+                      info@slickcustomboxes.com
+                    </a>
+                    .
+                  </p>
                 </div>
               </div>
 
@@ -268,7 +246,6 @@ export default function PrivacyPolicyPage() {
 
           {/* CTA */}
           <div className="mt-10 text-center py-12 px-6 bg-gradient-to-br from-[#171512] to-[#2a2520] rounded-3xl text-white">
-            <Globe size={40} className="mx-auto text-[#FDB022] mb-4" />
             <h3 className="text-2xl font-bold mb-3">Have questions about our policy?</h3>
             <p className="text-white/60 mb-7 max-w-md mx-auto text-sm">
               Our team is happy to clarify anything about how we handle your data.
@@ -279,7 +256,6 @@ export default function PrivacyPolicyPage() {
               className="inline-flex items-center gap-2 px-7 py-3 bg-[#FDB022] text-[#171512] font-bold rounded-xl hover:bg-[#f5a80f] transition-all shadow-lg shadow-[#FDB022]/25"
             >
               Contact us
-              <ChevronRight size={18} />
             </Link>
           </div>
         </div>
@@ -297,23 +273,16 @@ export default function PrivacyPolicyPage() {
 function Section({
   id,
   title,
-  icon: Icon,
   children,
 }: {
   id: string
   title: string
-  icon: React.ComponentType<{ size?: number; className?: string }>
   children: React.ReactNode
 }) {
   return (
     <section id={id} className="scroll-mt-28">
-      <div className="flex items-center gap-3 mb-4">
-        <span className="w-9 h-9 rounded-xl bg-[#FDB022]/12 flex items-center justify-center shrink-0">
-          <Icon size={16} className="text-[#c98b0c]" />
-        </span>
-        <h2 className="text-xl md:text-2xl font-bold text-[#171512]">{title}</h2>
-      </div>
-      <div className="pl-12 space-y-3 text-sm md:text-base">{children}</div>
+      <h2 className="text-xl md:text-2xl font-bold text-[#171512] mb-4">{title}</h2>
+      <div className="space-y-3 text-sm md:text-base">{children}</div>
     </section>
   )
 }
