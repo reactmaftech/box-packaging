@@ -1,7 +1,5 @@
 // lib/slug.ts
 // Single source of truth for product/category URLs.
-// Kept in sync with src/utils/slug.ts on the backend — if you change slugify
-// here, change it there too, or links will stop resolving.
 
 export function slugify(input: string): string {
   return (input || '')
@@ -16,25 +14,23 @@ export function slugify(input: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
-/** "custom-corrugated-boxes" -> "custom corrugated boxes" (display fallback only) */
+/** "custom-apparel-boxes" -> "custom apparel boxes" (display fallback only) */
 export function unslugify(slug: string): string {
   return (slug || '').replace(/-/g, ' ').trim()
 }
 
-/** /products/custom-corrugated-boxes */
+/** /custom-apparel-boxes — flat URL at site root */
 export function categoryHref(categoryName: string): string {
-  return `/products/${slugify(categoryName) || 'category'}`
+  return `/${slugify(categoryName) || 'category'}`
 }
 
 /**
- * /products/custom-corrugated-boxes/custom-corrugated-pizza-boxes
- * Uses the slug stored on the product when it is there. The slugified title is
- * only a fallback for documents created before the slug field existed — those
- * resolve through the server's legacy lookup and get a stored slug on first view.
+ * /custom-bandana-boxes — flat URL at site root
+ * Uses the slug stored on the product when available; falls back to slugify(title).
  */
 export function productHref(product: { slug?: string; title: string; category: string }): string {
   const productSlug = product.slug || slugify(product.title) || 'product'
-  return `${categoryHref(product.category)}/${productSlug}`
+  return `/${productSlug}`
 }
 
 /** Finds the category whose name slugifies to the given slug. */

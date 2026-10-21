@@ -18,7 +18,7 @@ import customBoxesThumb1 from '../assets/images/cutsom-2.webp'
 import customBoxesThumb2 from '../assets/images/cutsom-3.webp'
 import customBoxesThumb3 from '../assets/images/cutsom-4.webp'
 
-import boxStylesHero from '../assets/images/custom-pr-1.jpg'
+import boxStylesHero from '../assets/images/wholeshale-1.webp'
 import boxStylesThumb1 from '../assets/images/custom-pr-2.webp'
 import boxStylesThumb2 from '../assets/images/custom-pr-3.webp'
 import boxStylesThumb3 from '../assets/images/custom-pr-4.webp'

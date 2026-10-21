@@ -67,6 +67,15 @@ function splitIntoColumns(categories: MenuCategory[], maxPerColumn: number = 6):
   return columns
 }
 
+// Split an array of columns into rows of N columns each
+function chunkColumns<T>(columns: T[], perRow: number = 4): T[][] {
+  const rows: T[][] = []
+  for (let i = 0; i < columns.length; i += perRow) {
+    rows.push(columns.slice(i, i + perRow))
+  }
+  return rows
+}
+
 function resolveIconComponent(name?: string | null): any | null {
   if (!name || !name.trim()) return null
   const key = name.trim()
@@ -161,11 +170,11 @@ export function Header() {
       const iconVal = cat.icon.trim()
       if (iconVal.startsWith('http')) {
         return (
-          <img 
-            src={iconVal} 
-            alt="" 
-            className="w-4 h-4 object-cover rounded-sm" 
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} 
+          <img
+            src={iconVal}
+            alt=""
+            className="w-4 h-4 object-cover rounded-sm"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
           />
         )
       }
@@ -175,11 +184,11 @@ export function Header() {
 
     if (cat.image && cat.image.trim() && cat.image.startsWith('http')) {
       return (
-        <img 
-          src={cat.image} 
-          alt="" 
-          className="w-4 h-4 object-cover rounded-sm" 
-          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} 
+        <img
+          src={cat.image}
+          alt=""
+          className="w-4 h-4 object-cover rounded-sm"
+          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
         />
       )
     }
@@ -273,7 +282,7 @@ export function Header() {
                     )
                   }
 
-                  // Mega Menu
+                  // Mega Menu — auto width, wraps columns 4-per-row so nothing gets cropped
                   return (
                     <div key={menu._id} className="relative" onMouseEnter={() => handleMouseEnter(menu.name)} onMouseLeave={handleMouseLeave}>
                       <button onClick={() => handleMenuClick(menu.name)} className={`py-3.5 flex items-center gap-1.5 font-medium transition-colors ${activeMenu === menu.name ? 'text-[#fdb022]' : 'text-[#171512]/70 hover:text-[#171512]'}`}>
@@ -281,31 +290,50 @@ export function Header() {
                       </button>
                       <AnimatePresence>
                         {activeMenu === menu.name && (
-                          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.15 }} className="absolute left-0 top-full pt-2 z-50" style={{ minWidth: '600px', maxWidth: '900px' }}>
-                            <div className="bg-white rounded-2xl shadow-xl border border-black/[0.06] overflow-hidden">
-                              <div className="p-6">
+                          <motion.div
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 8 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute left-0 top-full pt-2 z-50 w-max max-w-[calc(100vw-2rem)]"
+                          >
+                            <div className="bg-white rounded-2xl shadow-xl border border-black/[0.06] overflow-hidden w-max max-w-[calc(100vw-2rem)]">
+                              <div className="p-4">
                                 {menu.items.filter(item => item.type === 'category').sort((a, b) => a.displayOrder - b.displayOrder).map((item, itemIdx) => {
                                   const columns = splitIntoColumns(item.categories || [], 6)
+                                  const columnRows = chunkColumns(columns, 4) // 4 columns per row
                                   const showIcons = item.showCategoryIcon !== false
                                   return (
-                                    <div key={item._id || itemIdx} className={itemIdx > 0 ? 'mt-6 pt-6 border-t border-gray-100' : ''}>
-                                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">{item.label}</h4>
-                                      <div className={`grid gap-6 ${columns.length === 1 ? 'grid-cols-1' : columns.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
-                                        {columns.map((column, colIdx) => (
-                                          <div key={colIdx} className="space-y-0.5">
-                                            {column.map((cat, catIdx) => (
-                                              <Link
-                                                key={catIdx}
-                                                href={categoryHref(cat.name)}
-                                                className="block px-2.5 py-2 rounded-lg hover:bg-[#fdb022]/10 transition-colors group/item"
-                                              >
-                                                <div className="text-sm font-medium text-[#171512] group-hover/item:text-[#fdb022] transition-colors truncate">
-                                                  {cat.name}
-                                                </div>
-                                                {cat.description && (
-                                                  <div className="text-xs text-black/40 truncate mt-0.5">{cat.description}</div>
-                                                )}
-                                              </Link>
+                                    <div key={item._id || itemIdx} className={itemIdx > 0 ? 'mt-4 pt-4 border-t border-gray-100' : ''}>
+                                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 px-4">{item.label}</h4>
+
+                                      {/* Render rows of up to 4 columns each — items styled like the Support menu */}
+                                      <div className="space-y-2">
+                                        {columnRows.map((row, rowIdx) => (
+                                          <div
+                                            key={rowIdx}
+                                            className="grid gap-x-4 gap-y-0 w-max"
+                                            style={{
+                                              gridTemplateColumns: `repeat(${row.length}, minmax(max-content, 1fr))`,
+                                            }}
+                                          >
+                                            {row.map((column, colIdx) => (
+                                              <div key={colIdx} className="space-y-0.5">
+                                                {column.map((cat, catIdx) => (
+                                                  <Link
+                                                    key={catIdx}
+                                                    href={categoryHref(cat.name)}
+                                                    className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#fdb022]/10 hover:text-[#171512] transition-colors rounded-lg"
+                                                  >
+                                                    <div className="break-words whitespace-normal leading-snug">
+                                                      {cat.name}
+                                                    </div>
+                                                    {cat.description && (
+                                                      <div className="text-xs text-gray-400 mt-0.5 break-words whitespace-normal leading-snug">{cat.description}</div>
+                                                    )}
+                                                  </Link>
+                                                ))}
+                                              </div>
                                             ))}
                                           </div>
                                         ))}
@@ -315,10 +343,10 @@ export function Header() {
                                 })}
                                 {/* Single links mixed with mega menu */}
                                 {menu.items.filter(item => item.type === 'custom').length > 0 && (
-                                  <div className="mt-6 pt-6 border-t border-gray-100">
-                                    <div className="flex flex-wrap gap-3">
+                                  <div className="mt-4 pt-4 border-t border-gray-100">
+                                    <div className="flex flex-wrap gap-2">
                                       {menu.items.filter(item => item.type === 'custom').map((item, idx) => (
-                                        <Link key={item._id || idx} href={item.customLink || '#'} className="px-4 py-2 bg-gray-50 rounded-lg text-sm font-medium text-gray-700 hover:bg-[#fdb022]/10 hover:text-[#171512] transition-colors">
+                                        <Link key={item._id || idx} href={item.customLink || '#'} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#fdb022]/10 hover:text-[#171512] transition-colors rounded-lg">
                                           {item.label}
                                         </Link>
                                       ))}
@@ -326,9 +354,9 @@ export function Header() {
                                   </div>
                                 )}
                               </div>
-                              <div className="bg-[#fdb022] px-6 py-4 flex items-center justify-between">
-                                <span className="text-sm text-[#171512] font-medium">Need custom packaging? Get a free quote today.</span>
-                                <Link href="/get-a-quote" className="flex items-center gap-2 bg-[#171512] text-white text-sm font-semibold px-5 py-2 rounded-lg hover:bg-black transition-colors shrink-0 ml-4">Get Quote<ArrowRight size={14} /></Link>
+                              <div className="bg-[#fdb022] px-4 py-3 flex items-center justify-between gap-4">
+                                <span className="text-sm text-[#171512] font-medium px-2">Need custom packaging? Get a free quote today.</span>
+                                <Link href="/get-a-quote" className="flex items-center gap-2 bg-[#171512] text-white text-sm font-semibold px-5 py-2 rounded-lg hover:bg-black transition-colors shrink-0">Get Quote<ArrowRight size={14} /></Link>
                               </div>
                             </div>
                           </motion.div>
@@ -400,14 +428,14 @@ export function Header() {
           {isMenuOpen && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="lg:hidden border-t border-black/[0.08] overflow-y-auto max-h-[80vh] bg-white">
               <div className="px-4 pt-3"><div className="relative mb-2"><Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-black/35" /><input type="text" placeholder="Search boxes, materials..." className="w-full bg-[#F5F1E7] border border-black/10 rounded-full pl-10 pr-4 py-2.5 text-sm placeholder:text-black/35 focus:outline-none" /></div></div>
-              
+
               {dynamicMenus.length > 0 ? dynamicMenus.map((menu) => {
                 const menuHasMegaMenu = hasMegaMenu(menu)
-                
+
                 if (!menuHasMegaMenu && menu.items.length === 1 && menu.items[0].type === 'custom') {
                   return <div key={menu._id} className="border-b border-black/[0.06]"><Link href={menu.items[0].customLink || `/${menu.slug}`} onClick={() => setIsMenuOpen(false)} className="w-full block px-4 py-3 text-[#171512] font-medium">{menu.name}</Link></div>
                 }
-                
+
                 return (
                   <div key={menu._id} className="border-b border-black/[0.06]">
                     <button onClick={() => handleMenuClick(menu.name)} className="w-full flex items-center justify-between px-4 py-3 text-[#171512] font-medium">
@@ -423,8 +451,8 @@ export function Header() {
                               <div className="space-y-1">
                                 {item.categories && item.categories.length > 0 ? item.categories.map((cat, catIdx) => (
                                   <Link key={catIdx} href={categoryHref(cat.name)} onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg hover:bg-[#fdb022]/10 transition-colors">
-                                    <div className="text-sm font-medium text-[#171512] truncate">{cat.name}</div>
-                                    {cat.description && <div className="text-xs text-black/40 truncate">{cat.description}</div>}
+                                    <div className="text-sm font-medium text-[#171512] break-words whitespace-normal leading-snug">{cat.name}</div>
+                                    {cat.description && <div className="text-xs text-black/40 break-words whitespace-normal leading-snug">{cat.description}</div>}
                                   </Link>
                                 )) : <p className="text-xs text-gray-400 px-3 py-2">No categories</p>}
                               </div>
@@ -477,7 +505,7 @@ export function Header() {
                   )}
                 </AnimatePresence>
               </div>
-              
+
               <div className="px-4 py-4 space-y-3">
                 <Link href="/get-a-quote" onClick={() => setIsMenuOpen(false)} className="block w-full text-center px-6 py-3 bg-[#fdb022] text-[#171512] font-semibold rounded-lg hover:bg-[#f5a80a] transition-colors">Get Quote</Link>
                 <a href={`tel:${PHONE_NUMBER}`} className="flex items-center justify-center gap-2 w-full text-center px-6 py-3 border-2 border-black/10 text-[#171512] font-medium rounded-lg"><Phone size={16} /> {PHONE_DISPLAY}</a>

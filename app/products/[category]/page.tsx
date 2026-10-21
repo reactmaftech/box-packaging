@@ -8,29 +8,20 @@ import {
   Search, Loader, X, Eye, MessageSquare, Package,
   Grid3X3, List, ArrowLeft, RefreshCw, Layers,
   ArrowRight,
-  MessageCircle
+  CheckCircle,
+  Ruler
 } from 'lucide-react'
 import Link from 'next/link'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { QuickInquiryModal } from '@/components/QuickInquiryModal'
-import { matchCategoryBySlug, unslugify } from '@/lib/slug'
-import { InstantQuote } from '@/components/InstantQuote'
+import { productHref, matchCategoryBySlug, unslugify } from '@/lib/slug'
 import { FAQ } from '@/components/Faq'
 import { PackagingContentSections } from '@/components/PackagingContentSections'
+import { DIMENSION_UNITS, DimensionUnit } from '@/lib/constants'
+import axios from 'axios'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
-
-// Build a hyphenated slug: "Custom Cardboard Boxes" -> "custom-cardboard-boxes"
-const toSlug = (value: string) =>
-  value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-
-const productHref = (product: { title: string; slug?: string; category: string }) =>
-  `/products/${toSlug(product.category)}/${product.slug || toSlug(product.title)}`
 
 interface Product {
   _id: string
@@ -54,15 +45,23 @@ interface Category {
   isActive: boolean
 }
 
+interface CategoryOption {
+  _id: string
+  name: string
+  type: string
+}
+
 export default function CategoryProductsPage() {
   const params = useParams()
   const router = useRouter()
 
-  const categorySlug = (params?.category as string) || ''
+  // Support both old URL shape (/products/<category>) and new flat URL (/<slug>).
+  // When this page is rendered via app/[slug]/page.tsx, params will be { slug: ... }
+  // instead of { category: ... }.
+  const rawParams = params as Record<string, string | undefined>
+  const categorySlug = (rawParams.category || rawParams.slug || '') as string
 
   const [category, setCategory] = useState<Category | null>(null)
-  // The real category name from the database. The products endpoint filters on
-  // an exact string match, so this must be the stored name, not the slug.
   const [categoryName, setCategoryName] = useState('')
 
   const [products, setProducts] = useState<Product[]>([])
@@ -78,6 +77,35 @@ export default function CategoryProductsPage() {
     type: '',
   })
 
+  // ===== Hero Inquiry Form State =====
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    company: '',
+    industry: '',
+    boxType: '',
+    quantity: '',
+    length: '',
+    width: '',
+    depth: '',
+    unit: 'in' as DimensionUnit,
+    deadline: '',
+    budget: '',
+    message: '',
+  })
+  const [categories, setCategories] = useState<CategoryOption[]>([])
+  const [loadingCategories, setLoadingCategories] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [formLoading, setFormLoading] = useState(false)
+  const [formError, setFormError] = useState('')
+  const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({})
+
+  const industries = [
+    'Electronics', 'Cosmetics & Beauty', 'Food & Beverage',
+    'Pharmaceuticals', 'E-commerce', 'Retail', 'Other',
+  ]
+
   useEffect(() => {
     if (categorySlug) resolveCategory(categorySlug)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -88,7 +116,23 @@ export default function CategoryProductsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryName, sortBy])
 
-  // "custom-cardboard-boxes" -> the stored name "Custom Cardboard Boxes"
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        setLoadingCategories(true)
+        const res = await axios.get(`${API_URL}/categories?isActive=true`)
+        if (cancelled) return
+        setCategories(res.data?.data ?? [])
+      } catch (err) {
+        console.error('Failed to load categories:', err)
+      } finally {
+        if (!cancelled) setLoadingCategories(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [])
+
   const resolveCategory = async (slug: string) => {
     try {
       setLoading(true)
@@ -166,33 +210,128 @@ export default function CategoryProductsPage() {
 
   const displayName = categoryName || unslugify(categorySlug)
 
+  // ===== Inquiry form helpers =====
+  const validateForm = () => {
+    const errors: { [key: string]: string } = {}
+    if (!formData.fullName || formData.fullName.length < 2) errors.fullName = 'Full name must be at least 2 characters'
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = 'Please enter a valid email address'
+    if (!formData.phone || formData.phone.length < 7) errors.phone = 'Phone number must be at least 7 characters'
+    if (!formData.company) errors.company = 'Company name is required'
+    if (!formData.industry) errors.industry = 'Please select an industry'
+    if (!formData.boxType) errors.boxType = 'Please select a box type'
+    ;(['length', 'width', 'depth'] as const).forEach((k) => {
+      const v = formData[k]
+      if (v !== '' && (Number.isNaN(Number(v)) || Number(v) < 0)) errors[k] = 'Must be a positive number'
+    })
+    setValidationErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+    if (validationErrors[name]) {
+      setValidationErrors((prev) => {
+        const next = { ...prev }
+        delete next[name]
+        return next
+      })
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!validateForm()) return
+
+    setFormLoading(true)
+    setFormError('')
+
+    try {
+      const lengthNum = formData.length.trim() !== '' ? Number(formData.length) : undefined
+      const widthNum = formData.width.trim() !== '' ? Number(formData.width) : undefined
+      const depthNum = formData.depth.trim() !== '' ? Number(formData.depth) : undefined
+
+      const payload: any = {
+        fullName: formData.fullName.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        company: formData.company.trim(),
+        industry: formData.industry,
+        boxType: formData.boxType,
+        quantity: formData.quantity ? parseInt(formData.quantity) : undefined,
+        deadline: formData.deadline || undefined,
+        budget: formData.budget,
+        message: formData.message,
+        unit: formData.unit,
+      }
+      if (lengthNum !== undefined && Number.isFinite(lengthNum)) payload.length = lengthNum
+      if (widthNum !== undefined && Number.isFinite(widthNum)) payload.width = widthNum
+      if (depthNum !== undefined && Number.isFinite(depthNum)) payload.depth = depthNum
+
+      const response = await axios.post(`${API_URL}/inquiries`, payload, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 10000,
+      })
+
+      if (response.data.success) {
+        setSubmitted(true)
+        setFormData({
+          fullName: '', email: '', phone: '', company: '', industry: '', boxType: '',
+          quantity: '', length: '', width: '', depth: '', unit: 'in',
+          deadline: '', budget: '', message: '',
+        })
+        setTimeout(() => setSubmitted(false), 5000)
+      }
+    } catch (err: any) {
+      if (err.response?.data?.errors) {
+        const serverErrors: { [key: string]: string } = {}
+        err.response.data.errors.forEach((error: any) => { serverErrors[error.path] = error.msg })
+        setValidationErrors(serverErrors)
+        setFormError('Please fix the validation errors below.')
+      } else if (err.response?.data?.message) {
+        setFormError(err.response.data.message)
+      } else {
+        setFormError('Failed to submit inquiry. Please try again.')
+      }
+    } finally {
+      setFormLoading(false)
+    }
+  }
+
+  const fieldClass = (fieldName: string) =>
+    `w-full px-3 py-2 bg-white border rounded-lg text-[#171512] placeholder:text-black/40 focus:outline-none focus:ring-2 focus:ring-[#FDB022]/40 focus:border-[#FDB022] transition-all text-sm ${
+      validationErrors[fieldName] ? 'border-red-500 bg-red-50' : 'border-gray-200'
+    }`
+
+  const selectArrow =
+    "appearance-none bg-white bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"8\" viewBox=\"0 0 12 8\"%3E%3Cpath fill=\"%23333\" d=\"M6 8L0 0h12z\"/%3E%3C/svg%3E')] bg-[length:10px_7px] bg-[right_0.6rem_center] bg-no-repeat pr-7"
+
+  const labelClass = "block text-[10px] font-semibold uppercase tracking-wide text-black/50 mb-1"
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      {/* Hero - Light Theme with Category Image */}
-      <section className="relative bg-gradient-to-br from-[#FAF8F5] via-[#F5F1E7] to-[#EDE5D8] pt-32 pb-16 md:pb-20 overflow-hidden">
-        {/* Subtle background pattern */}
+      {/* Hero - Light Theme with Compact Inquiry Form */}
+      <section className="relative bg-gradient-to-br from-[#FAF8F5] via-[#F5F1E7] to-[#EDE5D8] pt-28 pb-14 overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03]">
           <div className="absolute inset-0" style={{
             backgroundImage: `radial-gradient(circle at 25% 25%, #171512 1px, transparent 1px), radial-gradient(circle at 75% 75%, #171512 1px, transparent 1px)`,
             backgroundSize: '50px 50px'
           }} />
         </div>
-        {/* Decorative blur blobs */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#FDB022]/15 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
         <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#FDB022]/10 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
             {/* Left: Text Content */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              {/* Breadcrumbs */}
-              <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
+              <div className="flex items-center gap-2 text-sm text-gray-500 mb-5">
                 <Link href="/" className="hover:text-[#171512] transition-colors">Home</Link>
                 <span>/</span>
                 <Link href="/products" className="hover:text-[#171512] transition-colors">Products</Link>
@@ -200,24 +339,20 @@ export default function CategoryProductsPage() {
                 <span className="text-[#FDB022] font-semibold capitalize">{displayName}</span>
               </div>
 
-              {/* Category type badge */}
               <span className="inline-flex items-center border border-[#FDB022]/40 bg-[#FDB022]/10 rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide text-[#B8860B] mb-4">
                 <Layers size={14} className="mr-2" />
                 {category?.type || 'CATEGORY'}
               </span>
 
-              {/* Title */}
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 capitalize text-[#171512]">
                 {displayName}
               </h1>
 
-              {/* Description */}
-              <p className="text-lg text-gray-600 max-w-xl mb-8 leading-relaxed">
+              <p className="text-lg text-gray-600 max-w-xl mb-6 leading-relaxed">
                 {category?.description
                   || `Explore our ${displayName.toLowerCase()} collection. High-quality custom packaging solutions designed to meet your specific needs.`}
               </p>
 
-              {/* CTA Buttons */}
               <div className="flex flex-wrap items-center gap-4">
                 <Link
                   href="/quote"
@@ -227,39 +362,191 @@ export default function CategoryProductsPage() {
                   <ArrowRight size={18} />
                 </Link>
               </div>
+
+              <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500">
+                <span className="flex items-center gap-1.5"><CheckCircle size={14} className="text-[#FDB022]" /> Free quotes</span>
+                <span className="flex items-center gap-1.5"><CheckCircle size={14} className="text-[#FDB022]" /> 24h response</span>
+                <span className="flex items-center gap-1.5"><CheckCircle size={14} className="text-[#FDB022]" /> Custom sizes</span>
+              </div>
             </motion.div>
 
-            {/* Right: Category Image */}
+            {/* Right: Compact Inquiry Form */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.15 }}
-              className="relative hidden lg:block"
+              className="relative"
             >
-              <div className="relative">
-                {/* Decorative frame behind image */}
-                <div className="absolute -inset-4 bg-gradient-to-br from-[#FDB022]/20 to-[#FDB022]/5 rounded-3xl rotate-2" />
-                <div className="absolute -inset-4 bg-gradient-to-tl from-[#171512]/10 to-transparent rounded-3xl -rotate-1" />
-
-                {/* Main image container */}
-                <div className="relative bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-                  {category?.image ? (
-                    <img
-                      src={category.image}
-                      alt={displayName}
-                      className="w-full h-[340px] md:h-[400px] object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" fill="%23F5F1E7"><rect width="600" height="400"/><text x="50%" y="50%" font-family="sans-serif" font-size="16" fill="%23D4C5A9" text-anchor="middle" dy=".3em">Category Image</text></svg>'
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-[340px] md:h-[400px] flex flex-col items-center justify-center bg-gradient-to-br from-[#F5F1E7] to-[#EDE5D8]">
-                      <Package size={80} className="text-[#D4C5A9] mb-4" />
-                      <p className="text-sm text-[#B8A88A] font-medium">No image available</p>
-                    </div>
+              <div className="relative bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                <form onSubmit={handleSubmit} className="p-4 md:p-5">
+                  {submitted && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mb-3 p-2.5 bg-green-50 border border-green-200 text-green-700 rounded-lg text-xs flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-2">
+                        <CheckCircle size={16} className="text-green-500 flex-shrink-0" />
+                        Thank you! Your inquiry has been submitted.
+                      </div>
+                      <button type="button" onClick={() => setSubmitted(false)} className="text-green-500 hover:text-green-700">
+                        <X size={14} />
+                      </button>
+                    </motion.div>
                   )}
-                </div>
+
+                  {formError && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mb-3 p-2.5 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs flex items-center justify-between"
+                    >
+                      <span>{formError}</span>
+                      <button type="button" onClick={() => setFormError('')} className="text-red-500 hover:text-red-700">
+                        <X size={14} />
+                      </button>
+                    </motion.div>
+                  )}
+
+                  <div className="space-y-2.5">
+                    {/* Row 1: Name, Email, Phone */}
+                    <div className="grid grid-cols-3 gap-2.5">
+                      <div>
+                        <label className={labelClass}>Full Name *</label>
+                        <input type="text" name="fullName" value={formData.fullName} onChange={handleChange}
+                          className={fieldClass('fullName')} placeholder="John Doe" />
+                        {validationErrors.fullName && <p className="text-red-500 text-[10px] mt-0.5">{validationErrors.fullName}</p>}
+                      </div>
+                      <div>
+                        <label className={labelClass}>Email *</label>
+                        <input type="email" name="email" value={formData.email} onChange={handleChange}
+                          className={fieldClass('email')} placeholder="you@company.com" />
+                        {validationErrors.email && <p className="text-red-500 text-[10px] mt-0.5">{validationErrors.email}</p>}
+                      </div>
+                      <div>
+                        <label className={labelClass}>Phone *</label>
+                        <input type="tel" name="phone" value={formData.phone} onChange={handleChange}
+                          className={fieldClass('phone')} placeholder="+1 555 000 0000" />
+                        {validationErrors.phone && <p className="text-red-500 text-[10px] mt-0.5">{validationErrors.phone}</p>}
+                      </div>
+                    </div>
+
+                    {/* Row 2: Company, Industry, Box Type */}
+                    <div className="grid grid-cols-3 gap-2.5">
+                      <div>
+                        <label className={labelClass}>Company *</label>
+                        <input type="text" name="company" value={formData.company} onChange={handleChange}
+                          className={fieldClass('company')} placeholder="Company Inc." />
+                        {validationErrors.company && <p className="text-red-500 text-[10px] mt-0.5">{validationErrors.company}</p>}
+                      </div>
+                      <div>
+                        <label className={labelClass}>Industry *</label>
+                        <select name="industry" value={formData.industry} onChange={handleChange}
+                          className={`${fieldClass('industry')} ${selectArrow}`}>
+                          <option value="">Select</option>
+                          {industries.map((ind) => <option key={ind} value={ind}>{ind}</option>)}
+                        </select>
+                        {validationErrors.industry && <p className="text-red-500 text-[10px] mt-0.5">{validationErrors.industry}</p>}
+                      </div>
+                      <div>
+                        <label className={labelClass}>Box Type *</label>
+                        <select name="boxType" value={formData.boxType} onChange={handleChange}
+                          className={`${fieldClass('boxType')} ${selectArrow}`} disabled={loadingCategories}>
+                          <option value="">{loadingCategories ? 'Loading…' : 'Select'}</option>
+                          {categories.map((c) => (
+                            <option key={c._id} value={c.name}>{c.name}</option>
+                          ))}
+                        </select>
+                        {validationErrors.boxType && <p className="text-red-500 text-[10px] mt-0.5">{validationErrors.boxType}</p>}
+                      </div>
+                    </div>
+
+                    {/* Row 3: Dimensions L / W / D / Unit */}
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Ruler size={12} className="text-[#FDB022]" />
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-black/50">Box Dimensions (optional)</span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2.5">
+                        <div>
+                          <input type="number" inputMode="decimal" name="length" value={formData.length} onChange={handleChange}
+                            className={fieldClass('length')} placeholder="Length" min="0" step="0.01" />
+                          {validationErrors.length && <p className="text-red-500 text-[10px] mt-0.5">{validationErrors.length}</p>}
+                        </div>
+                        <div>
+                          <input type="number" inputMode="decimal" name="width" value={formData.width} onChange={handleChange}
+                            className={fieldClass('width')} placeholder="Width" min="0" step="0.01" />
+                          {validationErrors.width && <p className="text-red-500 text-[10px] mt-0.5">{validationErrors.width}</p>}
+                        </div>
+                        <div>
+                          <input type="number" inputMode="decimal" name="depth" value={formData.depth} onChange={handleChange}
+                            className={fieldClass('depth')} placeholder="Depth" min="0" step="0.01" />
+                          {validationErrors.depth && <p className="text-red-500 text-[10px] mt-0.5">{validationErrors.depth}</p>}
+                        </div>
+                        <div>
+                          <select name="unit" value={formData.unit} onChange={handleChange}
+                            className={`${fieldClass('unit')} ${selectArrow}`}>
+                            {DIMENSION_UNITS.map((u) => <option key={u.value} value={u.value}>{u.label}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Row 4: Quantity, Budget, Deadline */}
+                    <div className="grid grid-cols-3 gap-2.5">
+                      <div>
+                        <label className={labelClass}>Quantity</label>
+                        <input type="number" name="quantity" value={formData.quantity} onChange={handleChange}
+                          className={fieldClass('quantity')} placeholder="e.g. 1000" min="1" />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Budget</label>
+                        <select name="budget" value={formData.budget} onChange={handleChange}
+                          className={`${fieldClass('budget')} ${selectArrow}`}>
+                          <option value="">Select</option>
+                          <option value="Under $500">Under $500</option>
+                          <option value="$500 - $1000">$500 - $1000</option>
+                          <option value="$1000 - $5000">$1000 - $5000</option>
+                          <option value="$5000+">$5000+</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className={labelClass}>Deadline</label>
+                        <input type="date" name="deadline" value={formData.deadline} onChange={handleChange}
+                          className={fieldClass('deadline')} min={new Date().toISOString().split('T')[0]} />
+                      </div>
+                    </div>
+
+                    {/* Row 5: Message (full width) */}
+                    <div>
+                      <label className={labelClass}>Message</label>
+                      <textarea name="message" value={formData.message} onChange={handleChange}
+                        className={`${fieldClass('message')} h-14 resize-none`}
+                        placeholder="Tell us about your project…" />
+                    </div>
+
+                    {/* Row 6: Submit button — full width, single line */}
+                    <motion.button
+                      type="submit"
+                      disabled={formLoading}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      className="group w-full flex items-center justify-center gap-2 bg-[#FDB022] text-[#171512] font-bold py-2.5 rounded-lg hover:bg-[#f5a80f] transition-all shadow-md shadow-[#FDB022]/25 disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap"
+                    >
+                      {formLoading ? (
+                        <span className="flex items-center gap-2">
+                          <span className="w-4 h-4 border-2 border-[#171512]/30 border-t-[#171512] rounded-full animate-spin" />
+                          Sending…
+                        </span>
+                      ) : (
+                        <>
+                          Get Quote
+                          <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
+                        </>
+                      )}
+                    </motion.button>
+                  </div>
+                </form>
               </div>
             </motion.div>
           </div>
@@ -495,7 +782,6 @@ export default function CategoryProductsPage() {
 
       <PackagingContentSections />
 
-      <InstantQuote />
       <FAQ />
 
       <QuickInquiryModal

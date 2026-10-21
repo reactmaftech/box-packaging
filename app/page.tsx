@@ -12,6 +12,7 @@ import { PremiumFinishes } from '@/components/Premiumfinishes'
 import { FAQ } from '@/components/Faq'
 import { CTA } from '@/components/CTA'
 import { PackagingContentSections } from '@/components/PackagingContentSections'
+import { LuxuryFinishingSlider } from '@/components/LuxuryFinishingSlider'
 
 export const metadata: Metadata = {
   title: 'Custom Printed Boxes & Packaging | Slick Custom Boxes',
@@ -32,7 +33,9 @@ export default function Home() {
       <PackagingContentSections />
       <CustomPackagingCTA />
       <Testimonials />
-      <PremiumFinishes />
+      {/* <PremiumFinishes /> */}
+      <LuxuryFinishingSlider />
+
       <FAQ />
       <CTA />
       <Footer />

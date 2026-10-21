@@ -13,20 +13,14 @@ import {
 import Link from 'next/link'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
-import { TrendingProducts } from '@/components/Trendingproducts'
+import { categoryHref, productHref, matchCategoryBySlug, unslugify } from '@/lib/slug'
 import { DielineComp } from '../../../../components/DielineComp'
 import { FAQ } from '@/components/Faq'
 import { Testimonials } from '@/components/Testimonial'
 import { DIMENSION_UNITS, DimensionUnit } from '@/lib/constants'
+import { LuxuryFinishingSlider } from '@/components/LuxuryFinishingSlider'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
-
-const toSlug = (value: string) =>
-  value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
-
-const categoryHref = (name: string) => `/products/${toSlug(name)}`
-const productHref = (product: { title: string; slug?: string; category: string }) =>
-  `/products/${toSlug(product.category)}/${product.slug || toSlug(product.title)}`
 
 interface Product {
   _id: string
@@ -46,6 +40,15 @@ interface CategoryOption {
   _id: string
   name: string
   type: string
+}
+
+interface Category {
+  _id: string
+  name: string
+  type: string
+  description?: string
+  image?: string
+  isActive: boolean
 }
 
 interface FormData {
@@ -86,15 +89,31 @@ const TRUST_ITEMS = [
   { icon: ShieldCheck, title: 'No die charges', copy: 'Custom sizes at no extra cost' },
 ]
 
-export default function ProductDetailPage() {
+/** Extract an array from any of the possible API response shapes. */
+function extractArray<T = any>(json: any): T[] {
+  if (Array.isArray(json)) return json
+  if (Array.isArray(json?.data)) return json.data
+  if (Array.isArray(json?.products)) return json.products
+  if (Array.isArray(json?.data?.products)) return json.data.products
+  if (Array.isArray(json?.data?.docs)) return json.data.docs
+  if (Array.isArray(json?.docs)) return json.docs
+  return []
+}
+
+interface ProductDetailPageProps {
+  initialProduct?: Product | null
+}
+
+export default function ProductDetailPage({ initialProduct }: ProductDetailPageProps = {}) {
   const params = useParams()
   const router = useRouter()
 
-  const productSlug = (params?.product as string) || ''
-  const categorySlug = (params?.category as string) || ''
+  const rawParams = params as Record<string, string | undefined>
+  const productSlug = (rawParams.product || rawParams.slug || '') as string
+  const categorySlug = (rawParams.category || '') as string
 
-  const [product, setProduct] = useState<Product | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [product, setProduct] = useState<Product | null>(initialProduct || null)
+  const [loading, setLoading] = useState(!initialProduct)
   const [error, setError] = useState('')
   const [related, setRelated] = useState<Product[]>([])
 
@@ -112,12 +131,11 @@ export default function ProductDetailPage() {
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({})
   const formRef = useRef<HTMLDivElement>(null)
 
-  // Prefill only once per product id so a router.replace() re-render
-  // cannot wipe user input.
   const prefilledForRef = useRef<string | null>(null)
 
   const today = new Date().toISOString().split('T')[0]
 
+  // ── Load categories for the form ────────────────────────────────
   useEffect(() => {
     let cancelled = false
     ;(async () => {
@@ -126,7 +144,8 @@ export default function ProductDetailPage() {
         const res = await fetch(`${API_URL}/categories?isActive=true`)
         if (cancelled) return
         const json = await res.json()
-        setCategories(json?.data ?? [])
+        const list = extractArray<CategoryOption>(json)
+        setCategories(list)
       } catch (err) {
         console.error('Failed to load categories:', err)
       } finally {
@@ -136,8 +155,24 @@ export default function ProductDetailPage() {
     return () => { cancelled = true }
   }, [])
 
+  // ── Bootstrap product ──────────────────────────────────────────
   useEffect(() => {
-    if (!productSlug || !categorySlug) {
+    // If the parent (app/[slug]/page.tsx) already gave us the product, use it.
+    if (initialProduct && initialProduct._id) {
+      setProduct(initialProduct)
+      setLoading(false)
+      setError('')
+      setActiveImage(0)
+      if (prefilledForRef.current !== initialProduct._id) {
+        prefilledForRef.current = initialProduct._id
+        prefillForm(initialProduct)
+      }
+      fetchRelated(initialProduct._id)
+      return
+    }
+
+    // Otherwise (old /products/:cat/:prod URLs) fall back to fetching.
+    if (!productSlug) {
       setError('That product link is not valid.')
       setLoading(false)
       return
@@ -145,43 +180,86 @@ export default function ProductDetailPage() {
     prefilledForRef.current = null
     fetchProduct()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productSlug, categorySlug])
+  }, [initialProduct?._id, productSlug, categorySlug])
 
+  // ── Fetch product the old way ──────────────────────────────────
   const fetchProduct = async () => {
     try {
       setLoading(true)
       setError('')
 
-      const res = await fetch(
-        `${API_URL}/products/by-slug/${encodeURIComponent(categorySlug)}/${encodeURIComponent(productSlug)}`,
-        { headers: { 'Content-Type': 'application/json' } }
-      )
+      const tried: string[] = []
 
-      if (!res.ok) {
-        setError(res.status === 404
-          ? 'This product is no longer available.'
-          : 'We could not load this product.')
-        return
+      // Build possible URL combinations. The backend might expect:
+      //   - category as slug    or  category as real name
+      //   - product  as slug    or  product  as real title
+      const categoryCandidates = new Set<string>()
+      if (categorySlug) categoryCandidates.add(categorySlug)
+
+      // If we have a slug, try to find the real category name too.
+      if (!categorySlug) {
+        try {
+          const catRes = await fetch(`${API_URL}/categories?isActive=true`)
+          if (catRes.ok) {
+            const catJson = await catRes.json()
+            const catList = extractArray<Category>(catJson)
+            // No category in URL → scan all categories for the product.
+            for (const c of catList) {
+              const url = `${API_URL}/products/by-slug/${encodeURIComponent(c.name)}/${encodeURIComponent(productSlug)}`
+              tried.push(url)
+              const res = await fetch(url, { headers: { 'Content-Type': 'application/json' } })
+              if (res.ok) {
+                const json = await res.json()
+                const item: Product = json?.data ?? json
+                if (item?._id) {
+                  applyLoadedProduct(item)
+                  return
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('[product] category scan failed:', e)
+        }
+      } else {
+        // We do have a category slug/name — try it plus unslugified fallback.
+        categoryCandidates.add(unslugify(categorySlug))
+        for (const cat of categoryCandidates) {
+          const url = `${API_URL}/products/by-slug/${encodeURIComponent(cat)}/${encodeURIComponent(productSlug)}`
+          tried.push(url)
+          const res = await fetch(url, { headers: { 'Content-Type': 'application/json' } })
+          if (res.ok) {
+            const json = await res.json()
+            const item: Product = json?.data ?? json
+            if (item?._id) {
+              applyLoadedProduct(item)
+              return
+            }
+          }
+        }
       }
 
-      const json = await res.json()
-      const item: Product = json?.data ?? json
-      if (!item?._id) { setError('We could not load this product.'); return }
-
-      setProduct(item)
-      setActiveImage(0)
-
-      if (prefilledForRef.current !== item._id) {
-        prefilledForRef.current = item._id
-        prefillForm(item)
+      // Final fallback: fetch all products and match slug locally.
+      try {
+        const allRes = await fetch(`${API_URL}/products?isActive=true&limit=1000`)
+        if (allRes.ok) {
+          const allJson = await allRes.json()
+          const list: Product[] = extractArray(allJson)
+          const found = list.find(p => {
+            const candidates = [p.slug, p.title ? slugifyTitle(p.title) : ''].filter(Boolean) as string[]
+            return candidates.some(c => c === productSlug)
+          })
+          if (found) {
+            applyLoadedProduct(found)
+            return
+          }
+        }
+      } catch (e) {
+        console.warn('[product] list fallback failed:', e)
       }
 
-      const canonical = productHref(item)
-      if (typeof window !== 'undefined' && window.location.pathname !== canonical) {
-        router.replace(canonical)
-      }
-
-      fetchRelated(item._id)
+      console.warn('[product] all fetches failed. URLs tried:', tried)
+      setError('This product is no longer available.')
     } catch (err) {
       console.error('Error fetching product:', err)
       setError('We could not load this product. Check your connection and try again.')
@@ -190,12 +268,31 @@ export default function ProductDetailPage() {
     }
   }
 
+  // Local slugifier for this file (avoids extra import dance)
+  const slugifyTitle = (s: string) =>
+    s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+
+  const applyLoadedProduct = (item: Product) => {
+    setProduct(item)
+    setActiveImage(0)
+    if (prefilledForRef.current !== item._id) {
+      prefilledForRef.current = item._id
+      prefillForm(item)
+    }
+    // Canonicalize URL
+    const canonical = productHref(item)
+    if (typeof window !== 'undefined' && window.location.pathname !== canonical) {
+      router.replace(canonical)
+    }
+    fetchRelated(item._id)
+  }
+
   const fetchRelated = async (id: string) => {
     try {
       const res = await fetch(`${API_URL}/products/${id}/related?limit=4`)
       if (!res.ok) return
       const json = await res.json()
-      setRelated(json?.data ?? [])
+      setRelated(extractArray<Product>(json))
     } catch { /* nice-to-have */ }
   }
 
@@ -294,8 +391,6 @@ export default function ProductDetailPage() {
       if (widthNum !== undefined && Number.isFinite(widthNum)) payload.width = widthNum
       if (depthNum !== undefined && Number.isFinite(depthNum)) payload.depth = depthNum
 
-      console.log('[product page] payload →', payload)
-
       const response = await axios.post(`${API_URL}/inquiries`, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 10000,
@@ -364,9 +459,9 @@ export default function ProductDetailPage() {
               className="px-6 py-2.5 bg-[#171512] text-white rounded-full text-sm font-medium hover:bg-black transition-colors">
               Try again
             </button>
-            <Link href={`/products/${categorySlug}`}
+            <Link href="/products"
               className="px-6 py-2.5 bg-[#FDB022] text-[#171512] rounded-full text-sm font-semibold hover:bg-[#f5a80f] transition-colors">
-              Back to category
+              Browse all products
             </Link>
           </div>
         </div>
@@ -389,7 +484,7 @@ export default function ProductDetailPage() {
           </Link>
 
           <div className="grid lg:grid-cols-2 gap-10 xl:gap-14">
-            {/* -------- Gallery -------- */}
+            {/* Gallery */}
             <div className="lg:sticky lg:top-28 lg:self-start">
               <div
                 className="relative aspect-square w-full rounded-2xl overflow-hidden bg-[#F5F1E7] border border-black/[0.06] group"
@@ -478,7 +573,7 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {/* -------- Details + full inquiry form -------- */}
+            {/* Details + form */}
             <div>
               <Link href={categoryHref(product.category)}
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F5F1E7] text-[#8a7554] text-xs font-semibold hover:bg-[#EDE5D8] transition-colors">
@@ -615,7 +710,6 @@ export default function ProductDetailPage() {
                         </div>
                       </div>
 
-                      {/* Dimensions */}
                       <div className="rounded-xl border border-black/10 p-4 bg-gray-50/70">
                         <div className="flex items-center gap-2 mb-3">
                           <Ruler size={16} className="text-[#FDB022]" />
@@ -708,7 +802,6 @@ export default function ProductDetailPage() {
         </div>
       </section>
 
-      {/* Description + single image — unchanged */}
       <section className="py-14 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-10">
@@ -820,7 +913,7 @@ export default function ProductDetailPage() {
         </section>
       )}
 
-      <TrendingProducts />
+      <LuxuryFinishingSlider />
       <DielineComp />
       <FAQ />
       <Testimonials />
