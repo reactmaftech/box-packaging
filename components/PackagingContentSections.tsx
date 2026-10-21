@@ -13,7 +13,7 @@ import { Check, Package, ArrowRight } from 'lucide-react'
 /* Update the SECTIONS array below to use the imported variables.      */
 /* ------------------------------------------------------------------ */
 
-import customBoxesHero from '../assets/images/cutsom-1.webp'
+import customBoxesHero from '../assets/images/cutsom-1.webp' 
 import customBoxesThumb1 from '../assets/images/cutsom-2.webp'
 import customBoxesThumb2 from '../assets/images/cutsom-3.webp'
 import customBoxesThumb3 from '../assets/images/cutsom-4.webp'
