@@ -56,8 +56,6 @@ export default function CategoryProductsPage() {
   const router = useRouter()
 
   // Support both old URL shape (/products/<category>) and new flat URL (/<slug>).
-  // When this page is rendered via app/[slug]/page.tsx, params will be { slug: ... }
-  // instead of { category: ... }.
   const rawParams = params as Record<string, string | undefined>
   const categorySlug = (rawParams.category || rawParams.slug || '') as string
 
@@ -211,18 +209,38 @@ export default function CategoryProductsPage() {
   const displayName = categoryName || unslugify(categorySlug)
 
   // ===== Inquiry form helpers =====
+  // ✅ Only fullName, email, phone are required.
+  //    Dimensions are only validated if filled; deadline only if picked.
   const validateForm = () => {
     const errors: { [key: string]: string } = {}
-    if (!formData.fullName || formData.fullName.length < 2) errors.fullName = 'Full name must be at least 2 characters'
-    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = 'Please enter a valid email address'
-    if (!formData.phone || formData.phone.length < 7) errors.phone = 'Phone number must be at least 7 characters'
-    if (!formData.company) errors.company = 'Company name is required'
-    if (!formData.industry) errors.industry = 'Please select an industry'
-    if (!formData.boxType) errors.boxType = 'Please select a box type'
+
+    // --- REQUIRED ---
+    if (!formData.fullName.trim() || formData.fullName.trim().length < 2) {
+      errors.fullName = 'Full name must be at least 2 characters'
+    }
+    if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      errors.email = 'Please enter a valid email address'
+    }
+    if (!formData.phone.trim() || formData.phone.trim().length < 7) {
+      errors.phone = 'Phone number must be at least 7 characters'
+    }
+
+    // --- OPTIONAL: only validate dimension numbers if provided ---
     ;(['length', 'width', 'depth'] as const).forEach((k) => {
       const v = formData[k]
-      if (v !== '' && (Number.isNaN(Number(v)) || Number(v) < 0)) errors[k] = 'Must be a positive number'
+      if (v !== '' && (Number.isNaN(Number(v)) || Number(v) < 0)) {
+        errors[k] = 'Must be a positive number'
+      }
     })
+
+    // --- OPTIONAL: deadline must be in the future if provided ---
+    if (formData.deadline) {
+      const picked = new Date(formData.deadline)
+      if (Number.isNaN(picked.getTime()) || picked <= new Date()) {
+        errors.deadline = 'Deadline must be in the future'
+      }
+    }
+
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -247,23 +265,28 @@ export default function CategoryProductsPage() {
     setFormError('')
 
     try {
-      const lengthNum = formData.length.trim() !== '' ? Number(formData.length) : undefined
-      const widthNum = formData.width.trim() !== '' ? Number(formData.width) : undefined
-      const depthNum = formData.depth.trim() !== '' ? Number(formData.depth) : undefined
-
+      // ✅ Sparse payload — optional fields only included when filled in.
       const payload: any = {
         fullName: formData.fullName.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),
-        company: formData.company.trim(),
-        industry: formData.industry,
-        boxType: formData.boxType,
-        quantity: formData.quantity ? parseInt(formData.quantity) : undefined,
-        deadline: formData.deadline || undefined,
-        budget: formData.budget,
-        message: formData.message,
-        unit: formData.unit,
+        unit: formData.unit, // always present (default 'in')
       }
+
+      if (formData.company.trim()) payload.company = formData.company.trim()
+      if (formData.industry) payload.industry = formData.industry
+      if (formData.boxType) payload.boxType = formData.boxType
+      if (formData.quantity.trim()) {
+        const q = parseInt(formData.quantity, 10)
+        if (Number.isFinite(q) && q > 0) payload.quantity = q
+      }
+      if (formData.budget) payload.budget = formData.budget
+      if (formData.message.trim()) payload.message = formData.message.trim()
+      if (formData.deadline) payload.deadline = formData.deadline
+
+      const lengthNum = formData.length.trim() !== '' ? Number(formData.length) : undefined
+      const widthNum = formData.width.trim() !== '' ? Number(formData.width) : undefined
+      const depthNum = formData.depth.trim() !== '' ? Number(formData.depth) : undefined
       if (lengthNum !== undefined && Number.isFinite(lengthNum)) payload.length = lengthNum
       if (widthNum !== undefined && Number.isFinite(widthNum)) payload.width = widthNum
       if (depthNum !== undefined && Number.isFinite(depthNum)) payload.depth = depthNum
@@ -273,16 +296,25 @@ export default function CategoryProductsPage() {
         timeout: 10000,
       })
 
-      if (response.data.success) {
+      const isSuccess =
+        response.data?.success === true ||
+        (response.status >= 200 && response.status < 300 && response.data?.success !== false)
+
+      if (isSuccess) {
         setSubmitted(true)
         setFormData({
           fullName: '', email: '', phone: '', company: '', industry: '', boxType: '',
           quantity: '', length: '', width: '', depth: '', unit: 'in',
           deadline: '', budget: '', message: '',
         })
-        setTimeout(() => setSubmitted(false), 5000)
+
+        // 🆕 Redirect to thank-you page.
+        router.push('/thank-you')
+      } else {
+        setFormError('Submission received but not confirmed by the server. Please try again.')
       }
     } catch (err: any) {
+      console.error('Submission error:', err)
       if (err.response?.data?.errors) {
         const serverErrors: { [key: string]: string } = {}
         err.response.data.errors.forEach((error: any) => { serverErrors[error.path] = error.msg })
@@ -387,7 +419,7 @@ export default function CategoryProductsPage() {
                     >
                       <div className="flex items-center gap-2">
                         <CheckCircle size={16} className="text-green-500 flex-shrink-0" />
-                        Thank you! Your inquiry has been submitted.
+                        Thank you! Your inquiry has been submitted. Redirecting…
                       </div>
                       <button type="button" onClick={() => setSubmitted(false)} className="text-green-500 hover:text-green-700">
                         <X size={14} />
@@ -409,47 +441,45 @@ export default function CategoryProductsPage() {
                   )}
 
                   <div className="space-y-2.5">
-                    {/* Row 1: Name, Email, Phone */}
+                    {/* Row 1: Name, Email, Phone — the ONLY required fields */}
                     <div className="grid grid-cols-3 gap-2.5">
                       <div>
                         <label className={labelClass}>Full Name *</label>
                         <input type="text" name="fullName" value={formData.fullName} onChange={handleChange}
-                          className={fieldClass('fullName')} placeholder="John Doe" />
+                          className={fieldClass('fullName')} placeholder="John Doe" required />
                         {validationErrors.fullName && <p className="text-red-500 text-[10px] mt-0.5">{validationErrors.fullName}</p>}
                       </div>
                       <div>
                         <label className={labelClass}>Email *</label>
                         <input type="email" name="email" value={formData.email} onChange={handleChange}
-                          className={fieldClass('email')} placeholder="you@company.com" />
+                          className={fieldClass('email')} placeholder="you@company.com" required />
                         {validationErrors.email && <p className="text-red-500 text-[10px] mt-0.5">{validationErrors.email}</p>}
                       </div>
                       <div>
                         <label className={labelClass}>Phone *</label>
                         <input type="tel" name="phone" value={formData.phone} onChange={handleChange}
-                          className={fieldClass('phone')} placeholder="+1 555 000 0000" />
+                          className={fieldClass('phone')} placeholder="+1 555 000 0000" required />
                         {validationErrors.phone && <p className="text-red-500 text-[10px] mt-0.5">{validationErrors.phone}</p>}
                       </div>
                     </div>
 
-                    {/* Row 2: Company, Industry, Box Type */}
+                    {/* Row 2: Company, Industry, Box Type — all optional */}
                     <div className="grid grid-cols-3 gap-2.5">
                       <div>
-                        <label className={labelClass}>Company *</label>
+                        <label className={labelClass}>Company</label>
                         <input type="text" name="company" value={formData.company} onChange={handleChange}
                           className={fieldClass('company')} placeholder="Company Inc." />
-                        {validationErrors.company && <p className="text-red-500 text-[10px] mt-0.5">{validationErrors.company}</p>}
                       </div>
                       <div>
-                        <label className={labelClass}>Industry *</label>
+                        <label className={labelClass}>Industry</label>
                         <select name="industry" value={formData.industry} onChange={handleChange}
                           className={`${fieldClass('industry')} ${selectArrow}`}>
                           <option value="">Select</option>
                           {industries.map((ind) => <option key={ind} value={ind}>{ind}</option>)}
                         </select>
-                        {validationErrors.industry && <p className="text-red-500 text-[10px] mt-0.5">{validationErrors.industry}</p>}
                       </div>
                       <div>
-                        <label className={labelClass}>Box Type *</label>
+                        <label className={labelClass}>Box Type</label>
                         <select name="boxType" value={formData.boxType} onChange={handleChange}
                           className={`${fieldClass('boxType')} ${selectArrow}`} disabled={loadingCategories}>
                           <option value="">{loadingCategories ? 'Loading…' : 'Select'}</option>
@@ -457,11 +487,10 @@ export default function CategoryProductsPage() {
                             <option key={c._id} value={c.name}>{c.name}</option>
                           ))}
                         </select>
-                        {validationErrors.boxType && <p className="text-red-500 text-[10px] mt-0.5">{validationErrors.boxType}</p>}
                       </div>
                     </div>
 
-                    {/* Row 3: Dimensions L / W / D / Unit */}
+                    {/* Row 3: Dimensions L / W / D / Unit — optional */}
                     <div>
                       <div className="flex items-center gap-1.5 mb-1">
                         <Ruler size={12} className="text-[#FDB022]" />
@@ -492,7 +521,7 @@ export default function CategoryProductsPage() {
                       </div>
                     </div>
 
-                    {/* Row 4: Quantity, Budget, Deadline */}
+                    {/* Row 4: Quantity, Budget, Deadline — optional */}
                     <div className="grid grid-cols-3 gap-2.5">
                       <div>
                         <label className={labelClass}>Quantity</label>
@@ -514,6 +543,7 @@ export default function CategoryProductsPage() {
                         <label className={labelClass}>Deadline</label>
                         <input type="date" name="deadline" value={formData.deadline} onChange={handleChange}
                           className={fieldClass('deadline')} min={new Date().toISOString().split('T')[0]} />
+                        {validationErrors.deadline && <p className="text-red-500 text-[10px] mt-0.5">{validationErrors.deadline}</p>}
                       </div>
                     </div>
 
@@ -522,7 +552,7 @@ export default function CategoryProductsPage() {
                       <label className={labelClass}>Message</label>
                       <textarea name="message" value={formData.message} onChange={handleChange}
                         className={`${fieldClass('message')} h-14 resize-none`}
-                        placeholder="Tell us about your project…" />
+                        placeholder="Tell us about your project… (optional)" />
                     </div>
 
                     {/* Row 6: Submit button — full width, single line */}
@@ -545,6 +575,10 @@ export default function CategoryProductsPage() {
                         </>
                       )}
                     </motion.button>
+
+                    <p className="text-[10px] text-black/40 text-center">
+                      * Full name, email, and phone are required. All other fields are optional.
+                    </p>
                   </div>
                 </form>
               </div>

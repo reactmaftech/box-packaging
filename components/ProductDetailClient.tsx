@@ -334,18 +334,38 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
     }
   }
 
+  // ✅ Only fullName, email, phone are required.
+  //    Dimensions validated only if filled; deadline only if picked.
   const validateForm = () => {
     const errors: { [key: string]: string } = {}
-    if (!formData.fullName || formData.fullName.trim().length < 2) errors.fullName = 'Full name must be at least 2 characters'
-    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = 'Please enter a valid email address'
-    if (!formData.phone || formData.phone.trim().length < 7) errors.phone = 'Phone number must be at least 7 characters'
-    if (!formData.company) errors.company = 'Company name is required'
-    if (!formData.industry) errors.industry = 'Please select an industry'
-    if (!formData.boxType) errors.boxType = 'Please select a box type'
+
+    // --- REQUIRED ---
+    if (!formData.fullName.trim() || formData.fullName.trim().length < 2) {
+      errors.fullName = 'Full name must be at least 2 characters'
+    }
+    if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      errors.email = 'Please enter a valid email address'
+    }
+    if (!formData.phone.trim() || formData.phone.trim().length < 7) {
+      errors.phone = 'Phone number must be at least 7 characters'
+    }
+
+    // --- OPTIONAL: dimension numbers only if provided ---
     ;(['length', 'width', 'depth'] as const).forEach((k) => {
       const v = formData[k]
-      if (v !== '' && (Number.isNaN(Number(v)) || Number(v) < 0)) errors[k] = 'Must be a positive number'
+      if (v !== '' && (Number.isNaN(Number(v)) || Number(v) < 0)) {
+        errors[k] = 'Must be a positive number'
+      }
     })
+
+    // --- OPTIONAL: deadline must be in the future if provided ---
+    if (formData.deadline) {
+      const picked = new Date(formData.deadline)
+      if (Number.isNaN(picked.getTime()) || picked <= new Date()) {
+        errors.deadline = 'Deadline must be in the future'
+      }
+    }
+
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -358,24 +378,29 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
     setFormError('')
 
     try {
-      const lengthNum = formData.length.trim() !== '' ? Number(formData.length) : undefined
-      const widthNum = formData.width.trim() !== '' ? Number(formData.width) : undefined
-      const depthNum = formData.depth.trim() !== '' ? Number(formData.depth) : undefined
-
+      // ✅ Sparse payload — optional fields only included when filled in.
       const payload: any = {
         fullName: formData.fullName.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),
-        company: formData.company.trim(),
-        industry: formData.industry,
-        boxType: formData.boxType,
-        quantity: formData.quantity ? parseInt(formData.quantity, 10) : undefined,
-        specifications: formData.specifications,
-        deadline: formData.deadline || undefined,
-        budget: formData.budget,
-        message: formData.message,
-        unit: formData.unit,
+        unit: formData.unit, // always present (default 'in')
       }
+
+      if (formData.company.trim()) payload.company = formData.company.trim()
+      if (formData.industry) payload.industry = formData.industry
+      if (formData.boxType) payload.boxType = formData.boxType
+      if (formData.quantity.trim()) {
+        const q = parseInt(formData.quantity, 10)
+        if (Number.isFinite(q) && q > 0) payload.quantity = q
+      }
+      if (formData.specifications.trim()) payload.specifications = formData.specifications.trim()
+      if (formData.budget) payload.budget = formData.budget
+      if (formData.message.trim()) payload.message = formData.message.trim()
+      if (formData.deadline) payload.deadline = formData.deadline
+
+      const lengthNum = formData.length.trim() !== '' ? Number(formData.length) : undefined
+      const widthNum = formData.width.trim() !== '' ? Number(formData.width) : undefined
+      const depthNum = formData.depth.trim() !== '' ? Number(formData.depth) : undefined
       if (lengthNum !== undefined && Number.isFinite(lengthNum)) payload.length = lengthNum
       if (widthNum !== undefined && Number.isFinite(widthNum)) payload.width = widthNum
       if (depthNum !== undefined && Number.isFinite(depthNum)) payload.depth = depthNum
@@ -385,11 +410,15 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
         timeout: 10000,
       })
 
-      if (response.data.success) {
+      const isSuccess =
+        response.data?.success === true ||
+        (response.status >= 200 && response.status < 300 && response.data?.success !== false)
+
+      if (isSuccess) {
         setSubmitted(true)
         if (product) prefillForm(product)
       } else {
-        setFormError('Failed to submit inquiry. Please try again.')
+        setFormError('Submission received but not confirmed by the server. Please try again.')
       }
     } catch (err: any) {
       console.error('Submission error:', err)
@@ -652,15 +681,16 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
                         </div>
                       )}
 
+                      {/* ---------------- REQUIRED FIELDS ---------------- */}
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div>
                           <input type="text" name="fullName" value={formData.fullName} onChange={handleChange}
-                            className={fieldClass('fullName')} placeholder="Full Name *" />
+                            className={fieldClass('fullName')} placeholder="Full Name *" required />
                           {validationErrors.fullName && <p className="text-red-500 text-xs mt-1">{validationErrors.fullName}</p>}
                         </div>
                         <div>
                           <input type="email" name="email" value={formData.email} onChange={handleChange}
-                            className={fieldClass('email')} placeholder="Email Address *" />
+                            className={fieldClass('email')} placeholder="Email Address *" required />
                           {validationErrors.email && <p className="text-red-500 text-xs mt-1">{validationErrors.email}</p>}
                         </div>
                       </div>
@@ -668,13 +698,14 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div>
                           <input type="tel" name="phone" value={formData.phone} onChange={handleChange}
-                            className={fieldClass('phone')} placeholder="Phone Number *" />
+                            className={fieldClass('phone')} placeholder="Phone Number *" required />
                           {validationErrors.phone && <p className="text-red-500 text-xs mt-1">{validationErrors.phone}</p>}
                         </div>
+
+                        {/* ---------------- OPTIONAL FIELDS ---------------- */}
                         <div>
                           <input type="text" name="company" value={formData.company} onChange={handleChange}
-                            className={fieldClass('company')} placeholder="Company Name *" />
-                          {validationErrors.company && <p className="text-red-500 text-xs mt-1">{validationErrors.company}</p>}
+                            className={fieldClass('company')} placeholder="Company Name (optional)" />
                         </div>
                       </div>
 
@@ -682,20 +713,18 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
                         <div>
                           <select name="industry" value={formData.industry} onChange={handleChange}
                             className={`${fieldClass('industry')} ${selectArrow}`}>
-                            <option value="">Industry *</option>
+                            <option value="">Industry (optional)</option>
                             {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
                           </select>
-                          {validationErrors.industry && <p className="text-red-500 text-xs mt-1">{validationErrors.industry}</p>}
                         </div>
                         <div>
                           <select name="boxType" value={formData.boxType} onChange={handleChange}
                             className={`${fieldClass('boxType')} ${selectArrow}`} disabled={loadingCategories}>
-                            <option value="">{loadingCategories ? 'Loading…' : 'Box Type *'}</option>
+                            <option value="">{loadingCategories ? 'Loading…' : 'Box Type (optional)'}</option>
                             {categories.map(c => (
                               <option key={c._id} value={c.name}>{c.name}{c.type ? ` — ${c.type}` : ''}</option>
                             ))}
                           </select>
-                          {validationErrors.boxType && <p className="text-red-500 text-xs mt-1">{validationErrors.boxType}</p>}
                         </div>
                       </div>
 
@@ -735,28 +764,29 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
 
                       <div className="grid sm:grid-cols-3 gap-4">
                         <input type="number" name="quantity" value={formData.quantity} onChange={handleChange}
-                          className={fieldClass('quantity')} placeholder="Quantity" min="1" />
+                          className={fieldClass('quantity')} placeholder="Quantity (optional)" min="1" />
                         <select name="budget" value={formData.budget} onChange={handleChange}
                           className={`${fieldClass('budget')} ${selectArrow}`}>
-                          <option value="">Budget Range</option>
+                          <option value="">Budget Range (optional)</option>
                           {BUDGETS.map(b => <option key={b} value={b}>{b}</option>)}
                         </select>
-                        <input type="date" name="deadline" value={formData.deadline} onChange={handleChange}
-                          className={fieldClass('deadline')} min={today} />
+                        <div>
+                          <input type="date" name="deadline" value={formData.deadline} onChange={handleChange}
+                            className={fieldClass('deadline')} min={today} />
+                          {validationErrors.deadline && <p className="text-red-500 text-xs mt-1">{validationErrors.deadline}</p>}
+                        </div>
                       </div>
 
                       <div>
                         <textarea name="specifications" value={formData.specifications} onChange={handleChange}
                           className={`${fieldClass('specifications')} h-24 resize-none`}
-                          placeholder="Box specifications — materials, printing requirements, etc." />
-                        {validationErrors.specifications && <p className="text-red-500 text-xs mt-1">{validationErrors.specifications}</p>}
+                          placeholder="Box specifications — materials, printing requirements, etc. (optional)" />
                       </div>
 
                       <div>
                         <textarea name="message" value={formData.message} onChange={handleChange}
                           className={`${fieldClass('message')} h-20 resize-none`}
-                          placeholder="Tell us more about your project..." />
-                        {validationErrors.message && <p className="text-red-500 text-xs mt-1">{validationErrors.message}</p>}
+                          placeholder="Tell us more about your project... (optional)" />
                       </div>
 
                       <motion.button
@@ -780,7 +810,8 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
                       </motion.button>
 
                       <p className="text-xs text-black/40 text-center">
-                        * Required fields. We&apos;ll get back to you within 24 hours.
+                        * Full name, email, and phone number are required. All other fields are optional.
+                        We&apos;ll get back to you within 24 hours.
                       </p>
                     </motion.form>
                   )}

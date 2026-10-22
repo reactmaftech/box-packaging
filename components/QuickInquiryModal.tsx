@@ -92,17 +92,30 @@ export function QuickInquiryModal({
     }
   }
 
+  // ✅ Only fullName, email, phone are required.
+  //    Dimensions validated only if filled; deadline not present in this modal.
   const validateForm = () => {
     const errors: { [key: string]: string } = {}
-    if (!formData.fullName || formData.fullName.length < 2) errors.fullName = 'Full name must be at least 2 characters'
-    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = 'Please enter a valid email address'
-    if (!formData.phone || formData.phone.length < 7) errors.phone = 'Phone number must be at least 7 characters'
-    if (!formData.company) errors.company = 'Company name is required'
-    if (!formData.boxType) errors.boxType = 'Please select a box type'
+
+    // --- REQUIRED ---
+    if (!formData.fullName.trim() || formData.fullName.trim().length < 2) {
+      errors.fullName = 'Full name must be at least 2 characters'
+    }
+    if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      errors.email = 'Please enter a valid email address'
+    }
+    if (!formData.phone.trim() || formData.phone.trim().length < 7) {
+      errors.phone = 'Phone number must be at least 7 characters'
+    }
+
+    // --- OPTIONAL: dimension numbers only validated if provided ---
     ;(['length', 'width', 'depth'] as const).forEach((k) => {
       const v = formData[k]
-      if (v !== '' && (Number.isNaN(Number(v)) || Number(v) < 0)) errors[k] = 'Must be a positive number'
+      if (v !== '' && (Number.isNaN(Number(v)) || Number(v) < 0)) {
+        errors[k] = 'Must be a positive number'
+      }
     })
+
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -115,29 +128,38 @@ export function QuickInquiryModal({
     setError('')
 
     try {
+      // Preserve the contextual metadata (page/category/type) in message.
       const messageWithDetails = [
         `[Page: ${pageName}]`,
         `[Category Type: ${categoryType}]`,
         `[Category: ${categoryName}]`,
-        formData.message ? `\n${formData.message}` : '',
+        formData.message.trim() ? `\n${formData.message.trim()}` : '',
       ].filter(Boolean).join('\n')
 
-      const lengthNum = formData.length.trim() !== '' ? Number(formData.length) : undefined
-      const widthNum = formData.width.trim() !== '' ? Number(formData.width) : undefined
-      const depthNum = formData.depth.trim() !== '' ? Number(formData.depth) : undefined
-
+      // ✅ Sparse payload — only required + any optional fields the user actually filled in.
       const payload: any = {
         fullName: formData.fullName.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),
-        company: formData.company.trim(),
-        industry: categoryType || 'Other',
-        boxType: formData.boxType || categoryName,
-        quantity: formData.quantity ? parseInt(formData.quantity) : undefined,
-        message: messageWithDetails,
-        specifications: `Submitted from: ${pageName} page`,
         unit: formData.unit,
+        // Context is always attached so the admin can see where it came from.
+        message: messageWithDetails,
       }
+
+      if (formData.company.trim()) payload.company = formData.company.trim()
+      // categoryType is a good default for `industry` — only set if we have one.
+      if (categoryType && categoryType !== 'Other') payload.industry = categoryType
+      // boxType: use user's choice, otherwise fall back to the category name.
+      const chosenBox = formData.boxType || categoryName
+      if (chosenBox) payload.boxType = chosenBox
+      if (formData.quantity.trim()) {
+        const q = parseInt(formData.quantity, 10)
+        if (Number.isFinite(q) && q > 0) payload.quantity = q
+      }
+
+      const lengthNum = formData.length.trim() !== '' ? Number(formData.length) : undefined
+      const widthNum = formData.width.trim() !== '' ? Number(formData.width) : undefined
+      const depthNum = formData.depth.trim() !== '' ? Number(formData.depth) : undefined
       if (lengthNum !== undefined && Number.isFinite(lengthNum)) payload.length = lengthNum
       if (widthNum !== undefined && Number.isFinite(widthNum)) payload.width = widthNum
       if (depthNum !== undefined && Number.isFinite(depthNum)) payload.depth = depthNum
@@ -149,7 +171,11 @@ export function QuickInquiryModal({
         timeout: 10000,
       })
 
-      if (response.data.success) {
+      const isSuccess =
+        response.data?.success === true ||
+        (response.status >= 200 && response.status < 300 && response.data?.success !== false)
+
+      if (isSuccess) {
         setSubmitted(true)
         setFormData({
           fullName: '', email: '', phone: '', company: '', boxType: '',
@@ -159,6 +185,8 @@ export function QuickInquiryModal({
           setSubmitted(false)
           onClose()
         }, 2000)
+      } else {
+        setError('Submission received but not confirmed by the server. Please try again.')
       }
     } catch (err: any) {
       console.error('Submission error:', err)
@@ -280,45 +308,78 @@ export function QuickInquiryModal({
 
               {!submitted && (
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* ---------------- REQUIRED ---------------- */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name *</label>
-                    <input type="text" name="fullName" value={formData.fullName} onChange={handleChange}
-                      className={inputClass('fullName')} placeholder="Enter your full name" />
+                    <input
+                      type="text"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleChange}
+                      className={inputClass('fullName')}
+                      placeholder="Enter your full name"
+                      required
+                    />
                     {validationErrors.fullName && <p className="text-red-500 text-xs mt-1">{validationErrors.fullName}</p>}
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address *</label>
-                    <input type="email" name="email" value={formData.email} onChange={handleChange}
-                      className={inputClass('email')} placeholder="Enter your email" />
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className={inputClass('email')}
+                      placeholder="Enter your email"
+                      required
+                    />
                     {validationErrors.email && <p className="text-red-500 text-xs mt-1">{validationErrors.email}</p>}
                   </div>
 
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number *</label>
-                      <input type="tel" name="phone" value={formData.phone} onChange={handleChange}
-                        className={inputClass('phone')} placeholder="Enter phone number" />
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        className={inputClass('phone')}
+                        placeholder="Enter phone number"
+                        required
+                      />
                       {validationErrors.phone && <p className="text-red-500 text-xs mt-1">{validationErrors.phone}</p>}
                     </div>
+
+                    {/* ---------------- OPTIONAL ---------------- */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Company Name *</label>
-                      <input type="text" name="company" value={formData.company} onChange={handleChange}
-                        className={inputClass('company')} placeholder="Enter company name" />
-                      {validationErrors.company && <p className="text-red-500 text-xs mt-1">{validationErrors.company}</p>}
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Company Name</label>
+                      <input
+                        type="text"
+                        name="company"
+                        value={formData.company}
+                        onChange={handleChange}
+                        className={inputClass('company')}
+                        placeholder="Enter company name (optional)"
+                      />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Box Type *</label>
-                    <select name="boxType" value={formData.boxType} onChange={handleChange}
-                      className={`${inputClass('boxType')} ${selectArrow}`} disabled={loadingCategories}>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Box Type</label>
+                    <select
+                      name="boxType"
+                      value={formData.boxType}
+                      onChange={handleChange}
+                      className={`${inputClass('boxType')} ${selectArrow}`}
+                      disabled={loadingCategories}
+                    >
                       <option value="">{loadingCategories ? 'Loading…' : 'Select a box type'}</option>
                       {categories.map((c) => (
                         <option key={c._id} value={c.name}>{c.name}{c.type ? ` — ${c.type}` : ''}</option>
                       ))}
                     </select>
-                    {validationErrors.boxType && <p className="text-red-500 text-xs mt-1">{validationErrors.boxType}</p>}
                   </div>
 
                   {/* Dimensions */}
@@ -393,7 +454,7 @@ export function QuickInquiryModal({
                   </motion.button>
 
                   <p className="text-xs text-gray-400 text-center">
-                    * Required fields. We&apos;ll respond within 24 hours.
+                    * Full name, email, and phone number are required. All other fields are optional.
                   </p>
                 </form>
               )}
