@@ -22,9 +22,9 @@ import logoImage from '../assets/logo/logo.png'
 
 // Payment gateways imports
 import visaImage from '../assets/images/visa.png'
-import amexImage from '../assets/images/american-express.png'
+import amexImage from '../assets/images/American-Express-Color.png'
 import paypalImage from '../assets/images/paypal.png'
-import cardImage from '../assets/images/card.png'
+import cardImage from '../assets/images/Mastercard-Logo.png'
 
 const PHONE_NUMBER = '+12177276247'
 const PHONE_DISPLAY = '+1 (217) 727-6247'
@@ -275,15 +275,15 @@ export function Footer() {
             ))}
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Payment Methods Icons */}
-            <div className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 flex items-center justify-center gap-3 shadow-sm">
+          <div className="flex items-center gap-5">
+            {/* Payment Methods Icons (No background, bigger size) */}
+            <div className="flex items-center justify-center gap-3">
               {PAYMENT_METHODS.map((payment) => (
-                <div key={payment.alt} className="relative h-7 w-10 flex items-center justify-center">
+                <div key={payment.alt} className="relative h-9 w-12 flex items-center justify-center">
                   <Image
                     src={payment.src}
                     alt={payment.alt}
-                    className="object-contain max-h-full max-w-full"
+                    className="object-contain max-h-full max-w-full drop-shadow-sm"
                   />
                 </div>
               ))}
