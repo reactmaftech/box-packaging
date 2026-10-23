@@ -5,6 +5,9 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Slick Custom Boxes - Premium Custom Packaging Solutions',
   description: 'High-quality custom packaging boxes for all industries. Get your free quote today at Slick Custom Boxes!',
+  verification: {
+    google: 'eQWkbn7mNBsmXj4C1_CjSlec5-YKPR62JmWvffGVsbg',
+  },
 }
 
 export default function RootLayout({
