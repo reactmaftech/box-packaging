@@ -14,6 +14,7 @@ import {
   Clock,
   Instagram,
   Facebook,
+  Linkedin,
 } from 'lucide-react'
 
 // Logo import
@@ -78,6 +79,7 @@ const PAYMENT_METHODS = [
 const SOCIAL_LINKS = [
   { icon: Instagram, href: 'https://www.instagram.com/slickcustomboxes/', label: 'Instagram' },
   { icon: Facebook, href: 'https://www.facebook.com/slickcustomboxes', label: 'Facebook' },
+  { icon: Linkedin, href: 'https://www.linkedin.com/company/slick-custom-boxes', label: 'LinkedIn' },
 ]
 
 function FooterHeading({ children }: { children: React.ReactNode }) {

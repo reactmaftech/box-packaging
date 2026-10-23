@@ -141,7 +141,7 @@ export default function ContactPage() {
     {
       icon: Clock,
       title: 'Working hours',
-      details: ['Monday – Friday, 8:00am – 6:00pm CT'],
+      details: ['Mon – Fri: 9:00 AM – 6:00 PM'],
       bgColor: 'bg-[#F5F1E7]',
       iconBg: 'bg-[#FDB022]/15',
       iconColor: 'text-[#FDB022]',
