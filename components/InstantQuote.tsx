@@ -1,7 +1,7 @@
 // components/InstantQuote.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -11,13 +11,7 @@ import { DIMENSION_UNITS, DimensionUnit } from '@/lib/constants'
 
 import quoteImage from '../assets/images/pr-bulk.jpg'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL
-
-interface CategoryOption {
-  _id: string
-  name: string
-  type: string
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
 
 export function InstantQuote() {
   const router = useRouter()
@@ -27,8 +21,6 @@ export function InstantQuote() {
     email: '',
     phone: '',
     company: '',
-    industry: '',
-    boxType: '',
     quantity: '',
     length: '',
     width: '',
@@ -40,38 +32,11 @@ export function InstantQuote() {
     message: '',
   })
 
-  const [categories, setCategories] = useState<CategoryOption[]>([])
-  const [loadingCategories, setLoadingCategories] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({})
 
-  const industries = [
-    'Electronics', 'Cosmetics & Beauty', 'Food & Beverage',
-    'Pharmaceuticals', 'E-commerce', 'Retail', 'Other',
-  ]
-
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        setLoadingCategories(true)
-        const res = await axios.get(`${API_URL}/categories?isActive=true`)
-        if (cancelled) return
-        setCategories(res.data?.data ?? [])
-      } catch (err) {
-        console.error('Failed to load categories:', err)
-      } finally {
-        if (!cancelled) setLoadingCategories(false)
-      }
-    })()
-    return () => { cancelled = true }
-  }, [])
-
-  // ✅ Only fullName, email, phone are required.
-  //    Dimensions are only validated if the user typed something into them.
-  //    Deadline is only validated if the user picked a date.
   const validateForm = () => {
     const errors: { [key: string]: string } = {}
 
@@ -126,17 +91,14 @@ export function InstantQuote() {
     setError('')
 
     try {
-      // ✅ Sparse payload — optional fields are only included when filled in.
       const payload: any = {
         fullName: formData.fullName.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),
-        unit: formData.unit, // always has a default ('in')
+        unit: formData.unit,
       }
 
       if (formData.company.trim()) payload.company = formData.company.trim()
-      if (formData.industry) payload.industry = formData.industry
-      if (formData.boxType) payload.boxType = formData.boxType
       if (formData.quantity.trim()) {
         const q = parseInt(formData.quantity, 10)
         if (Number.isFinite(q) && q > 0) payload.quantity = q
@@ -153,8 +115,6 @@ export function InstantQuote() {
       if (widthNum !== undefined && Number.isFinite(widthNum)) payload.width = widthNum
       if (depthNum !== undefined && Number.isFinite(depthNum)) payload.depth = depthNum
 
-      console.log('[InstantQuote] payload →', payload)
-
       const response = await axios.post(`${API_URL}/inquiries`, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 10000,
@@ -167,7 +127,7 @@ export function InstantQuote() {
       if (isSuccess) {
         setSubmitted(true)
         setFormData({
-          fullName: '', email: '', phone: '', company: '', industry: '', boxType: '',
+          fullName: '', email: '', phone: '', company: '',
           quantity: '', length: '', width: '', depth: '', unit: 'in',
           specifications: '', deadline: '', budget: '', message: '',
         })
@@ -298,25 +258,6 @@ export function InstantQuote() {
                   <div>
                     <input type="text" name="company" value={formData.company} onChange={handleChange}
                       className={fieldClass('company')} placeholder="Company Name (optional)" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <select name="industry" value={formData.industry} onChange={handleChange}
-                      className={`${fieldClass('industry')} ${selectArrow}`}>
-                      <option value="">Industry (optional)</option>
-                      {industries.map((ind) => <option key={ind} value={ind}>{ind}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <select name="boxType" value={formData.boxType} onChange={handleChange}
-                      className={`${fieldClass('boxType')} ${selectArrow}`} disabled={loadingCategories}>
-                      <option value="">{loadingCategories ? 'Loading…' : 'Box Type (optional)'}</option>
-                      {categories.map((c) => (
-                        <option key={c._id} value={c.name}>{c.name}{c.type ? ` — ${c.type}` : ''}</option>
-                      ))}
-                    </select>
                   </div>
                 </div>
 

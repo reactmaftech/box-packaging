@@ -8,7 +8,7 @@ import axios from 'axios'
 import {
   Loader, Package, ChevronLeft, ChevronRight, ArrowLeft, ArrowRight,
   CheckCircle, X, Truck, Palette, Clock, ShieldCheck, Layers,
-  Maximize2, Phone, Ruler,
+  Maximize2, Phone, Mail, Ruler,
 } from 'lucide-react'
 import Link from 'next/link'
 import { Header } from '@/components/Header'
@@ -22,6 +22,10 @@ import { LuxuryFinishingSlider } from '@/components/LuxuryFinishingSlider'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
 
+const PHONE_NUMBER = '+12177276247'
+const PHONE_DISPLAY = '+1 (217) 727-6247'
+const EMAIL_ADDRESS = 'info@slickcustomboxes.com'
+
 export interface Product {
   _id: string
   title: string
@@ -34,12 +38,6 @@ export interface Product {
   createdBy?: { _id: string; name: string }
   createdAt: string
   updatedAt: string
-}
-
-interface CategoryOption {
-  _id: string
-  name: string
-  type: string
 }
 
 interface Category {
@@ -56,8 +54,6 @@ interface FormData {
   email: string
   phone: string
   company: string
-  industry: string
-  boxType: string
   quantity: string
   length: string
   width: string
@@ -70,15 +66,10 @@ interface FormData {
 }
 
 const EMPTY_FORM: FormData = {
-  fullName: '', email: '', phone: '', company: '', industry: '', boxType: '',
+  fullName: '', email: '', phone: '', company: '',
   quantity: '', length: '', width: '', depth: '', unit: 'in',
   specifications: '', deadline: '', budget: '', message: '',
 }
-
-const INDUSTRIES = [
-  'Electronics', 'Cosmetics & Beauty', 'Food & Beverage',
-  'Pharmaceuticals', 'E-commerce', 'Retail', 'Other',
-]
 
 const BUDGETS = ['Under $500', '$500 - $1000', '$1000 - $5000', '$5000+']
 
@@ -121,9 +112,6 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [zoom, setZoom] = useState({ on: false, x: 50, y: 50 })
 
-  const [categories, setCategories] = useState<CategoryOption[]>([])
-  const [loadingCategories, setLoadingCategories] = useState(false)
-
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -134,26 +122,6 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
   const prefilledForRef = useRef<string | null>(null)
 
   const today = new Date().toISOString().split('T')[0]
-
-  // ── Load categories for the form ────────────────────────────────
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        setLoadingCategories(true)
-        const res = await fetch(`${API_URL}/categories?isActive=true`)
-        if (cancelled) return
-        const json = await res.json()
-        const list = extractArray<CategoryOption>(json)
-        setCategories(list)
-      } catch (err) {
-        console.error('Failed to load categories:', err)
-      } finally {
-        if (!cancelled) setLoadingCategories(false)
-      }
-    })()
-    return () => { cancelled = true }
-  }, [])
 
   // ── Bootstrap product ──────────────────────────────────────────
   useEffect(() => {
@@ -288,7 +256,6 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
   const prefillForm = (item: Product) => {
     setFormData({
       ...EMPTY_FORM,
-      boxType: item.category || '',
       specifications: `Product: ${item.title} (${item.category})\n`,
     })
   }
@@ -340,8 +307,6 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
     if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = 'Please enter a valid email address'
     if (!formData.phone || formData.phone.trim().length < 7) errors.phone = 'Phone number must be at least 7 characters'
     if (!formData.company) errors.company = 'Company name is required'
-    if (!formData.industry) errors.industry = 'Please select an industry'
-    if (!formData.boxType) errors.boxType = 'Please select a box type'
     ;(['length', 'width', 'depth'] as const).forEach((k) => {
       const v = formData[k]
       if (v !== '' && (Number.isNaN(Number(v)) || Number(v) < 0)) errors[k] = 'Must be a positive number'
@@ -367,8 +332,6 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
         email: formData.email.trim(),
         phone: formData.phone.trim(),
         company: formData.company.trim(),
-        industry: formData.industry,
-        boxType: formData.boxType,
         quantity: formData.quantity ? parseInt(formData.quantity, 10) : undefined,
         specifications: formData.specifications,
         deadline: formData.deadline || undefined,
@@ -547,17 +510,51 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
                 </p>
               )}
 
-              <div className="mt-6 rounded-2xl bg-gradient-to-br from-[#171512] to-[#2a2520] p-5">
-                <p className="text-white/40 text-xs uppercase tracking-wider mb-4">Contact us directly</p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <a href="tel:+12177276247" className="flex items-center gap-3 group">
-                    <span className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white shrink-0 transition-all duration-200 group-hover:bg-[#FDB022] group-hover:scale-105">
-                      <Phone size={16} />
-                    </span>
-                    <span className="text-white text-sm font-medium group-hover:text-[#FDB022] transition-colors">
-                      +1 (217) 727-6247
-                    </span>
-                  </a>
+              {/* Light Theme "Contact us directly" Section */}
+              <div className="mt-8 rounded-2xl bg-gradient-to-br from-[#F5F1E7] to-white border border-black/[0.06] p-6 shadow-sm">
+                <p className="text-black/50 text-xs font-semibold uppercase tracking-wider mb-4">
+                  Contact us directly
+                </p>
+                
+                <div className="flex flex-col gap-3">
+                  {/* Get a Quote CTA */}
+                  <button
+                    onClick={scrollToForm}
+                    className="flex items-center justify-between w-full bg-[#FDB022] hover:bg-[#f5a80f] text-[#171512] font-bold px-5 py-3.5 rounded-xl transition-all group shadow-sm"
+                  >
+                    <span>Get a Free Quote</span>
+                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                  </button>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+                    {/* Phone Button */}
+                    <a 
+                      href={`tel:${PHONE_NUMBER}`} 
+                      className="flex items-center gap-3 bg-white border border-black/[0.06] hover:border-[#FDB022]/50 shadow-sm hover:shadow rounded-xl p-3 transition-all group"
+                    >
+                      <span className="w-9 h-9 rounded-full bg-[#FDB022]/15 text-[#c98b0c] flex items-center justify-center shrink-0 group-hover:bg-[#FDB022] group-hover:text-[#171512] transition-colors">
+                        <Phone size={16} />
+                      </span>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[10px] text-black/40 uppercase tracking-wider font-semibold">Call Us</span>
+                        <span className="text-[#171512] text-sm font-semibold truncate group-hover:text-[#c98b0c] transition-colors">{PHONE_DISPLAY}</span>
+                      </div>
+                    </a>
+
+                    {/* Email Button */}
+                    <a 
+                      href={`mailto:${EMAIL_ADDRESS}`} 
+                      className="flex items-center gap-3 bg-white border border-black/[0.06] hover:border-[#FDB022]/50 shadow-sm hover:shadow rounded-xl p-3 transition-all group"
+                    >
+                      <span className="w-9 h-9 rounded-full bg-[#FDB022]/15 text-[#c98b0c] flex items-center justify-center shrink-0 group-hover:bg-[#FDB022] group-hover:text-[#171512] transition-colors">
+                        <Mail size={16} />
+                      </span>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[10px] text-black/40 uppercase tracking-wider font-semibold">Email Us</span>
+                        <span className="text-[#171512] text-sm font-semibold truncate group-hover:text-[#c98b0c] transition-colors">{EMAIL_ADDRESS}</span>
+                      </div>
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -675,27 +672,6 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
                           <input type="text" name="company" value={formData.company} onChange={handleChange}
                             className={fieldClass('company')} placeholder="Company Name *" />
                           {validationErrors.company && <p className="text-red-500 text-xs mt-1">{validationErrors.company}</p>}
-                        </div>
-                      </div>
-
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <div>
-                          <select name="industry" value={formData.industry} onChange={handleChange}
-                            className={`${fieldClass('industry')} ${selectArrow}`}>
-                            <option value="">Industry *</option>
-                            {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
-                          </select>
-                          {validationErrors.industry && <p className="text-red-500 text-xs mt-1">{validationErrors.industry}</p>}
-                        </div>
-                        <div>
-                          <select name="boxType" value={formData.boxType} onChange={handleChange}
-                            className={`${fieldClass('boxType')} ${selectArrow}`} disabled={loadingCategories}>
-                            <option value="">{loadingCategories ? 'Loading…' : 'Box Type *'}</option>
-                            {categories.map(c => (
-                              <option key={c._id} value={c.name}>{c.name}{c.type ? ` — ${c.type}` : ''}</option>
-                            ))}
-                          </select>
-                          {validationErrors.boxType && <p className="text-red-500 text-xs mt-1">{validationErrors.boxType}</p>}
                         </div>
                       </div>
 

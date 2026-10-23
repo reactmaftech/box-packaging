@@ -8,9 +8,13 @@ import {
   ArrowRight,
   Package,
   Loader,
+  Phone,
 } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
+
+const PHONE_NUMBER = '+12177276247'
+const PHONE_DISPLAY = '+1 (217) 727-6247'
 
 // Fallback images
 import boxImage1 from '../assets/images/01.webp'
@@ -77,11 +81,9 @@ export function Hero() {
       setLoading(true)
       setDebugInfo('Fetching...')
       
-      // Try multiple endpoints
       let categories: any[] = []
       let success = false
 
-      // Try endpoint 1: /categories/active
       console.log('🔍 Trying /categories/active...')
       try {
         const response = await fetch(`${API_URL}/categories/active`)
@@ -106,7 +108,6 @@ export function Hero() {
         console.log('❌ /categories/active failed:', e)
       }
 
-      // Try endpoint 2: /categories (all)
       if (!success) {
         console.log('🔍 Trying /categories...')
         try {
@@ -133,7 +134,6 @@ export function Hero() {
         }
       }
 
-      // Try endpoint 3: /categories/debug/all
       if (!success) {
         console.log('🔍 Trying /categories/debug/all...')
         try {
@@ -154,22 +154,10 @@ export function Hero() {
       }
 
       console.log('📋 Total categories found:', categories.length)
-      console.log('📋 Categories data:', categories.map(c => ({ 
-        name: c.name, 
-        hasImage: !!c.image, 
-        imageUrl: c.image?.substring(0, 60) || 'none',
-        isActive: c.isActive 
-      })))
-
-      // Filter active categories with valid images
+      
       const validCategories = categories.filter(cat => {
         const isActive = cat.isActive === true || cat.isActive === undefined
         const hasImage = cat.image && typeof cat.image === 'string' && cat.image.trim().length > 0 && cat.image.startsWith('http')
-        
-        if (!hasImage) {
-          console.log(`⚠️ Category "${cat.name}" - image: ${cat.image?.substring(0, 50) || 'none'} - active: ${isActive}`)
-        }
-        
         return isActive && hasImage
       })
 
@@ -182,23 +170,18 @@ export function Hero() {
           alt: cat.name
         }))
         
-        console.log('✅ Using dynamic images:', images.length)
         setSliderImages(images)
         setUseFallback(false)
         setDebugInfo(`Showing ${images.length} dynamic images`)
       } else {
-        console.log('⚠️ No valid categories with images')
-        
-        // If categories exist but no images, still show category names
         const activeCategories = categories.filter(cat => 
           cat.isActive === true || cat.isActive === undefined
         )
         
         if (activeCategories.length > 0) {
-          console.log('📋 Active categories (without images):', activeCategories.length)
-          setDebugInfo(`Found ${activeCategories.length} categories but none have images. Upload images in admin panel.`)
+          setDebugInfo(`Found ${activeCategories.length} categories but none have images.`)
         } else {
-          setDebugInfo('No categories found. Create categories in admin panel first.')
+          setDebugInfo('No categories found.')
         }
         
         useFallbackWithLocalImages()
@@ -292,12 +275,14 @@ export function Hero() {
                 Get a Quote
                 <ArrowRight size={17} className="group-hover:translate-x-1 transition-transform" />
               </Link>
-              {/* <Link
-                href="#portfolio"
-                className="px-7 py-3.5 bg-transparent text-[#171512] font-semibold rounded-lg border-2 border-black/10 hover:border-[#fdb022] hover:bg-[#fdb022]/5 transition-all duration-300"
+              
+              <a
+                href={`tel:${PHONE_NUMBER}`}
+                className="group px-7 py-3.5 bg-transparent text-[#171512] font-semibold rounded-lg border-2 border-black/10 hover:border-[#fdb022] hover:bg-[#fdb022]/5 transition-all duration-300 flex items-center gap-2"
               >
-                View Portfolio
-              </Link> */}
+                <Phone size={17} className="group-hover:scale-110 transition-transform" />
+                {PHONE_DISPLAY}
+              </a>
             </motion.div>
           </motion.div>
         </div>

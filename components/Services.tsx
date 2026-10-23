@@ -1,7 +1,10 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowRight, Palette, Tag, ShieldCheck, Rocket } from 'lucide-react'
+import { ArrowRight, Palette, Tag, ShieldCheck, Rocket, Phone } from 'lucide-react'
+
+const PHONE_NUMBER = '+12177276247'
+const PHONE_DISPLAY = '+1 (217) 727-6247'
 
 const highlights = [
   {
@@ -126,13 +129,24 @@ export function Services() {
             <h3 className="text-2xl font-bold text-white mb-4 relative z-10">{darkCard.title}</h3>
             <p className="text-white/65 leading-relaxed mb-8 relative z-10">{darkCard.description}</p>
 
-            <a
-              href="#inquiry"
-              className="group mt-auto inline-flex items-center gap-2 w-fit bg-[#fdb022] text-[#171512] font-semibold px-6 py-3 rounded-lg hover:bg-[#f5a80a] transition-colors relative z-10"
-            >
-              Get a free quote
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </a>
+            {/* Action Buttons */}
+            <div className="mt-auto flex flex-col gap-3 relative z-10">
+              <a
+                href="#inquiry"
+                className="group inline-flex items-center justify-center gap-2 w-full bg-[#fdb022] text-[#171512] font-semibold px-6 py-3 rounded-lg hover:bg-[#f5a80a] transition-colors"
+              >
+                Get a free quote
+                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              </a>
+              
+              <a
+                href={`tel:${PHONE_NUMBER}`}
+                className="group inline-flex items-center justify-center gap-2 w-full bg-white/5 border border-white/10 text-white font-semibold px-6 py-3 rounded-lg hover:bg-white/10 hover:border-white/20 transition-all"
+              >
+                <Phone size={16} className="text-[#fdb022]" />
+                {PHONE_DISPLAY}
+              </a>
+            </div>
           </motion.div>
         </div>
       </div>

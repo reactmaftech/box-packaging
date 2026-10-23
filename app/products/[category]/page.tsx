@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import {
   Search, Loader, X, Eye, MessageSquare, Package,
   Grid3X3, List, ArrowLeft, RefreshCw, Layers,
-  ArrowRight,
+  ArrowRight, Phone,
   CheckCircle,
   Ruler
 } from 'lucide-react'
@@ -22,6 +22,9 @@ import { DIMENSION_UNITS, DimensionUnit } from '@/lib/constants'
 import axios from 'axios'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
+
+const PHONE_NUMBER = '+12177276247'
+const PHONE_DISPLAY = '+1 (217) 727-6247'
 
 interface Product {
   _id: string
@@ -43,12 +46,6 @@ interface Category {
   description?: string
   image?: string
   isActive: boolean
-}
-
-interface CategoryOption {
-  _id: string
-  name: string
-  type: string
 }
 
 export default function CategoryProductsPage() {
@@ -81,8 +78,6 @@ export default function CategoryProductsPage() {
     email: '',
     phone: '',
     company: '',
-    industry: '',
-    boxType: '',
     quantity: '',
     length: '',
     width: '',
@@ -92,17 +87,10 @@ export default function CategoryProductsPage() {
     budget: '',
     message: '',
   })
-  const [categories, setCategories] = useState<CategoryOption[]>([])
-  const [loadingCategories, setLoadingCategories] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [formLoading, setFormLoading] = useState(false)
   const [formError, setFormError] = useState('')
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({})
-
-  const industries = [
-    'Electronics', 'Cosmetics & Beauty', 'Food & Beverage',
-    'Pharmaceuticals', 'E-commerce', 'Retail', 'Other',
-  ]
 
   useEffect(() => {
     if (categorySlug) resolveCategory(categorySlug)
@@ -113,23 +101,6 @@ export default function CategoryProductsPage() {
     if (categoryName) fetchProducts(categoryName)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryName, sortBy])
-
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        setLoadingCategories(true)
-        const res = await axios.get(`${API_URL}/categories?isActive=true`)
-        if (cancelled) return
-        setCategories(res.data?.data ?? [])
-      } catch (err) {
-        console.error('Failed to load categories:', err)
-      } finally {
-        if (!cancelled) setLoadingCategories(false)
-      }
-    })()
-    return () => { cancelled = true }
-  }, [])
 
   const resolveCategory = async (slug: string) => {
     try {
@@ -209,8 +180,6 @@ export default function CategoryProductsPage() {
   const displayName = categoryName || unslugify(categorySlug)
 
   // ===== Inquiry form helpers =====
-  // ✅ Only fullName, email, phone are required.
-  //    Dimensions are only validated if filled; deadline only if picked.
   const validateForm = () => {
     const errors: { [key: string]: string } = {}
 
@@ -265,17 +234,14 @@ export default function CategoryProductsPage() {
     setFormError('')
 
     try {
-      // ✅ Sparse payload — optional fields only included when filled in.
       const payload: any = {
         fullName: formData.fullName.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),
-        unit: formData.unit, // always present (default 'in')
+        unit: formData.unit,
       }
 
       if (formData.company.trim()) payload.company = formData.company.trim()
-      if (formData.industry) payload.industry = formData.industry
-      if (formData.boxType) payload.boxType = formData.boxType
       if (formData.quantity.trim()) {
         const q = parseInt(formData.quantity, 10)
         if (Number.isFinite(q) && q > 0) payload.quantity = q
@@ -303,12 +269,11 @@ export default function CategoryProductsPage() {
       if (isSuccess) {
         setSubmitted(true)
         setFormData({
-          fullName: '', email: '', phone: '', company: '', industry: '', boxType: '',
+          fullName: '', email: '', phone: '', company: '',
           quantity: '', length: '', width: '', depth: '', unit: 'in',
           deadline: '', budget: '', message: '',
         })
 
-        // 🆕 Redirect to thank-you page.
         router.push('/thank-you')
       } else {
         setFormError('Submission received but not confirmed by the server. Please try again.')
@@ -385,14 +350,21 @@ export default function CategoryProductsPage() {
                   || `Explore our ${displayName.toLowerCase()} collection. High-quality custom packaging solutions designed to meet your specific needs.`}
               </p>
 
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex flex-wrap items-center gap-3">
                 <Link
-                  href="/quote"
+                  href="/get-a-quote"
                   className="inline-flex items-center gap-2 bg-[#FDB022] text-[#171512] font-semibold px-6 py-3 rounded-lg hover:bg-[#f5a80f] transition-colors shadow-lg shadow-[#FDB022]/25"
                 >
                   Request a Quote
                   <ArrowRight size={18} />
                 </Link>
+                <a
+                  href={`tel:${PHONE_NUMBER}`}
+                  className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-black/10 text-[#171512] font-semibold px-6 py-3 rounded-lg hover:bg-white hover:border-[#FDB022] transition-colors shadow-sm"
+                >
+                  <Phone size={18} className="text-[#FDB022]" />
+                  {PHONE_DISPLAY}
+                </a>
               </div>
 
               <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500">
@@ -463,30 +435,12 @@ export default function CategoryProductsPage() {
                       </div>
                     </div>
 
-                    {/* Row 2: Company, Industry, Box Type — all optional */}
+                    {/* Row 2: Company — optional */}
                     <div className="grid grid-cols-3 gap-2.5">
-                      <div>
+                      <div className="col-span-3">
                         <label className={labelClass}>Company</label>
                         <input type="text" name="company" value={formData.company} onChange={handleChange}
-                          className={fieldClass('company')} placeholder="Company Inc." />
-                      </div>
-                      <div>
-                        <label className={labelClass}>Industry</label>
-                        <select name="industry" value={formData.industry} onChange={handleChange}
-                          className={`${fieldClass('industry')} ${selectArrow}`}>
-                          <option value="">Select</option>
-                          {industries.map((ind) => <option key={ind} value={ind}>{ind}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className={labelClass}>Box Type</label>
-                        <select name="boxType" value={formData.boxType} onChange={handleChange}
-                          className={`${fieldClass('boxType')} ${selectArrow}`} disabled={loadingCategories}>
-                          <option value="">{loadingCategories ? 'Loading…' : 'Select'}</option>
-                          {categories.map((c) => (
-                            <option key={c._id} value={c.name}>{c.name}</option>
-                          ))}
-                        </select>
+                          className={fieldClass('company')} placeholder="Company Inc. (optional)" />
                       </div>
                     </div>
 

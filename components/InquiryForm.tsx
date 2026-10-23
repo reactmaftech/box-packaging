@@ -1,7 +1,7 @@
 // app/components/InquiryForm.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
@@ -10,14 +10,7 @@ import {
 } from 'lucide-react'
 import { DIMENSION_UNITS, DimensionUnit } from '@/lib/constants'
 
-// ✅ FIX #1: fallback so API_URL is never undefined
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
-
-interface CategoryOption {
-  _id: string
-  name: string
-  type: string
-}
 
 export function InquiryForm() {
   const router = useRouter()
@@ -27,8 +20,6 @@ export function InquiryForm() {
     email: '',
     phone: '',
     company: '',
-    industry: '',
-    boxType: '',
     quantity: '',
     length: '',
     width: '',
@@ -40,17 +31,10 @@ export function InquiryForm() {
     message: '',
   })
 
-  const [categories, setCategories] = useState<CategoryOption[]>([])
-  const [loadingCategories, setLoadingCategories] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({})
-
-  const industries = [
-    'Electronics', 'Cosmetics & Beauty', 'Food & Beverage',
-    'Pharmaceuticals', 'E-commerce', 'Retail', 'Other',
-  ]
 
   const benefits = [
     { icon: Clock, text: 'Fast Turnaround' },
@@ -58,26 +42,6 @@ export function InquiryForm() {
     { icon: CheckCircle, text: 'Free Design Consultation' },
   ]
 
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        setLoadingCategories(true)
-        const res = await axios.get(`${API_URL}/categories?isActive=true`)
-        if (cancelled) return
-        setCategories(res.data?.data ?? [])
-      } catch (err) {
-        console.error('Failed to load categories:', err)
-      } finally {
-        if (!cancelled) setLoadingCategories(false)
-      }
-    })()
-    return () => { cancelled = true }
-  }, [])
-
-  // ✅ Only fullName, email, phone are required now.
-  //    All other fields are optional — dimensions are only validated
-  //    if the user typed something into them.
   const validateForm = () => {
     const errors: { [key: string]: string } = {}
 
@@ -134,19 +98,14 @@ export function InquiryForm() {
     setError('')
 
     try {
-      // ✅ Build a sparse payload — only include optional fields if the
-      //    user actually filled them in. This keeps the backend happy and
-      //    avoids storing empty strings.
       const payload: any = {
         fullName: formData.fullName.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),
-        unit: formData.unit, // has a default ('in') — always safe to send
+        unit: formData.unit,
       }
 
       if (formData.company.trim()) payload.company = formData.company.trim()
-      if (formData.industry) payload.industry = formData.industry
-      if (formData.boxType) payload.boxType = formData.boxType
       if (formData.quantity.trim()) {
         const q = parseInt(formData.quantity, 10)
         if (Number.isFinite(q) && q > 0) payload.quantity = q
@@ -163,17 +122,11 @@ export function InquiryForm() {
       if (widthNum !== undefined && Number.isFinite(widthNum)) payload.width = widthNum
       if (depthNum !== undefined && Number.isFinite(depthNum)) payload.depth = depthNum
 
-      console.log('[InquiryForm] POST →', `${API_URL}/inquiries`, payload)
-
       const response = await axios.post(`${API_URL}/inquiries`, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 10000,
       })
 
-      console.log('[InquiryForm] response →', response.status, response.data)
-
-      // ✅ Treat the submission as successful if the API explicitly says
-      //    `success: true`, OR returns 2xx without `success: false`.
       const isSuccess =
         response.data?.success === true ||
         (response.status >= 200 && response.status < 300 && response.data?.success !== false)
@@ -181,7 +134,7 @@ export function InquiryForm() {
       if (isSuccess) {
         setSubmitted(true)
         setFormData({
-          fullName: '', email: '', phone: '', company: '', industry: '', boxType: '',
+          fullName: '', email: '', phone: '', company: '',
           quantity: '', length: '', width: '', depth: '', unit: 'in',
           specifications: '', deadline: '', budget: '', message: '',
         })
@@ -192,7 +145,6 @@ export function InquiryForm() {
     } catch (err: any) {
       console.error('Submission error:', err)
       if (err.response) {
-        console.error('Server said:', err.response.status, err.response.data)
         if (err.response.data?.errors) {
           const serverErrors: { [key: string]: string } = {}
           err.response.data.errors.forEach((e: any) => { serverErrors[e.path] = e.msg })
@@ -334,38 +286,6 @@ export function InquiryForm() {
                       className={fieldClass('company')}
                       placeholder="Company Name (optional)"
                     />
-                  </div>
-                </div>
-
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <select
-                      name="industry"
-                      value={formData.industry}
-                      onChange={handleChange}
-                      className={`${fieldClass('industry')} ${selectArrow}`}
-                    >
-                      <option value="">Industry (optional)</option>
-                      {industries.map((ind) => <option key={ind} value={ind}>{ind}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <select
-                      name="boxType"
-                      value={formData.boxType}
-                      onChange={handleChange}
-                      className={`${fieldClass('boxType')} ${selectArrow}`}
-                      disabled={loadingCategories}
-                    >
-                      <option value="">
-                        {loadingCategories ? 'Loading box types…' : 'Box Type (optional)'}
-                      </option>
-                      {categories.map((c) => (
-                        <option key={c._id} value={c.name}>
-                          {c.name}{c.type ? ` — ${c.type}` : ''}
-                        </option>
-                      ))}
-                    </select>
                   </div>
                 </div>
 

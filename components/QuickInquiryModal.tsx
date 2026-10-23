@@ -1,7 +1,7 @@
 // components/QuickInquiryModal.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import axios from 'axios'
 import {
@@ -19,12 +19,6 @@ interface QuickInquiryModalProps {
   pageName?: string
 }
 
-interface CategoryOption {
-  _id: string
-  name: string
-  type: string
-}
-
 export function QuickInquiryModal({
   isOpen,
   onClose,
@@ -37,7 +31,6 @@ export function QuickInquiryModal({
     email: '',
     phone: '',
     company: '',
-    boxType: '',
     quantity: '',
     length: '',
     width: '',
@@ -46,39 +39,10 @@ export function QuickInquiryModal({
     message: '',
   })
 
-  const [categories, setCategories] = useState<CategoryOption[]>([])
-  const [loadingCategories, setLoadingCategories] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({})
-
-  useEffect(() => {
-    if (!isOpen) return
-    let cancelled = false
-    ;(async () => {
-      try {
-        setLoadingCategories(true)
-        const res = await axios.get(`${API_URL}/categories?isActive=true`)
-        if (cancelled) return
-        setCategories(res.data?.data ?? [])
-      } catch (err) {
-        console.error('Failed to load categories:', err)
-      } finally {
-        if (!cancelled) setLoadingCategories(false)
-      }
-    })()
-    return () => { cancelled = true }
-  }, [isOpen])
-
-  useEffect(() => {
-    if (!isOpen) return
-    setFormData((prev) => ({
-      ...prev,
-      boxType: prev.boxType || categoryName || '',
-    }))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, categoryName])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -92,8 +56,6 @@ export function QuickInquiryModal({
     }
   }
 
-  // ✅ Only fullName, email, phone are required.
-  //    Dimensions validated only if filled; deadline not present in this modal.
   const validateForm = () => {
     const errors: { [key: string]: string } = {}
 
@@ -128,7 +90,6 @@ export function QuickInquiryModal({
     setError('')
 
     try {
-      // Preserve the contextual metadata (page/category/type) in message.
       const messageWithDetails = [
         `[Page: ${pageName}]`,
         `[Category Type: ${categoryType}]`,
@@ -136,22 +97,15 @@ export function QuickInquiryModal({
         formData.message.trim() ? `\n${formData.message.trim()}` : '',
       ].filter(Boolean).join('\n')
 
-      // ✅ Sparse payload — only required + any optional fields the user actually filled in.
       const payload: any = {
         fullName: formData.fullName.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),
         unit: formData.unit,
-        // Context is always attached so the admin can see where it came from.
         message: messageWithDetails,
       }
 
       if (formData.company.trim()) payload.company = formData.company.trim()
-      // categoryType is a good default for `industry` — only set if we have one.
-      if (categoryType && categoryType !== 'Other') payload.industry = categoryType
-      // boxType: use user's choice, otherwise fall back to the category name.
-      const chosenBox = formData.boxType || categoryName
-      if (chosenBox) payload.boxType = chosenBox
       if (formData.quantity.trim()) {
         const q = parseInt(formData.quantity, 10)
         if (Number.isFinite(q) && q > 0) payload.quantity = q
@@ -163,8 +117,6 @@ export function QuickInquiryModal({
       if (lengthNum !== undefined && Number.isFinite(lengthNum)) payload.length = lengthNum
       if (widthNum !== undefined && Number.isFinite(widthNum)) payload.width = widthNum
       if (depthNum !== undefined && Number.isFinite(depthNum)) payload.depth = depthNum
-
-      console.log('[QuickInquiryModal] payload →', payload)
 
       const response = await axios.post(`${API_URL}/inquiries`, payload, {
         headers: { 'Content-Type': 'application/json' },
@@ -178,7 +130,7 @@ export function QuickInquiryModal({
       if (isSuccess) {
         setSubmitted(true)
         setFormData({
-          fullName: '', email: '', phone: '', company: '', boxType: '',
+          fullName: '', email: '', phone: '', company: '',
           quantity: '', length: '', width: '', depth: '', unit: 'in', message: '',
         })
         setTimeout(() => {
@@ -217,7 +169,7 @@ export function QuickInquiryModal({
 
   const resetForm = () => {
     setFormData({
-      fullName: '', email: '', phone: '', company: '', boxType: '',
+      fullName: '', email: '', phone: '', company: '',
       quantity: '', length: '', width: '', depth: '', unit: 'in', message: '',
     })
     setError('')
@@ -364,22 +316,6 @@ export function QuickInquiryModal({
                         placeholder="Enter company name (optional)"
                       />
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Box Type</label>
-                    <select
-                      name="boxType"
-                      value={formData.boxType}
-                      onChange={handleChange}
-                      className={`${inputClass('boxType')} ${selectArrow}`}
-                      disabled={loadingCategories}
-                    >
-                      <option value="">{loadingCategories ? 'Loading…' : 'Select a box type'}</option>
-                      {categories.map((c) => (
-                        <option key={c._id} value={c.name}>{c.name}{c.type ? ` — ${c.type}` : ''}</option>
-                      ))}
-                    </select>
                   </div>
 
                   {/* Dimensions */}

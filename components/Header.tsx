@@ -67,7 +67,6 @@ function splitIntoColumns(categories: MenuCategory[], maxPerColumn: number = 6):
   return columns
 }
 
-// Split an array of columns into rows of N columns each
 function chunkColumns<T>(columns: T[], perRow: number = 4): T[][] {
   const rows: T[][] = []
   for (let i = 0; i < columns.length; i += perRow) {
@@ -116,19 +115,6 @@ export function Header() {
       const response = await fetch(`${API_URL}/menus/active`)
       if (response.ok) {
         const data = await response.json()
-        console.log('📦 Menus loaded:', data.data?.length || 0)
-        if (data.data) {
-          data.data.forEach((menu: DynamicMenu) => {
-            menu.items?.forEach((item: MenuItem) => {
-              console.log(`   Item "${item.label}" - showCategoryIcon: ${item.showCategoryIcon}, icon: ${item.icon}`)
-              if (item.categories) {
-                item.categories.forEach((cat: MenuCategory) => {
-                  console.log(`     Category "${cat.name}" - icon: "${cat.icon}", image: "${cat.image?.substring(0, 30)}"`)
-                })
-              }
-            })
-          })
-        }
         setDynamicMenus(data.data || [])
       }
     } catch (error) {
@@ -164,355 +150,488 @@ export function Header() {
     return menu.items.some(item => item.type === 'category' && item.categories && item.categories.length > 0)
   }
 
-  // Render icon for a category in the dropdown
-  const renderCategoryIcon = (cat: MenuCategory, fallbackIconName: string) => {
-    if (cat.icon && cat.icon.trim()) {
-      const iconVal = cat.icon.trim()
-      if (iconVal.startsWith('http')) {
-        return (
-          <img
-            src={iconVal}
-            alt=""
-            className="w-4 h-4 object-cover rounded-sm"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-          />
-        )
-      }
-      const IconComponent = resolveIconComponent(iconVal)
-      if (IconComponent) return <IconComponent size={15} />
-    }
-
-    if (cat.image && cat.image.trim() && cat.image.startsWith('http')) {
-      return (
-        <img
-          src={cat.image}
-          alt=""
-          className="w-4 h-4 object-cover rounded-sm"
-          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-        />
-      )
-    }
-
-    const FallbackIcon = resolveIconComponent(fallbackIconName)
-    if (FallbackIcon) return <FallbackIcon size={15} />
-
-    return <Layers size={15} />
-  }
-
   return (
-    <header className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'pt-2 px-2' : 'pt-0 px-0'}`}>
-      <div className={`w-[95%] mx-auto bg-white transition-all duration-300 ${isScrolled ? 'rounded-2xl shadow-lg' : 'rounded-none shadow-none'}`}>
-        {/* Row 1 — logo / search / utility */}
-        <div className="border-b border-black/[0.08] px-6">
-          <div className="py-3 flex items-center gap-6">
-            <Link href="/" className="flex items-center shrink-0 group">
-              <Image
-                src={logoImage}
-                alt={SITE_NAME}
-                priority
-                className="h-14 md:h-16 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
-              />
-            </Link>
-
-            <div className="hidden md:flex flex-1 max-w-xl">
-              <div className="relative w-full">
-                <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-black/35" />
-                <input type="text" placeholder="Search boxes, materials, industries..." className="w-full bg-[#F5F1E7] border border-black/10 rounded-full pl-10 pr-4 py-2.5 text-sm text-[#171512] placeholder:text-black/35 focus:outline-none focus:ring-2 focus:ring-[#fdb022]/30 focus:border-[#fdb022] transition-all" />
-              </div>
-            </div>
-
-            <div className="hidden md:flex items-center gap-5 ml-auto shrink-0">
-              <a href={`tel:${PHONE_NUMBER}`} className="hidden lg:flex items-center gap-2 text-sm text-[#171512]/70 hover:text-[#171512] transition-colors">
-                <Phone size={16} /><span>{PHONE_DISPLAY}</span>
-              </a>
-              <a href={`mailto:${EMAIL_ADDRESS}`} className="hidden lg:flex items-center gap-2 text-sm text-[#171512]/70 hover:text-[#171512] transition-colors">
-                <Mail size={16} />
-              </a>
-              <Link href="/get-a-quote" className="flex items-center gap-2 bg-[#fdb022] text-[#171512] text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-[#f5a80a] transition-colors">
-                Get Quote<ArrowRight size={15} />
-              </Link>
-            </div>
-
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden ml-auto text-[#171512] p-2 hover:bg-black/5 rounded-lg transition-colors">
-              {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
-            </button>
+    <header className="sticky top-0 z-50 w-full flex flex-col">
+      {/* ═══════════════════════════════════════════════════════════
+          TOP UTILITY BAR — Full Width, Light Color
+      ═══════════════════════════════════════════════════════════ */}
+      <div className="hidden md:block w-full bg-[#F5F1E7] border-b border-black/[0.06]">
+        <div className="w-[97%] mx-auto px-2 py-2 flex items-center justify-between gap-4">
+          <p className="text-xs font-medium text-[#171512]/70 flex items-center gap-1.5">
+            <span className="text-base">📦</span> Premium Custom Packaging — Free Design &amp; Shipping
+          </p>
+          <div className="flex items-center gap-3 ml-auto">
+            {/* Phone */}
+            <a
+              href={`tel:${PHONE_NUMBER}`}
+              className="flex items-center gap-2 text-sm font-bold text-[#171512] hover:text-[#d99a1f] transition-colors"
+            >
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#fdb022]/20 text-[#d99a1f]">
+                <Phone size={13} />
+              </span>
+              {PHONE_DISPLAY}
+            </a>
+            <span className="w-px h-4 bg-black/10" />
+            {/* Email */}
+            <a
+              href={`mailto:${EMAIL_ADDRESS}`}
+              className="flex items-center gap-2 text-sm font-semibold text-[#171512]/80 hover:text-[#171512] transition-colors"
+            >
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-black/5 text-[#171512]/70">
+                <Mail size={13} />
+              </span>
+              {EMAIL_ADDRESS}
+            </a>
           </div>
         </div>
+      </div>
 
-        {/* Row 2 — Dynamic Navigation, desktop only */}
-        <div className="hidden lg:block">
-          <div className="px-6">
-            <nav className="flex items-center gap-8 text-sm">
-              {loadingMenus ? (
-                <div className="flex items-center gap-2 py-3.5 text-sm text-gray-400"><Loader size={14} className="animate-spin" /><span>Loading...</span></div>
-              ) : dynamicMenus.length > 0 ? (
-                dynamicMenus.map((menu) => {
-                  const menuHasMegaMenu = hasMegaMenu(menu)
+      {/* ═══════════════════════════════════════════════════════════
+          MAIN HEADER CONTAINER (Rounded on scroll)
+      ═══════════════════════════════════════════════════════════ */}
+      <div className={`transition-all duration-300 ${isScrolled ? 'pt-2 px-2' : 'pt-0 px-0'}`}>
+        <div className={`w-[97%] mx-auto bg-white transition-all duration-300 ${isScrolled ? 'rounded-2xl shadow-xl' : 'rounded-none shadow-none'}`}>
+          
+          {/* MAIN ROW — logo / search / colorful CTAs */}
+          <div className="border-b border-black/[0.08] px-4 md:px-6">
+            <div className="py-3 flex items-center gap-4 md:gap-6">
+              {/* Logo */}
+              <Link href="/" className="flex items-center shrink-0 group">
+                <Image
+                  src={logoImage}
+                  alt={SITE_NAME}
+                  priority
+                  className="h-12 md:h-16 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+                />
+              </Link>
 
-                  // Single link menu (no dropdown)
-                  if (!menuHasMegaMenu && menu.items.length === 1 && menu.items[0].type === 'custom') {
-                    return (
-                      <Link key={menu._id} href={menu.items[0].customLink || `/${menu.slug}`} className="py-3.5 font-medium text-[#171512]/70 hover:text-[#171512] transition-colors">
-                        {menu.name}
-                      </Link>
-                    )
-                  }
+              {/* Search — desktop */}
+              <div className="hidden md:flex flex-1 max-w-lg">
+                <div className="relative w-full">
+                  <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-black/35" />
+                  <input
+                    type="text"
+                    placeholder="Search boxes, materials, industries..."
+                    className="w-full bg-[#F5F1E7] border border-black/10 rounded-full pl-10 pr-4 py-2.5 text-sm text-[#171512] placeholder:text-black/35 focus:outline-none focus:ring-2 focus:ring-[#fdb022]/40 focus:border-[#fdb022] transition-all"
+                  />
+                </div>
+              </div>
 
-                  // Multiple single links (simple dropdown)
-                  if (!menuHasMegaMenu && menu.items.every(item => item.type === 'custom')) {
+              {/* Colorful action buttons */}
+              <div className="hidden md:flex items-center gap-3 ml-auto shrink-0">
+                <Link
+                  href="/get-a-quote"
+                  className="flex items-center gap-2 bg-gradient-to-r from-[#fdb022] to-[#f5a80a] text-[#171512] text-[15px] font-medium px-6 py-3 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+                >
+                  Get a Quote <ArrowRight size={16} />
+                </Link>
+                <a
+                  href={`tel:${PHONE_NUMBER}`}
+                  className="flex items-center gap-2 bg-[#171512] text-white text-[15px] font-medium px-6 py-3 rounded-xl hover:bg-black hover:-translate-y-0.5 transition-all duration-200"
+                >
+                  <Phone size={16} /> Call Now
+                </a>
+              </div>
+
+              {/* Mobile menu button */}
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="md:hidden ml-auto text-[#171512] p-2 hover:bg-black/5 rounded-lg transition-colors"
+                aria-label="Toggle menu"
+              >
+                {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
+              </button>
+            </div>
+          </div>
+
+          {/* ═══════════════════════════════════════════════════════════
+              DESKTOP NAVIGATION
+          ═══════════════════════════════════════════════════════════ */}
+          <div className="hidden lg:block">
+            <div className="px-6">
+              <nav className="flex items-center gap-6 xl:gap-8 text-sm">
+                {loadingMenus ? (
+                  <div className="flex items-center gap-2 py-3.5 text-sm text-gray-400">
+                    <Loader size={14} className="animate-spin" />
+                    <span>Loading...</span>
+                  </div>
+                ) : dynamicMenus.length > 0 ? (
+                  dynamicMenus.map((menu) => {
+                    const menuHasMegaMenu = hasMegaMenu(menu)
+
+                    // Single custom link
+                    if (!menuHasMegaMenu && menu.items.length === 1 && menu.items[0].type === 'custom') {
+                      return (
+                        <Link
+                          key={menu._id}
+                          href={menu.items[0].customLink || `/${menu.slug}`}
+                          className="py-3.5 font-medium text-[#171512]/75 hover:text-[#fdb022] transition-colors"
+                        >
+                          {menu.name}
+                        </Link>
+                      )
+                    }
+
+                    // Simple dropdown (all custom links)
+                    if (!menuHasMegaMenu && menu.items.every(item => item.type === 'custom')) {
+                      return (
+                        <div key={menu._id} className="relative" onMouseEnter={() => handleMouseEnter(menu.name)} onMouseLeave={handleMouseLeave}>
+                          <button
+                            onClick={() => handleMenuClick(menu.name)}
+                            className={`py-3.5 flex items-center gap-1.5 font-medium transition-colors ${activeMenu === menu.name ? 'text-[#fdb022]' : 'text-[#171512]/75 hover:text-[#171512]'}`}
+                          >
+                            {menu.name}
+                            <ChevronDown size={14} className={`transition-transform duration-200 ${activeMenu === menu.name ? 'rotate-180' : ''}`} />
+                          </button>
+                          <AnimatePresence>
+                            {activeMenu === menu.name && (
+                              <motion.div
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 8 }}
+                                transition={{ duration: 0.15 }}
+                                className="absolute left-0 top-full pt-2 z-50 w-56"
+                              >
+                                <div className="bg-white rounded-xl shadow-xl border border-black/[0.06] overflow-hidden py-2">
+                                  {menu.items.filter(item => item.type === 'custom').map((item, idx) => (
+                                    <Link
+                                      key={item._id || idx}
+                                      href={item.customLink || '#'}
+                                      className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#fdb022]/10 hover:text-[#171512] transition-colors"
+                                    >
+                                      {item.label}
+                                    </Link>
+                                  ))}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      )
+                    }
+
+                    // Mega menu
                     return (
                       <div key={menu._id} className="relative" onMouseEnter={() => handleMouseEnter(menu.name)} onMouseLeave={handleMouseLeave}>
-                        <button onClick={() => handleMenuClick(menu.name)} className={`py-3.5 flex items-center gap-1.5 font-medium transition-colors ${activeMenu === menu.name ? 'text-[#fdb022]' : 'text-[#171512]/70 hover:text-[#171512]'}`}>
-                          {menu.name}<ChevronDown size={14} className={`transition-transform duration-200 ${activeMenu === menu.name ? 'rotate-180' : ''}`} />
+                        <button
+                          onClick={() => handleMenuClick(menu.name)}
+                          className={`py-3.5 flex items-center gap-1.5 font-medium transition-colors ${activeMenu === menu.name ? 'text-[#fdb022]' : 'text-[#171512]/75 hover:text-[#171512]'}`}
+                        >
+                          {menu.name}
+                          <ChevronDown size={14} className={`transition-transform duration-200 ${activeMenu === menu.name ? 'rotate-180' : ''}`} />
                         </button>
                         <AnimatePresence>
                           {activeMenu === menu.name && (
-                            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.15 }} className="absolute left-0 top-full pt-2 z-50 w-56">
-                              <div className="bg-white rounded-xl shadow-xl border border-black/[0.06] overflow-hidden py-2">
-                                {menu.items.filter(item => item.type === 'custom').map((item, idx) => (
-                                  <Link key={item._id || idx} href={item.customLink || '#'} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#fdb022]/10 hover:text-[#171512] transition-colors">
-                                    {item.label}
+                            <motion.div
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: 8 }}
+                              transition={{ duration: 0.15 }}
+                              className="absolute left-0 top-full pt-2 z-50 w-max max-w-[calc(100vw-2rem)]"
+                            >
+                              <div className="bg-white rounded-2xl shadow-xl border border-black/[0.06] overflow-hidden w-max max-w-[calc(100vw-2rem)]">
+                                <div className="p-4">
+                                  {menu.items
+                                    .filter(item => item.type === 'category')
+                                    .sort((a, b) => a.displayOrder - b.displayOrder)
+                                    .map((item, itemIdx) => {
+                                      const columns = splitIntoColumns(item.categories || [], 6)
+                                      const columnRows = chunkColumns(columns, 4)
+                                      return (
+                                        <div key={item._id || itemIdx} className={itemIdx > 0 ? 'mt-4 pt-4 border-t border-gray-100' : ''}>
+                                          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 px-4">
+                                            {item.label}
+                                          </h4>
+                                          <div className="space-y-2">
+                                            {columnRows.map((row, rowIdx) => (
+                                              <div
+                                                key={rowIdx}
+                                                className="grid gap-x-4 gap-y-0 w-max"
+                                                style={{
+                                                  gridTemplateColumns: `repeat(${row.length}, minmax(max-content, 1fr))`,
+                                                }}
+                                              >
+                                                {row.map((column, colIdx) => (
+                                                  <div key={colIdx} className="space-y-0.5">
+                                                    {column.map((cat, catIdx) => (
+                                                      <Link
+                                                        key={catIdx}
+                                                        href={categoryHref(cat.name)}
+                                                        className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#fdb022]/10 hover:text-[#171512] transition-colors rounded-lg"
+                                                      >
+                                                        <div className="break-words whitespace-normal leading-snug">{cat.name}</div>
+                                                        {cat.description && (
+                                                          <div className="text-xs text-gray-400 mt-0.5 break-words whitespace-normal leading-snug">
+                                                            {cat.description}
+                                                          </div>
+                                                        )}
+                                                      </Link>
+                                                    ))}
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )
+                                    })}
+                                  {menu.items.filter(item => item.type === 'custom').length > 0 && (
+                                    <div className="mt-4 pt-4 border-t border-gray-100">
+                                      <div className="flex flex-wrap gap-2">
+                                        {menu.items.filter(item => item.type === 'custom').map((item, idx) => (
+                                          <Link
+                                            key={item._id || idx}
+                                            href={item.customLink || '#'}
+                                            className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#fdb022]/10 hover:text-[#171512] transition-colors rounded-lg"
+                                          >
+                                            {item.label}
+                                          </Link>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="bg-gradient-to-r from-[#fdb022] to-[#f5a80a] px-4 py-3 flex items-center justify-between gap-4">
+                                  <span className="text-sm text-[#171512] font-medium px-2">
+                                    Need custom packaging? Get a free quote today.
+                                  </span>
+                                  <Link
+                                    href="/get-a-quote"
+                                    className="flex items-center gap-2 bg-[#171512] text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-black transition-colors shrink-0"
+                                  >
+                                    Get Quote <ArrowRight size={14} />
                                   </Link>
-                                ))}
+                                </div>
                               </div>
                             </motion.div>
                           )}
                         </AnimatePresence>
                       </div>
                     )
+                  })
+                ) : (
+                  <Link href="/products" className="py-3.5 font-medium text-[#171512]/75 hover:text-[#171512] transition-colors">
+                    Products
+                  </Link>
+                )}
+
+                {/* Support dropdown */}
+                <div className="relative" onMouseEnter={handleSupportEnter} onMouseLeave={handleSupportLeave}>
+                  <button
+                    onClick={() => setSupportOpen(!supportOpen)}
+                    className={`py-3.5 flex items-center gap-1.5 font-medium transition-colors ${supportOpen ? 'text-[#fdb022]' : 'text-[#171512]/75 hover:text-[#171512]'}`}
+                  >
+                    Support
+                    <ChevronDown size={14} className={`transition-transform duration-200 ${supportOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {supportOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute left-0 top-full pt-2 z-50 w-56"
+                      >
+                        <div className="bg-white rounded-xl shadow-xl border border-black/[0.06] overflow-hidden py-2">
+                          {SUPPORT_LINKS.map((link) => (
+                            <Link
+                              key={link.href}
+                              href={link.href}
+                              className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#fdb022]/10 hover:text-[#171512] transition-colors"
+                            >
+                              {link.label}
+                            </Link>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Right-side call CTA */}
+                <div className="ml-auto flex items-center gap-3 py-2.5">
+                  <a
+                    href={`tel:${PHONE_NUMBER}`}
+                    className="flex items-center gap-2 bg-[#171512] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-black transition-colors"
+                  >
+                    <Phone size={16} />
+                    {PHONE_DISPLAY}
+                  </a>
+                </div>
+              </nav>
+            </div>
+          </div>
+
+          {/* ═══════════════════════════════════════════════════════════
+              MOBILE MENU
+          ═══════════════════════════════════════════════════════════ */}
+          <AnimatePresence>
+            {isMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="lg:hidden border-t border-black/[0.08] overflow-y-auto max-h-[85vh] bg-white"
+              >
+                {/* Mobile contact strip */}
+                <div className="bg-[#F5F1E7] px-4 py-3 flex flex-col gap-2 border-b border-black/[0.06]">
+                  <a href={`tel:${PHONE_NUMBER}`} className="flex items-center gap-2 text-sm font-bold text-[#171512]">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#fdb022]/20 text-[#d99a1f]">
+                      <Phone size={13} />
+                    </span>
+                    {PHONE_DISPLAY}
+                  </a>
+                  <a href={`mailto:${EMAIL_ADDRESS}`} className="flex items-center gap-2 text-sm font-semibold text-[#171512]/80">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-black/5 text-[#171512]/70">
+                      <Mail size={13} />
+                    </span>
+                    {EMAIL_ADDRESS}
+                  </a>
+                </div>
+
+                {/* Mobile search */}
+                <div className="px-4 pt-3">
+                  <div className="relative mb-2">
+                    <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-black/35" />
+                    <input
+                      type="text"
+                      placeholder="Search boxes, materials..."
+                      className="w-full bg-[#F5F1E7] border border-black/10 rounded-full pl-10 pr-4 py-2.5 text-sm placeholder:text-black/35 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {dynamicMenus.length > 0 ? dynamicMenus.map((menu) => {
+                  const menuHasMegaMenu = hasMegaMenu(menu)
+
+                  if (!menuHasMegaMenu && menu.items.length === 1 && menu.items[0].type === 'custom') {
+                    return (
+                      <div key={menu._id} className="border-b border-black/[0.06]">
+                        <Link
+                          href={menu.items[0].customLink || `/${menu.slug}`}
+                          onClick={() => setIsMenuOpen(false)}
+                          className="w-full block px-4 py-3 text-[#171512] font-medium"
+                        >
+                          {menu.name}
+                        </Link>
+                      </div>
+                    )
                   }
 
-                  // Mega Menu — auto width, wraps columns 4-per-row so nothing gets cropped
                   return (
-                    <div key={menu._id} className="relative" onMouseEnter={() => handleMouseEnter(menu.name)} onMouseLeave={handleMouseLeave}>
-                      <button onClick={() => handleMenuClick(menu.name)} className={`py-3.5 flex items-center gap-1.5 font-medium transition-colors ${activeMenu === menu.name ? 'text-[#fdb022]' : 'text-[#171512]/70 hover:text-[#171512]'}`}>
-                        {menu.name}<ChevronDown size={14} className={`transition-transform duration-200 ${activeMenu === menu.name ? 'rotate-180' : ''}`} />
+                    <div key={menu._id} className="border-b border-black/[0.06]">
+                      <button
+                        onClick={() => handleMenuClick(menu.name)}
+                        className="w-full flex items-center justify-between px-4 py-3 text-[#171512] font-medium"
+                      >
+                        <span>{menu.name}</span>
+                        <ChevronDown size={18} className={`transition-transform duration-200 ${activeMenu === menu.name ? 'rotate-180' : ''}`} />
                       </button>
                       <AnimatePresence>
                         {activeMenu === menu.name && (
                           <motion.div
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 8 }}
-                            transition={{ duration: 0.15 }}
-                            className="absolute left-0 top-full pt-2 z-50 w-max max-w-[calc(100vw-2rem)]"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="bg-[#F5F1E7] px-4 py-2"
                           >
-                            <div className="bg-white rounded-2xl shadow-xl border border-black/[0.06] overflow-hidden w-max max-w-[calc(100vw-2rem)]">
-                              <div className="p-4">
-                                {menu.items.filter(item => item.type === 'category').sort((a, b) => a.displayOrder - b.displayOrder).map((item, itemIdx) => {
-                                  const columns = splitIntoColumns(item.categories || [], 6)
-                                  const columnRows = chunkColumns(columns, 4) // 4 columns per row
-                                  const showIcons = item.showCategoryIcon !== false
-                                  return (
-                                    <div key={item._id || itemIdx} className={itemIdx > 0 ? 'mt-4 pt-4 border-t border-gray-100' : ''}>
-                                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 px-4">{item.label}</h4>
-
-                                      {/* Render rows of up to 4 columns each — items styled like the Support menu */}
-                                      <div className="space-y-2">
-                                        {columnRows.map((row, rowIdx) => (
-                                          <div
-                                            key={rowIdx}
-                                            className="grid gap-x-4 gap-y-0 w-max"
-                                            style={{
-                                              gridTemplateColumns: `repeat(${row.length}, minmax(max-content, 1fr))`,
-                                            }}
-                                          >
-                                            {row.map((column, colIdx) => (
-                                              <div key={colIdx} className="space-y-0.5">
-                                                {column.map((cat, catIdx) => (
-                                                  <Link
-                                                    key={catIdx}
-                                                    href={categoryHref(cat.name)}
-                                                    className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#fdb022]/10 hover:text-[#171512] transition-colors rounded-lg"
-                                                  >
-                                                    <div className="break-words whitespace-normal leading-snug">
-                                                      {cat.name}
-                                                    </div>
-                                                    {cat.description && (
-                                                      <div className="text-xs text-gray-400 mt-0.5 break-words whitespace-normal leading-snug">{cat.description}</div>
-                                                    )}
-                                                  </Link>
-                                                ))}
-                                              </div>
-                                            ))}
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )
-                                })}
-                                {/* Single links mixed with mega menu */}
-                                {menu.items.filter(item => item.type === 'custom').length > 0 && (
-                                  <div className="mt-4 pt-4 border-t border-gray-100">
-                                    <div className="flex flex-wrap gap-2">
-                                      {menu.items.filter(item => item.type === 'custom').map((item, idx) => (
-                                        <Link key={item._id || idx} href={item.customLink || '#'} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#fdb022]/10 hover:text-[#171512] transition-colors rounded-lg">
-                                          {item.label}
-                                        </Link>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
+                            {menu.items.filter(item => item.type === 'category').map((item, idx) => (
+                              <div key={item._id || idx} className="mb-4 last:mb-0">
+                                <h4 className="text-[11px] font-bold text-black/40 uppercase tracking-wider mb-2">{item.label}</h4>
+                                <div className="space-y-1">
+                                  {item.categories && item.categories.length > 0 ? item.categories.map((cat, catIdx) => (
+                                    <Link
+                                      key={catIdx}
+                                      href={categoryHref(cat.name)}
+                                      onClick={() => setIsMenuOpen(false)}
+                                      className="block px-3 py-2 rounded-lg hover:bg-[#fdb022]/10 transition-colors"
+                                    >
+                                      <div className="text-sm font-medium text-[#171512] break-words whitespace-normal leading-snug">{cat.name}</div>
+                                      {cat.description && (
+                                        <div className="text-xs text-black/40 break-words whitespace-normal leading-snug">{cat.description}</div>
+                                      )}
+                                    </Link>
+                                  )) : <p className="text-xs text-gray-400 px-3 py-2">No categories</p>}
+                                </div>
                               </div>
-                              <div className="bg-[#fdb022] px-4 py-3 flex items-center justify-between gap-4">
-                                <span className="text-sm text-[#171512] font-medium px-2">Need custom packaging? Get a free quote today.</span>
-                                <Link href="/get-a-quote" className="flex items-center gap-2 bg-[#171512] text-white text-sm font-semibold px-5 py-2 rounded-lg hover:bg-black transition-colors shrink-0">Get Quote<ArrowRight size={14} /></Link>
-                              </div>
-                            </div>
+                            ))}
+                            {menu.items.filter(item => item.type === 'custom').map((item, idx) => (
+                              <Link
+                                key={item._id || idx}
+                                href={item.customLink || '#'}
+                                onClick={() => setIsMenuOpen(false)}
+                                className="block px-3 py-2 rounded-lg hover:bg-[#fdb022]/10 transition-colors mb-2"
+                              >
+                                <span className="text-sm font-medium text-[#171512]">{item.label}</span>
+                              </Link>
+                            ))}
                           </motion.div>
                         )}
                       </AnimatePresence>
                     </div>
                   )
-                })
-              ) : (
-                <>
-                  <Link href="/products" className="py-3.5 font-medium text-[#171512]/70 hover:text-[#171512] transition-colors">Products</Link>
-                </>
-              )}
+                }) : (
+                  <div className="border-b border-black/[0.06] px-4 py-3">
+                    <Link href="/products" className="font-medium text-[#171512]" onClick={() => setIsMenuOpen(false)}>
+                      Products
+                    </Link>
+                  </div>
+                )}
 
-              {/* Support dropdown */}
-              <div
-                className="relative"
-                onMouseEnter={handleSupportEnter}
-                onMouseLeave={handleSupportLeave}
-              >
-                <button
-                  onClick={() => setSupportOpen(!supportOpen)}
-                  className={`py-3.5 flex items-center gap-1.5 font-medium transition-colors ${supportOpen ? 'text-[#fdb022]' : 'text-[#171512]/70 hover:text-[#171512]'}`}
-                >
-                  Support
-                  <ChevronDown size={14} className={`transition-transform duration-200 ${supportOpen ? 'rotate-180' : ''}`} />
-                </button>
-                <AnimatePresence>
-                  {supportOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 8 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute left-0 top-full pt-2 z-50 w-56"
-                    >
-                      <div className="bg-white rounded-xl shadow-xl border border-black/[0.06] overflow-hidden py-2">
+                {/* Support (mobile) */}
+                <div className="border-b border-black/[0.06]">
+                  <button
+                    onClick={() => setSupportOpen(!supportOpen)}
+                    className="w-full flex items-center justify-between px-4 py-3 text-[#171512] font-medium"
+                  >
+                    <span>Support</span>
+                    <ChevronDown size={18} className={`transition-transform duration-200 ${supportOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {supportOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="bg-[#F5F1E7] px-4 py-2"
+                      >
                         {SUPPORT_LINKS.map((link) => (
                           <Link
                             key={link.href}
                             href={link.href}
-                            className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#fdb022]/10 hover:text-[#171512] transition-colors"
+                            onClick={() => setIsMenuOpen(false)}
+                            className="block px-3 py-2 rounded-lg hover:bg-[#fdb022]/10 transition-colors mb-2"
                           >
-                            {link.label}
+                            <span className="text-sm font-medium text-[#171512]">{link.label}</span>
                           </Link>
                         ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
-              {/* Call button on the right */}
-              <div className="ml-auto flex items-center gap-3 py-2.5">
-                <a
-                  href={`tel:${PHONE_NUMBER}`}
-                  className="flex items-center gap-2 bg-[#171512] text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-black transition-colors"
-                >
-                  <Phone size={16} />
-                  Call Us
-                </a>
-              </div>
-            </nav>
-          </div>
+                {/* Mobile CTAs */}
+                <div className="px-4 py-4 space-y-3">
+                  <Link
+                    href="/get-a-quote"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block w-full text-center px-6 py-3.5 bg-gradient-to-r from-[#fdb022] to-[#f5a80a] text-[#171512] text-[15px] font-medium rounded-xl shadow-sm"
+                  >
+                    Get a Quote
+                  </Link>
+                  <a
+                    href={`tel:${PHONE_NUMBER}`}
+                    className="flex items-center justify-center gap-2 w-full text-center px-6 py-3.5 bg-[#171512] text-white text-[15px] font-medium rounded-xl"
+                  >
+                    <Phone size={16} /> {PHONE_DISPLAY}
+                  </a>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="lg:hidden border-t border-black/[0.08] overflow-y-auto max-h-[80vh] bg-white">
-              <div className="px-4 pt-3"><div className="relative mb-2"><Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-black/35" /><input type="text" placeholder="Search boxes, materials..." className="w-full bg-[#F5F1E7] border border-black/10 rounded-full pl-10 pr-4 py-2.5 text-sm placeholder:text-black/35 focus:outline-none" /></div></div>
-
-              {dynamicMenus.length > 0 ? dynamicMenus.map((menu) => {
-                const menuHasMegaMenu = hasMegaMenu(menu)
-
-                if (!menuHasMegaMenu && menu.items.length === 1 && menu.items[0].type === 'custom') {
-                  return <div key={menu._id} className="border-b border-black/[0.06]"><Link href={menu.items[0].customLink || `/${menu.slug}`} onClick={() => setIsMenuOpen(false)} className="w-full block px-4 py-3 text-[#171512] font-medium">{menu.name}</Link></div>
-                }
-
-                return (
-                  <div key={menu._id} className="border-b border-black/[0.06]">
-                    <button onClick={() => handleMenuClick(menu.name)} className="w-full flex items-center justify-between px-4 py-3 text-[#171512] font-medium">
-                      <span>{menu.name}</span>
-                      <ChevronDown size={18} className={`transition-transform duration-200 ${activeMenu === menu.name ? 'rotate-180' : ''}`} />
-                    </button>
-                    <AnimatePresence>
-                      {activeMenu === menu.name && (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="bg-[#F5F1E7] px-4 py-2">
-                          {menu.items.filter(item => item.type === 'category').map((item, idx) => (
-                            <div key={item._id || idx} className="mb-4 last:mb-0">
-                              <h4 className="text-[11px] font-bold text-black/40 uppercase tracking-wider mb-2">{item.label}</h4>
-                              <div className="space-y-1">
-                                {item.categories && item.categories.length > 0 ? item.categories.map((cat, catIdx) => (
-                                  <Link key={catIdx} href={categoryHref(cat.name)} onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg hover:bg-[#fdb022]/10 transition-colors">
-                                    <div className="text-sm font-medium text-[#171512] break-words whitespace-normal leading-snug">{cat.name}</div>
-                                    {cat.description && <div className="text-xs text-black/40 break-words whitespace-normal leading-snug">{cat.description}</div>}
-                                  </Link>
-                                )) : <p className="text-xs text-gray-400 px-3 py-2">No categories</p>}
-                              </div>
-                            </div>
-                          ))}
-                          {menu.items.filter(item => item.type === 'custom').map((item, idx) => (
-                            <Link key={item._id || idx} href={item.customLink || '#'} onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg hover:bg-[#fdb022]/10 transition-colors mb-2">
-                              <span className="text-sm font-medium text-[#171512]">{item.label}</span>
-                            </Link>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                )
-              }) : (
-                <>
-                  <div className="border-b border-black/[0.06] px-4 py-3"><Link href="/products" className="font-medium text-[#171512]" onClick={() => setIsMenuOpen(false)}>Products</Link></div>
-                </>
-              )}
-
-              {/* Support dropdown (mobile) */}
-              <div className="border-b border-black/[0.06]">
-                <button
-                  onClick={() => setSupportOpen(!supportOpen)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-[#171512] font-medium"
-                >
-                  <span>Support</span>
-                  <ChevronDown size={18} className={`transition-transform duration-200 ${supportOpen ? 'rotate-180' : ''}`} />
-                </button>
-                <AnimatePresence>
-                  {supportOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="bg-[#F5F1E7] px-4 py-2"
-                    >
-                      {SUPPORT_LINKS.map((link) => (
-                        <Link
-                          key={link.href}
-                          href={link.href}
-                          onClick={() => setIsMenuOpen(false)}
-                          className="block px-3 py-2 rounded-lg hover:bg-[#fdb022]/10 transition-colors mb-2"
-                        >
-                          <span className="text-sm font-medium text-[#171512]">{link.label}</span>
-                        </Link>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="px-4 py-4 space-y-3">
-                <Link href="/get-a-quote" onClick={() => setIsMenuOpen(false)} className="block w-full text-center px-6 py-3 bg-[#fdb022] text-[#171512] font-semibold rounded-lg hover:bg-[#f5a80a] transition-colors">Get Quote</Link>
-                <a href={`tel:${PHONE_NUMBER}`} className="flex items-center justify-center gap-2 w-full text-center px-6 py-3 border-2 border-black/10 text-[#171512] font-medium rounded-lg"><Phone size={16} /> {PHONE_DISPLAY}</a>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </header>
   )
