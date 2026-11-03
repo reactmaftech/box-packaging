@@ -59,6 +59,26 @@ export default function RootLayout({
           <Phone size={24} strokeWidth={2.2} className="call-fab-icon text-white" />
         </a>
 
+        {/* Google tag (gtag.js) — Google Ads */}
+        <Script
+          id="google-tag-ads"
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=AW-18552012528"
+        />
+        <Script
+          id="google-tag-ads-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+
+              gtag('config', 'AW-18552012528');
+            `,
+          }}
+        />
+
         {/* Microsoft Clarity analytics — loads on every page */}
         <Script
           id="microsoft-clarity"
