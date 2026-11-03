@@ -6,11 +6,17 @@ import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import {
-  ArrowRight, Phone, Mail, Clock, Shield, CheckCircle, X, Ruler,
+  ArrowRight, Phone, Mail, Clock, Shield, CheckCircle, X, Ruler, MessageCircle,
 } from 'lucide-react'
 import { DIMENSION_UNITS, DimensionUnit } from '@/lib/constants'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
+
+// WhatsApp details
+const WHATSAPP_NUMBER = '+19292141874'
+const WHATSAPP_DISPLAY = '+1 (929) 214-1874'
+// wa.me requires digits only (no +, spaces, or dashes)
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, '')}`
 
 export function InquiryForm() {
   const router = useRouter()
@@ -418,6 +424,20 @@ export function InquiryForm() {
                     </span>
                     <span className="text-white font-medium group-hover:text-[#FDB022] transition-colors">
                       +1 (217) 727-6247
+                    </span>
+                  </a>
+
+                  <a
+                    href={WHATSAPP_LINK}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 group"
+                  >
+                    <span className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white shrink-0 transition-all duration-200 group-hover:bg-[#25D366] group-hover:scale-105">
+                      <MessageCircle size={16} />
+                    </span>
+                    <span className="text-white font-medium group-hover:text-[#25D366] transition-colors">
+                      {WHATSAPP_DISPLAY}
                     </span>
                   </a>
                 </div>

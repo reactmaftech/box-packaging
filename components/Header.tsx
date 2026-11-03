@@ -9,6 +9,7 @@ import {
   Box, Package, ShoppingBag, Gift, Layers, Sparkles,
   Truck, Award, Star, Clock, Shield, ArrowRight,
   ShoppingCart, Loader, Link as LinkIcon, Tag, Image as ImageIcon,
+  MessageCircle,
 } from 'lucide-react'
 
 import { categoryHref } from '@/lib/slug'
@@ -22,6 +23,12 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.ve
 const PHONE_NUMBER = '+12177276247'
 const PHONE_DISPLAY = '+1 (217) 727-6247'
 const SITE_NAME = 'Slick Custom Boxes'
+
+// WhatsApp details
+const WHATSAPP_NUMBER = '+19292141874'
+const WHATSAPP_DISPLAY = '+1 (929) 214-1874'
+// wa.me requires digits only (no +, spaces, or dashes)
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, '')}`
 
 // Trust points shown in the slim top bar (edit freely)
 const TOP_BAR_POINTS = [
@@ -186,7 +193,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full">
-      {/* TOP BAR: trust points + phone. Collapses on scroll to keep the header compact */}
+      {/* TOP BAR: trust points + phone + WhatsApp. Collapses on scroll to keep the header compact */}
       <div
         className={`hidden xl:block bg-[#171512] text-white overflow-hidden transition-all duration-300 ${
           isScrolled ? 'max-h-0 opacity-0' : 'max-h-12 opacity-100'
@@ -201,13 +208,25 @@ export function Header() {
               </li>
             ))}
           </ul>
-          <a
-            href={`tel:${PHONE_NUMBER}`}
-            className="flex items-center gap-2 text-[13px] font-medium text-white/80 hover:text-white transition-colors"
-          >
-            Questions? Call toll free
-            <span className="font-bold text-[#fdb022]">{PHONE_DISPLAY}</span>
-          </a>
+          <div className="flex items-center gap-5">
+            <a
+              href={`tel:${PHONE_NUMBER}`}
+              className="flex items-center gap-2 text-[13px] font-medium text-white/80 hover:text-white transition-colors"
+            >
+              Questions? Call toll free
+              <span className="font-bold text-[#fdb022]">{PHONE_DISPLAY}</span>
+            </a>
+            <a
+              href={WHATSAPP_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-[13px] font-medium text-white/80 hover:text-white transition-colors"
+            >
+              <MessageCircle size={15} className="text-[#25D366]" />
+              WhatsApp
+              <span className="font-bold text-[#25D366]">{WHATSAPP_DISPLAY}</span>
+            </a>
+          </div>
         </div>
       </div>
 
@@ -441,8 +460,8 @@ export function Header() {
               </div>
             </nav>
 
-            {/* 3. Right side: phone + CTA */}
-            <div className="hidden xl:flex items-center gap-4 shrink-0">
+            {/* 3. Right side: phone + WhatsApp (Get a Quote button removed) */}
+            <div className="hidden xl:flex items-center gap-3 shrink-0">
               <a
                 href={`tel:${PHONE_NUMBER}`}
                 className="group flex items-center gap-3 rounded-full bg-[#171512] pl-1.5 pr-5 py-1.5 hover:bg-black transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#fdb022] focus-visible:ring-offset-2"
@@ -456,16 +475,24 @@ export function Header() {
                 </span>
               </a>
 
-              <Link
-                href="/get-a-quote"
-                className="flex items-center gap-2 bg-[#fdb022] hover:bg-[#f5a80a] text-[#171512] text-[15px] font-bold px-7 py-3.5 rounded-full shadow-[0_6px_18px_rgba(253,176,34,0.45)] hover:shadow-[0_10px_24px_rgba(253,176,34,0.45)] hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#171512] focus-visible:ring-offset-2"
+              <a
+                href={WHATSAPP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Chat on WhatsApp ${WHATSAPP_DISPLAY}`}
+                className="group flex items-center gap-3 rounded-full bg-[#25D366] pl-1.5 pr-5 py-1.5 hover:bg-[#1ebe5b] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#fdb022] focus-visible:ring-offset-2"
               >
-                Get a Quote
-                <ArrowRight size={17} strokeWidth={2.4} />
-              </Link>
+                <span className="flex items-center justify-center w-10 h-10 rounded-full bg-white text-[#25D366]">
+                  <MessageCircle size={20} strokeWidth={2.4} className="group-hover:-rotate-12 transition-transform duration-300" />
+                </span>
+                <span className="flex flex-col leading-tight">
+                  <span className="text-[11px] text-white/80 font-medium">Chat on WhatsApp</span>
+                  <span className="text-[16px] font-extrabold text-white">{WHATSAPP_DISPLAY}</span>
+                </span>
+              </a>
             </div>
 
-            {/* Mobile: quick call + menu button */}
+            {/* Mobile: quick call + WhatsApp + menu button */}
             <div className="xl:hidden ml-auto flex items-center gap-2">
               <a
                 href={`tel:${PHONE_NUMBER}`}
@@ -473,6 +500,15 @@ export function Header() {
                 className="flex items-center justify-center w-11 h-11 rounded-full bg-[#fdb022] text-[#171512] hover:bg-[#f5a80a] transition-colors"
               >
                 <Phone size={20} strokeWidth={2.4} />
+              </a>
+              <a
+                href={WHATSAPP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Chat on WhatsApp"
+                className="flex items-center justify-center w-11 h-11 rounded-full bg-[#25D366] text-white hover:bg-[#1ebe5b] transition-colors"
+              >
+                <MessageCircle size={20} strokeWidth={2.4} />
               </a>
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -506,6 +542,22 @@ export function Header() {
                   <span className="flex flex-col leading-tight">
                     <span className="text-xs text-white/60 font-medium">Call us toll free</span>
                     <span className="text-[18px] font-extrabold text-white">{PHONE_DISPLAY}</span>
+                  </span>
+                </a>
+
+                {/* Mobile WhatsApp strip */}
+                <a
+                  href={WHATSAPP_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 bg-[#25D366] px-4 md:px-6 py-4"
+                >
+                  <span className="flex items-center justify-center w-11 h-11 rounded-full bg-white text-[#25D366]">
+                    <MessageCircle size={22} strokeWidth={2.4} />
+                  </span>
+                  <span className="flex flex-col leading-tight">
+                    <span className="text-xs text-white/80 font-medium">Chat on WhatsApp</span>
+                    <span className="text-[18px] font-extrabold text-white">{WHATSAPP_DISPLAY}</span>
                   </span>
                 </a>
 
@@ -654,6 +706,14 @@ export function Header() {
                     className="flex items-center justify-center gap-2 w-full px-6 py-4 bg-[#171512] text-white text-[15px] font-bold rounded-full"
                   >
                     <Phone size={16} /> Call Now
+                  </a>
+                  <a
+                    href={WHATSAPP_LINK}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full px-6 py-4 bg-[#25D366] text-white text-[15px] font-bold rounded-full"
+                  >
+                    <MessageCircle size={16} /> Chat on WhatsApp
                   </a>
                 </div>
               </motion.div>

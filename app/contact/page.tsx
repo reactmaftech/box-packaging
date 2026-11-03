@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   Phone, Mail, Clock, Send, CheckCircle,
-  MessageSquare, ArrowRight,
+  MessageSquare, ArrowRight, MessageCircle,
   Globe, Star, Shield, Truck, HeartHandshake
 } from 'lucide-react'
 import Link from 'next/link'
@@ -19,6 +19,12 @@ const PHONE_NUMBER = '+12177276247'
 const PHONE_DISPLAY = '+1 (217) 727-6247'
 const EMAIL_ADDRESS = 'info@slickcustomboxes.com'
 const SITE_NAME = 'Slick Custom Boxes'
+
+// WhatsApp details
+const WHATSAPP_NUMBER = '+19292141874'
+const WHATSAPP_DISPLAY = '+1 (929) 214-1874'
+// wa.me requires digits only (no +, spaces, or dashes)
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, '')}`
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -139,17 +145,19 @@ export default function ContactPage() {
       href: `mailto:${EMAIL_ADDRESS}`,
     },
     {
+      icon: MessageCircle,
+      title: 'WhatsApp',
+      details: [WHATSAPP_DISPLAY,],
+      bgColor: 'bg-[#25D366]/5',
+      iconBg: 'bg-[#25D366]/15',
+      iconColor: 'text-[#25D366]',
+      href: WHATSAPP_LINK,
+      external: true,
+    },
+    {
       icon: Clock,
       title: 'Working hours',
       details: ['Mon – Fri: 9:00 AM – 6:00 PM'],
-      bgColor: 'bg-[#F5F1E7]',
-      iconBg: 'bg-[#FDB022]/15',
-      iconColor: 'text-[#FDB022]',
-    },
-    {
-      icon: Globe,
-      title: 'Online',
-      details: ['Submit a quote request any time — we reply within 24 hours'],
       bgColor: 'bg-[#F5F1E7]',
       iconBg: 'bg-[#FDB022]/15',
       iconColor: 'text-[#FDB022]',
@@ -220,10 +228,30 @@ export default function ContactPage() {
               GET IN TOUCH
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Contact us</h1>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto">
+            <p className="text-lg text-white/60 max-w-2xl mx-auto mb-8">
               Have a question or ready to start your packaging project? We&apos;re here to help.
               Reach out to our team and we&apos;ll respond within 24 hours.
             </p>
+
+            {/* Hero quick contact buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <a
+                href={`tel:${PHONE_NUMBER}`}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 border border-white/15 text-white font-semibold text-sm hover:bg-white/15 transition-colors"
+              >
+                <Phone size={16} />
+                {PHONE_DISPLAY}
+              </a>
+              <a
+                href={WHATSAPP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#25D366] text-white font-semibold text-sm hover:bg-[#1ebe5b] transition-colors shadow-[0_6px_18px_rgba(37,211,102,0.35)]"
+              >
+                <MessageCircle size={16} />
+                WhatsApp
+              </a>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -234,7 +262,15 @@ export default function ContactPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {contactInfo.map((info, index) => {
               const CardWrapper: any = info.href ? 'a' : 'div'
-              const wrapperProps = info.href ? { href: info.href, className: 'block' } : {}
+              const wrapperProps = info.href
+                ? {
+                    href: info.href,
+                    ...(info.external
+                      ? { target: '_blank', rel: 'noopener noreferrer' }
+                      : {}),
+                    className: 'block',
+                  }
+                : {}
 
               return (
                 <motion.div
@@ -489,6 +525,19 @@ export default function ContactPage() {
                     </span>
                     <span className="text-sm font-medium text-[#171512] group-hover:text-[#FDB022] transition-colors">
                       {PHONE_DISPLAY}
+                    </span>
+                  </a>
+                  <a
+                    href={WHATSAPP_LINK}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 group"
+                  >
+                    <span className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#25D366] shrink-0 group-hover:bg-[#25D366] group-hover:text-white transition-colors">
+                      <MessageCircle size={16} />
+                    </span>
+                    <span className="text-sm font-medium text-[#171512] group-hover:text-[#25D366] transition-colors">
+                      {WHATSAPP_DISPLAY}
                     </span>
                   </a>
                   <a href={`mailto:${EMAIL_ADDRESS}`} className="flex items-center gap-3 group">

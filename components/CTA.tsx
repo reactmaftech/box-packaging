@@ -2,7 +2,13 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowRight, Phone } from 'lucide-react'
+import { ArrowRight, Phone, MessageCircle } from 'lucide-react'
+
+// WhatsApp details
+const WHATSAPP_NUMBER = '+19292141874'
+const WHATSAPP_DISPLAY = '+1 (929) 214-1874'
+// wa.me requires digits only (no +, spaces, or dashes)
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, '')}`
 
 export function CTA() {
   return (
@@ -42,6 +48,15 @@ export function CTA() {
               >
                 <Phone size={17} />
                 +1 (217) 727-6247
+              </a>
+              <a
+                href={WHATSAPP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2 bg-[#25D366] text-white font-semibold px-8 py-3.5 rounded-lg hover:bg-[#1ebe5b] transition-colors shadow-[0_6px_18px_rgba(37,211,102,0.35)]"
+              >
+                <MessageCircle size={17} className="group-hover:scale-110 transition-transform" />
+                WhatsApp
               </a>
             </div>
           </div>

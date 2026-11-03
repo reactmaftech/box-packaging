@@ -15,6 +15,7 @@ import {
   Instagram,
   Facebook,
   Linkedin,
+  MessageCircle,
 } from 'lucide-react'
 
 // Logo import
@@ -31,6 +32,12 @@ const PHONE_DISPLAY = '+1 (217) 727-6247'
 const EMAIL_ADDRESS = 'info@slickcustomboxes.com'
 const SITE_NAME = 'Slick Custom Boxes'
 const ADDRESS_LINES = ['1519 Hopewell Ave, Essex', 'MD 21221, USA']
+
+// WhatsApp details
+const WHATSAPP_NUMBER = '+19292141874'
+const WHATSAPP_DISPLAY = '+1 (929) 214-1874'
+// wa.me requires digits only (no +, spaces, or dashes)
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, '')}`
 
 const FEATURES = [
   { icon: Palette, title: 'Everything Customised', text: 'Your size, material & print' },
@@ -75,11 +82,28 @@ const PAYMENT_METHODS = [
   { src: cardImage, alt: 'Credit Card' },
 ]
 
+// Custom TikTok icon (since lucide-react doesn't include a TikTok icon)
+function TikTokIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.84-.1z" />
+    </svg>
+  )
+}
+
 // Social Media Links
 const SOCIAL_LINKS = [
   { icon: Instagram, href: 'https://www.instagram.com/slickcustomboxes/', label: 'Instagram' },
   { icon: Facebook, href: 'https://www.facebook.com/slickcustomboxes', label: 'Facebook' },
   { icon: Linkedin, href: 'https://www.linkedin.com/company/slick-custom-boxes', label: 'LinkedIn' },
+  { icon: TikTokIcon, href: 'https://www.tiktok.com/@slickcustomboxes', label: 'TikTok' },
+  { icon: MessageCircle, href: WHATSAPP_LINK, label: 'WhatsApp' },
 ]
 
 function FooterHeading({ children }: { children: React.ReactNode }) {
@@ -153,7 +177,7 @@ export function Footer() {
               <p className="text-[13px] font-bold text-[#171512] uppercase tracking-widest mb-3">
                 Follow Us
               </p>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap justify-center sm:justify-start gap-3">
                 {SOCIAL_LINKS.map((social) => (
                   <a
                     key={social.label}
@@ -161,7 +185,11 @@ export function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={social.label}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:border-[#FDB022] hover:bg-[#FDB022] hover:text-[#171512] transition-all shadow-sm"
+                    className={`flex h-10 w-10 items-center justify-center rounded-full border bg-white transition-all shadow-sm ${
+                      social.label === 'WhatsApp'
+                        ? 'border-[#25D366]/40 text-[#25D366] hover:border-[#25D366] hover:bg-[#25D366] hover:text-white'
+                        : 'border-slate-200 text-slate-500 hover:border-[#FDB022] hover:bg-[#FDB022] hover:text-[#171512]'
+                    }`}
                   >
                     <social.icon size={18} />
                   </a>
@@ -202,6 +230,22 @@ export function Footer() {
                     className="text-[#171512] font-semibold hover:text-[#C27803] transition-colors"
                   >
                     {PHONE_DISPLAY}
+                  </a>
+                </div>
+              </li>
+
+              {/* WhatsApp */}
+              <li className="flex items-start gap-3 text-left bg-white/60 border border-slate-200 rounded-xl p-3 hover:border-[#25D366]/60 transition-colors">
+                <MessageCircle size={17} className="mt-0.5 shrink-0 text-[#25D366]" />
+                <div>
+                  <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider mb-0.5">WhatsApp</p>
+                  <a
+                    href={WHATSAPP_LINK}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#171512] font-semibold hover:text-[#25D366] transition-colors"
+                  >
+                    {WHATSAPP_DISPLAY}
                   </a>
                 </div>
               </li>

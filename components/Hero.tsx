@@ -9,12 +9,19 @@ import {
   Package,
   Loader,
   Phone,
+  MessageCircle,
 } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.vercel.app/api'
 
 const PHONE_NUMBER = '+12177276247'
 const PHONE_DISPLAY = '+1 (217) 727-6247'
+
+// WhatsApp details
+const WHATSAPP_NUMBER = '+19292141874'
+const WHATSAPP_DISPLAY = '+1 (929) 214-1874'
+// wa.me requires digits only (no +, spaces, or dashes)
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, '')}`
 
 // Fallback images
 import boxImage1 from '../assets/images/01.webp'
@@ -282,6 +289,16 @@ export function Hero() {
               >
                 <Phone size={17} className="group-hover:scale-110 transition-transform" />
                 {PHONE_DISPLAY}
+              </a>
+
+              <a
+                href={WHATSAPP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group px-7 py-3.5 bg-[#25D366] text-white font-semibold rounded-lg hover:bg-[#1ebe5b] transition-all duration-300 flex items-center gap-2 shadow-[0_6px_18px_rgba(37,211,102,0.35)]"
+              >
+                <MessageCircle size={17} className="group-hover:scale-110 transition-transform" />
+                WhatsApp
               </a>
             </motion.div>
           </motion.div>

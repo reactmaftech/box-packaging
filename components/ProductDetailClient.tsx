@@ -8,7 +8,7 @@ import axios from 'axios'
 import {
   Loader, Package, ChevronLeft, ChevronRight, ArrowLeft, ArrowRight,
   CheckCircle, X, Truck, Palette, Clock, ShieldCheck, Layers,
-  Maximize2, Phone, Mail, Ruler,
+  Maximize2, Phone, Mail, Ruler, MessageCircle,
 } from 'lucide-react'
 import Link from 'next/link'
 import { Header } from '@/components/Header'
@@ -25,6 +25,12 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.ve
 const PHONE_NUMBER = '+12177276247'
 const PHONE_DISPLAY = '+1 (217) 727-6247'
 const EMAIL_ADDRESS = 'info@slickcustomboxes.com'
+
+// WhatsApp details
+const WHATSAPP_NUMBER = '+19292141874'
+const WHATSAPP_DISPLAY = '+1 (929) 214-1874'
+// wa.me requires digits only (no +, spaces, or dashes)
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, '')}`
 
 export interface Product {
   _id: string
@@ -444,6 +450,15 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
               className="px-6 py-2.5 bg-[#FDB022] text-[#171512] rounded-full text-sm font-semibold hover:bg-[#f5a80f] transition-colors">
               Browse all products
             </Link>
+            <a
+              href={WHATSAPP_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#25D366] text-white rounded-full text-sm font-semibold hover:bg-[#1ebe5b] transition-colors"
+            >
+              <MessageCircle size={15} />
+              WhatsApp
+            </a>
           </div>
         </div>
         <Footer />
@@ -581,6 +596,22 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
                       <div className="flex flex-col min-w-0">
                         <span className="text-[10px] text-black/40 uppercase tracking-wider font-semibold">Email Us</span>
                         <span className="text-[#171512] text-sm font-semibold truncate group-hover:text-[#c98b0c] transition-colors">{EMAIL_ADDRESS}</span>
+                      </div>
+                    </a>
+
+                    {/* WhatsApp Button — full width */}
+                    <a
+                      href={WHATSAPP_LINK}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="sm:col-span-2 flex items-center gap-3 bg-white border border-black/[0.06] hover:border-[#25D366]/60 shadow-sm hover:shadow rounded-xl p-3 transition-all group"
+                    >
+                      <span className="w-9 h-9 rounded-full bg-[#25D366]/15 text-[#25D366] flex items-center justify-center shrink-0 group-hover:bg-[#25D366] group-hover:text-white transition-colors">
+                        <MessageCircle size={16} />
+                      </span>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[10px] text-black/40 uppercase tracking-wider font-semibold">WhatsApp</span>
+                        <span className="text-[#171512] text-sm font-semibold truncate group-hover:text-[#25D366] transition-colors">{WHATSAPP_DISPLAY}</span>
                       </div>
                     </a>
                   </div>
@@ -787,6 +818,17 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
                         )}
                       </motion.button>
 
+                      {/* WhatsApp quick-link under submit */}
+                      <a
+                        href={WHATSAPP_LINK}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white font-semibold py-3 rounded-xl hover:bg-[#1ebe5b] transition-colors text-sm"
+                      >
+                        <MessageCircle size={16} />
+                        Chat on WhatsApp
+                      </a>
+
                       <p className="text-xs text-black/40 text-center">
                         * Full name, email, and phone number are required. All other fields are optional.
                         We&apos;ll get back to you within 24 hours.
@@ -917,13 +959,22 @@ export default function ProductDetailClient({ initialProduct }: ProductDetailCli
       <Testimonials />
 
       {!submitted && (
-        <div className="lg:hidden sticky bottom-0 z-40 bg-white/95 backdrop-blur-sm border-t border-gray-200 px-4 py-3 flex items-center gap-3">
+        <div className="lg:hidden sticky bottom-0 z-40 bg-white/95 backdrop-blur-sm border-t border-gray-200 px-4 py-3 flex items-center gap-2">
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-[#171512] truncate">{product.title}</p>
             <p className="text-xs text-gray-500">
               {product.price !== undefined ? `From $${product.price.toFixed(2)}` : 'Custom pricing'}
             </p>
           </div>
+          <a
+            href={WHATSAPP_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Chat on WhatsApp"
+            className="flex items-center justify-center w-11 h-11 bg-[#25D366] text-white rounded-xl shrink-0 hover:bg-[#1ebe5b] transition-colors"
+          >
+            <MessageCircle size={18} />
+          </a>
           <button onClick={scrollToForm}
             className="px-5 py-2.5 bg-[#FDB022] text-[#171512] rounded-xl font-bold text-sm shrink-0">
             Get a quote

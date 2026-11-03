@@ -1,10 +1,16 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowRight, Palette, Tag, ShieldCheck, Rocket, Phone } from 'lucide-react'
+import { ArrowRight, Palette, Tag, ShieldCheck, Rocket, Phone, MessageCircle } from 'lucide-react'
 
 const PHONE_NUMBER = '+12177276247'
 const PHONE_DISPLAY = '+1 (217) 727-6247'
+
+// WhatsApp details
+const WHATSAPP_NUMBER = '+19292141874'
+const WHATSAPP_DISPLAY = '+1 (929) 214-1874'
+// wa.me requires digits only (no +, spaces, or dashes)
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, '')}`
 
 const highlights = [
   {
@@ -145,6 +151,16 @@ export function Services() {
               >
                 <Phone size={16} className="text-[#fdb022]" />
                 {PHONE_DISPLAY}
+              </a>
+
+              <a
+                href={WHATSAPP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center justify-center gap-2 w-full bg-[#25D366] text-white font-semibold px-6 py-3 rounded-lg hover:bg-[#1ebe5b] transition-all"
+              >
+                <MessageCircle size={16} className="group-hover:scale-110 transition-transform" />
+                WhatsApp
               </a>
             </div>
           </motion.div>

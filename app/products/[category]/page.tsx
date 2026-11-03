@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import {
   Search, Loader, X, Eye, MessageSquare, Package,
   Grid3X3, List, ArrowLeft, RefreshCw, Layers,
-  ArrowRight, Phone,
+  ArrowRight, Phone, MessageCircle,
   CheckCircle,
   Ruler
 } from 'lucide-react'
@@ -25,6 +25,12 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://packaging-backend.ve
 
 const PHONE_NUMBER = '+12177276247'
 const PHONE_DISPLAY = '+1 (217) 727-6247'
+
+// WhatsApp details
+const WHATSAPP_NUMBER = '+19292141874'
+const WHATSAPP_DISPLAY = '+1 (929) 214-1874'
+// wa.me requires digits only (no +, spaces, or dashes)
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, '')}`
 
 interface Product {
   _id: string
@@ -365,6 +371,15 @@ export default function CategoryProductsPage() {
                   <Phone size={18} className="text-[#FDB022]" />
                   {PHONE_DISPLAY}
                 </a>
+                <a
+                  href={WHATSAPP_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-[#25D366] text-white font-semibold px-6 py-3 rounded-lg hover:bg-[#1ebe5b] transition-colors shadow-lg shadow-[#25D366]/25"
+                >
+                  <MessageCircle size={18} />
+                  WhatsApp
+                </a>
               </div>
 
               <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500">
@@ -530,6 +545,17 @@ export default function CategoryProductsPage() {
                       )}
                     </motion.button>
 
+                    {/* WhatsApp quick-link under submit */}
+                    <a
+                      href={WHATSAPP_LINK}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white font-semibold py-2.5 rounded-lg hover:bg-[#1ebe5b] transition-all text-sm"
+                    >
+                      <MessageCircle size={15} />
+                      Chat on WhatsApp
+                    </a>
+
                     <p className="text-[10px] text-black/40 text-center">
                       * Full name, email, and phone are required. All other fields are optional.
                     </p>
@@ -622,6 +648,15 @@ export default function CategoryProductsPage() {
                   className="px-6 py-2 bg-[#FDB022] text-[#171512] rounded-full text-sm font-semibold">
                   Browse all categories
                 </Link>
+                <a
+                  href={WHATSAPP_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-2 bg-[#25D366] text-white rounded-full text-sm font-semibold hover:bg-[#1ebe5b] transition-colors"
+                >
+                  <MessageCircle size={15} />
+                  WhatsApp
+                </a>
               </div>
             </div>
           ) : filteredProducts.length === 0 ? (

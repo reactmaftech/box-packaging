@@ -18,6 +18,7 @@ import {
   Recycle,
   Factory,
   Rocket,
+  MessageCircle,
 } from 'lucide-react'
 
 import { Header } from '@/components/Header'
@@ -33,6 +34,12 @@ import boxImage4 from '../../../assets/images/04.webp'
 const PHONE_NUMBER = '+12177276247'
 const PHONE_DISPLAY = '+1 (217) 727-6247'
 const EMAIL_ADDRESS = 'info@slickcustomboxes.com'
+
+// WhatsApp details
+const WHATSAPP_NUMBER = '+19292141874'
+const WHATSAPP_DISPLAY = '+1 (929) 214-1874'
+// wa.me requires digits only (no +, spaces, or dashes)
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, '')}`
 
 // Core values
 const values = [
@@ -187,6 +194,15 @@ export default function AboutPage() {
                 >
                   Get in touch
                 </Link>
+                <a
+                  href={WHATSAPP_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-[#25D366] text-white font-semibold px-8 py-4 rounded-xl hover:bg-[#1ebe5b] transition-colors shadow-lg shadow-[#25D366]/25"
+                >
+                  <MessageCircle size={18} />
+                  WhatsApp
+                </a>
               </div>
             </motion.div>
           </div>
@@ -481,6 +497,15 @@ export default function AboutPage() {
                 >
                   Explore our services
                 </Link>
+                <a
+                  href={WHATSAPP_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-[#25D366] text-white font-semibold px-8 py-4 rounded-xl hover:bg-[#1ebe5b] transition-colors shadow-lg shadow-[#25D366]/25"
+                >
+                  <MessageCircle size={18} />
+                  WhatsApp
+                </a>
               </div>
             </motion.div>
           </div>

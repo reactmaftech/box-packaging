@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { X, Phone, Mail, ShieldCheck, ArrowRight } from 'lucide-react'
+import { X, Phone, Mail, ShieldCheck, ArrowRight, MessageCircle } from 'lucide-react'
 
 // Popup image
 import popupImage from '../assets/images/custom-pr-1.jpg'
@@ -14,6 +14,12 @@ const PHONE_DISPLAY = '+1 (217) 727-6247'
 const EMAIL_ADDRESS = 'info@slickcustomboxes.com'
 const QUOTE_URL = '/get-a-quote'
 const DELAY_MS = 15000 // 15 seconds
+
+// WhatsApp details
+const WHATSAPP_NUMBER = '+19292141874'
+const WHATSAPP_DISPLAY = '+1 (929) 214-1874'
+// wa.me requires digits only (no +, spaces, or dashes)
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, '')}`
 
 export function QuotePopup() {
   const pathname = usePathname()
@@ -158,6 +164,27 @@ export function QuotePopup() {
                 </span>
               </span>
               <span className="text-sm font-bold">{PHONE_DISPLAY}</span>
+            </a>
+
+            {/* WhatsApp */}
+            <a
+              href={WHATSAPP_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between gap-3 rounded-2xl bg-[#25D366] px-4 py-3.5 text-left text-white shadow-md transition-transform hover:scale-[1.02]"
+            >
+              <span className="flex items-center gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/25">
+                  <MessageCircle size={18} />
+                </span>
+                <span>
+                  <span className="block text-sm font-bold">Chat on WhatsApp</span>
+                  <span className="block text-xs text-white/80">
+                    Message us directly
+                  </span>
+                </span>
+              </span>
+              <span className="text-sm font-bold">{WHATSAPP_DISPLAY}</span>
             </a>
 
             {/* Email */}

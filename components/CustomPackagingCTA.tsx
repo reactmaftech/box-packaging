@@ -7,8 +7,12 @@ import { Phone, MessageCircle, ArrowRight } from 'lucide-react'
 
 const PHONE = '+1 (217) 727-6247'
 const PHONE_HREF = 'tel:+12177276247'
-// If WhatsApp is ever enabled, use the SAME number as the main line.
-const WHATSAPP_HREF = 'https://wa.me/12177276247'
+
+// WhatsApp details
+const WHATSAPP_NUMBER = '+19292141874'
+const WHATSAPP_DISPLAY = '+1 (929) 214-1874'
+// wa.me requires digits only (no +, spaces, or dashes)
+const WHATSAPP_HREF = `https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, '')}`
 
 export function CustomPackagingCTA() {
   return (
@@ -30,7 +34,7 @@ export function CustomPackagingCTA() {
             </p>
           </div>
 
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex flex-wrap items-center gap-4 shrink-0">
             <a
               href={PHONE_HREF}
               className="hidden sm:flex items-center gap-2 text-sm font-semibold text-[#171512] hover:text-black transition-colors"
@@ -39,7 +43,15 @@ export function CustomPackagingCTA() {
               {PHONE}
             </a>
 
-            {/* WhatsApp icon is disabled. If you re-enable it, WHATSAPP_HREF uses the correct 217 number above. */}
+            <a
+              href={WHATSAPP_HREF}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:flex items-center gap-2 text-sm font-semibold text-[#171512] hover:text-[#1ebe5b] transition-colors"
+            >
+              <MessageCircle size={16} className="text-[#25D366]" />
+              {WHATSAPP_DISPLAY}
+            </a>
 
             <Link
               href="#inquiry"

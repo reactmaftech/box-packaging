@@ -2,12 +2,18 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 
 const LAST_UPDATED = 'January 2025'
+
+// WhatsApp details
+const WHATSAPP_NUMBER = '+19292141874'
+const WHATSAPP_DISPLAY = '+1 (929) 214-1874'
+// wa.me requires digits only (no +, spaces, or dashes)
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER.replace(/\D/g, '')}`
 
 export default function TermsAndConditionsPage() {
   return (
@@ -311,7 +317,7 @@ export default function TermsAndConditionsPage() {
                 <p className="mb-4">
                   To ask any queries concerning these terms and conditions, please get in touch with us at:
                 </p>
-                <div className="grid sm:grid-cols-2 gap-3">
+                <div className="grid sm:grid-cols-3 gap-3">
                   <a
                     href="tel:+12177276247"
                     className="group flex flex-col p-4 rounded-xl border border-gray-200 bg-white hover:border-[#FDB022] hover:shadow-sm transition-all"
@@ -328,6 +334,20 @@ export default function TermsAndConditionsPage() {
                     <p className="text-xs text-gray-500 mb-1">By email</p>
                     <p className="text-sm font-semibold text-[#171512] group-hover:text-[#c98b0c] transition-colors truncate">
                       info@slickcustomboxes.com
+                    </p>
+                  </a>
+                  <a
+                    href={WHATSAPP_LINK}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex flex-col p-4 rounded-xl border border-gray-200 bg-white hover:border-[#25D366] hover:shadow-sm transition-all"
+                  >
+                    <p className="text-xs text-gray-500 mb-1 flex items-center gap-1.5">
+                      <MessageCircle size={12} className="text-[#25D366]" />
+                      WhatsApp
+                    </p>
+                    <p className="text-sm font-semibold text-[#171512] group-hover:text-[#25D366] transition-colors">
+                      {WHATSAPP_DISPLAY}
                     </p>
                   </a>
                 </div>
@@ -357,12 +377,23 @@ export default function TermsAndConditionsPage() {
               Our team is happy to clarify anything in our Terms &amp; Conditions.
               Reach out any time.
             </p>
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-2 px-7 py-3 bg-[#FDB022] text-[#171512] font-bold rounded-xl hover:bg-[#f5a80f] transition-all shadow-lg shadow-[#FDB022]/25"
-            >
-              Contact us
-            </Link>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 px-7 py-3 bg-[#FDB022] text-[#171512] font-bold rounded-xl hover:bg-[#f5a80f] transition-all shadow-lg shadow-[#FDB022]/25"
+              >
+                Contact us
+              </Link>
+              <a
+                href={WHATSAPP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-7 py-3 bg-[#25D366] text-white font-bold rounded-xl hover:bg-[#1ebe5b] transition-all shadow-lg shadow-[#25D366]/25"
+              >
+                <MessageCircle size={17} />
+                WhatsApp
+              </a>
+            </div>
           </div>
         </div>
       </section>
